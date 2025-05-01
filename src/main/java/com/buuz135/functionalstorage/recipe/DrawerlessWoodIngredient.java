@@ -2,19 +2,19 @@ package com.buuz135.functionalstorage.recipe;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.hrznstudio.titanium.util.TagUtil;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.item.crafting.Ingredient;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.crafting.IIngredientSerializer;
 import net.minecraftforge.registries.ForgeRegistries;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,7 +48,8 @@ public class DrawerlessWoodIngredient extends Ingredient {
 
     private List<Item> getWoods(){
         if (woodless == null){
-            woodless = TagUtil.getAllEntries(ForgeRegistries.ITEMS, ItemTags.PLANKS).stream().filter(item -> !ForgeRegistries.ITEMS.getKey(item).getNamespace().equalsIgnoreCase("minecraft")).collect(Collectors.toList());
+            woodless = ForgeRegistries.ITEMS.getEntries().stream().map(Map.Entry::getValue)
+                    .filter(item -> item.is(ItemTags.PLANKS) && !ForgeRegistries.ITEMS.getKey(item).getNamespace().equalsIgnoreCase("minecraft")).collect(Collectors.toList());
             if (woodless.isEmpty()){
                 woodless.add(Items.OAK_PLANKS);
             }
@@ -72,7 +73,7 @@ public class DrawerlessWoodIngredient extends Ingredient {
     public static class WoodlessIngredientSerializer implements IIngredientSerializer<Ingredient>{
 
         @Override
-        public Ingredient parse(FriendlyByteBuf buffer) {
+        public Ingredient parse(PacketBuffer buffer) {
             return new DrawerlessWoodIngredient();
         }
 
@@ -82,7 +83,7 @@ public class DrawerlessWoodIngredient extends Ingredient {
         }
 
         @Override
-        public void write(FriendlyByteBuf buffer, Ingredient ingredient) {
+        public void write(PacketBuffer buffer, Ingredient ingredient) {
 
         }
     }
