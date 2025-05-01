@@ -1,15 +1,15 @@
 package com.buuz135.functionalstorage.util;
 
-import net.minecraft.core.NonNullList;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.CraftingContainer;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.CraftingRecipe;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.level.Level;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.CraftingInventory;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.ICraftingRecipe;
+import net.minecraft.item.crafting.IRecipeType;
+import net.minecraft.item.crafting.Ingredient;
+import net.minecraft.util.NonNullList;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.World;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
@@ -24,20 +24,20 @@ import java.util.*;
  */
 public class CompactingUtil {
 
-    private final Level level;
+    private final World level;
     private List<Result> results;
     private final int resultAmount;
 
-    public CompactingUtil(Level level, int resultAmount) {
+    public CompactingUtil(World level, int resultAmount) {
         this.level = level;
         this.resultAmount = resultAmount;
         this.results = new ArrayList<>();
     }
 
-    public void setup(ItemStack stack){
+    public void setup(ItemStack stack) {
         results.add(new Result(stack, 1));
         Result result = findUpperTier(stack);
-        if (!result.getResult().isEmpty()){
+        if (!result.getResult().isEmpty()) {
             results.add(result);
             if (results.size() < this.resultAmount) {
                 result = findUpperTier(result.getResult());
@@ -70,26 +70,26 @@ public class CompactingUtil {
         return results;
     }
 
-    private Result findUpperTier(ItemStack stack){
+    private Result findUpperTier(ItemStack stack) {
         //Checking 3x3
         int sizeCheck = 9;
-        CraftingContainer container = createContainerAndFill(3, stack);
+        CraftingInventory container = createContainerAndFill(3, stack);
         List<ItemStack> outputs = findAllMatchingRecipes(container);
         List<ItemStack> realOutputs = new ArrayList<>();
-        if (outputs.size() == 0){
+        if (outputs.size() == 0) {
             //Checking 2x2
             sizeCheck = 4;
             container = createContainerAndFill(2, stack);
             outputs = findAllMatchingRecipes(container);
         }
-        if (stack.is(StorageTags.IGNORE_CRAFTING_CHECK)){
+        if (stack.getItem().is(StorageTags.IGNORE_CRAFTING_CHECK)) {
             realOutputs = outputs;
-        }else if (outputs.size() > 0){
+        } else if (outputs.size() > 0) {
             for (ItemStack output : outputs) {
                 container = createContainerAndFill(1, output);
                 List<ItemStack> reversed = findAllMatchingRecipes(container);
                 for (ItemStack reversedStack : reversed) {
-                    if (reversedStack.getCount() != sizeCheck || !ItemStack.isSame(reversedStack, stack)){
+                    if (reversedStack.getCount() != sizeCheck || !ItemStack.isSame(reversedStack, stack)) {
                         continue;
                     }
                     realOutputs.add(output);
@@ -98,32 +98,32 @@ public class CompactingUtil {
         }
 
         ItemStack similar = findSimilar(stack, realOutputs);
-        if (!similar.isEmpty()){
+        if (!similar.isEmpty()) {
             return new Result(similar, sizeCheck);
         }
-        if (realOutputs.size() > 0){
+        if (realOutputs.size() > 0) {
             return new Result(realOutputs.get(0), sizeCheck);
         }
         return new Result(ItemStack.EMPTY, 0);
     }
 
-    private Result findLowerTier(ItemStack stack){
+    private Result findLowerTier(ItemStack stack) {
         List<ItemStack> candidates = new ArrayList<>();
         Map<ItemStack, Integer> candidatesRate = new HashMap<>();
-        for (CraftingRecipe craftingRecipe : level.getRecipeManager().getAllRecipesFor(RecipeType.CRAFTING)) {
+        for (ICraftingRecipe craftingRecipe : level.getRecipeManager().getAllRecipesFor(IRecipeType.CRAFTING)) {
             ItemStack output = craftingRecipe.getResultItem();
             if (!ItemStack.isSame(stack, output)) continue;
             ItemStack match = tryMatch(stack, craftingRecipe.getIngredients());
-            if (!match.isEmpty()){
+            if (!match.isEmpty()) {
                 int recipeSize = craftingRecipe.getIngredients().size();
-                if (stack.is(StorageTags.IGNORE_CRAFTING_CHECK)){
+                if (stack.getItem().is(StorageTags.IGNORE_CRAFTING_CHECK)) {
                     candidates.add(match);
                     candidatesRate.put(match, recipeSize);
                 }
-                CraftingContainer container = createContainerAndFill(1, output);
+                CraftingInventory container = createContainerAndFill(1, output);
                 List<ItemStack> matchStacks = findAllMatchingRecipes(container);
                 for (ItemStack matchStack : matchStacks) {
-                    if (ItemStack.isSame(match, matchStack) && matchStack.getCount() == recipeSize){
+                    if (ItemStack.isSame(match, matchStack) && matchStack.getCount() == recipeSize) {
                         candidates.add(match);
                         candidatesRate.put(match, recipeSize);
                         break;
@@ -132,18 +132,18 @@ public class CompactingUtil {
             }
         }
         ItemStack similar = findSimilar(stack, candidates);
-        if (!similar.isEmpty()){
+        if (!similar.isEmpty()) {
             return new Result(similar, candidatesRate.get(similar));
         }
-        if (candidates.size() > 0){
+        if (candidates.size() > 0) {
             return new Result(candidates.get(0), candidatesRate.get(candidates.get(0)));
         }
         return new Result(ItemStack.EMPTY, 0);
     }
 
-    private List<ItemStack> findAllMatchingRecipes(CraftingContainer crafting) {
+    private List<ItemStack> findAllMatchingRecipes(CraftingInventory crafting) {
         List<ItemStack> candidates = new ArrayList<>();
-        for (CraftingRecipe recipe : level.getRecipeManager().getRecipesFor(RecipeType.CRAFTING, crafting, level)) {
+        for (ICraftingRecipe recipe : level.getRecipeManager().getRecipesFor(IRecipeType.CRAFTING, crafting, level)) {
             if (recipe.matches(crafting, level)) {
                 ItemStack result = recipe.assemble(crafting);
                 if (!result.isEmpty())
@@ -199,15 +199,16 @@ public class CompactingUtil {
         return match;
     }
 
-    private CraftingContainer createContainerAndFill(int size, ItemStack stack){
-        CraftingContainer inventoryCrafting = new CraftingContainer(new AbstractContainerMenu(null, 0) {
+    private CraftingInventory createContainerAndFill(int size, ItemStack stack) {
+        CraftingInventory inventoryCrafting = new CraftingInventory(new Container(null, 0) {
+
             @Override
-            public ItemStack quickMoveStack(Player p_38941_, int p_38942_) {
+            public ItemStack quickMoveStack(PlayerEntity player, int i) {
                 return null;
             }
 
             @Override
-            public boolean stillValid(Player playerIn) {
+            public boolean stillValid(PlayerEntity playerIn) {
                 return false;
             }
         }, size, size);
@@ -217,7 +218,7 @@ public class CompactingUtil {
         return inventoryCrafting;
     }
 
-    public static class Result{
+    public static class Result {
 
         private ItemStack result;
         private int needed;
@@ -251,5 +252,4 @@ public class CompactingUtil {
                     '}';
         }
     }
-
 }
