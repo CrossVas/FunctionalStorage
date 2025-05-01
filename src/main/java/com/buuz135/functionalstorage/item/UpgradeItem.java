@@ -2,37 +2,30 @@ package com.buuz135.functionalstorage.item;
 
 import com.buuz135.functionalstorage.FunctionalStorage;
 import com.hrznstudio.titanium.item.BasicItem;
-import net.minecraft.ChatFormatting;
-import net.minecraft.core.Direction;
-import net.minecraft.core.NonNullList;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.entity.SlotAccess;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.ClickAction;
-import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.Direction;
+import net.minecraft.util.NonNullList;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.World;
 import org.apache.commons.lang3.text.WordUtils;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Locale;
 
 public class UpgradeItem extends BasicItem {
 
-    public static int MAX_SLOT = 4;
-
     public static Direction getDirection(ItemStack stack){
         if (stack.hasTag() && stack.getTag().contains("Direction")) {
             Item item = stack.getItem();
             if (item.equals(FunctionalStorage.PULLING_UPGRADE.get()) || item.equals(FunctionalStorage.PUSHING_UPGRADE.get()) || item.equals(FunctionalStorage.COLLECTOR_UPGRADE.get())) {
-                var direction = Direction.byName(stack.getOrCreateTag().getString("Direction"));
+                Direction direction = Direction.byName(stack.getOrCreateTag().getString("Direction"));
                 return direction == null ? Direction.NORTH : direction;
             }
         }
@@ -47,9 +40,9 @@ public class UpgradeItem extends BasicItem {
     }
 
     @Override
-    public void onCraftedBy(ItemStack p_41447_, Level p_41448_, Player p_41449_) {
-        super.onCraftedBy(p_41447_, p_41448_, p_41449_);
-        initNbt(p_41447_);
+    public void onCraftedBy(ItemStack stack, World world, PlayerEntity player) {
+        super.onCraftedBy(stack, world, player);
+        initNbt(stack);
     }
 
     private ItemStack initNbt(ItemStack stack){
@@ -64,7 +57,7 @@ public class UpgradeItem extends BasicItem {
     }
 
     @Override
-    public void fillItemCategory(CreativeModeTab group, NonNullList<ItemStack> items) {
+    public void fillItemCategory(ItemGroup group, NonNullList<ItemStack> items) {
         if (this.allowdedIn(group)) {
             items.add(initNbt(new ItemStack(this)));
         }
@@ -74,43 +67,21 @@ public class UpgradeItem extends BasicItem {
         return type;
     }
 
-
     @Override
-    public boolean overrideOtherStackedOnMe(ItemStack first, ItemStack second, Slot p_150894_, ClickAction clickAction, Player p_150896_, SlotAccess p_150897_) {
-        if (clickAction == ClickAction.SECONDARY && first.getCount() == 1){
-            Item item = first.getItem();
-            if (item.equals(FunctionalStorage.PULLING_UPGRADE.get()) || item.equals(FunctionalStorage.PUSHING_UPGRADE.get()) || item.equals(FunctionalStorage.COLLECTOR_UPGRADE.get())){
-                Direction direction = getDirection(first);
-                Direction next = Direction.values()[(Arrays.asList(Direction.values()).indexOf(direction) + 1 ) % Direction.values().length];
-                first.getOrCreateTag().putString("Direction", next.getName());
-                p_150896_.playSound(SoundEvents.UI_BUTTON_CLICK, 0.5f, 1);
-                return true;
-            }
-            if (item.equals(FunctionalStorage.REDSTONE_UPGRADE.get())){
-                int slot = first.getOrCreateTag().getInt("Slot");
-                first.getOrCreateTag().putInt("Slot", (slot + 1) % MAX_SLOT);
-                p_150896_.playSound(SoundEvents.UI_BUTTON_CLICK, 0.5f, 1);
-                return true;
-            }
-        }
-        return super.overrideOtherStackedOnMe(first, second, p_150894_, clickAction, p_150896_, p_150897_);
-    }
-
-    @Override
-    public void addTooltipDetails(@Nullable BasicItem.Key key, ItemStack stack, List<Component> tooltip, boolean advanced) {
+    public void addTooltipDetails(@Nullable BasicItem.Key key, ItemStack stack, List<ITextComponent> tooltip, boolean advanced) {
         super.addTooltipDetails(key, stack, tooltip, advanced);
-        tooltip.add(new TranslatableComponent("upgrade.type").withStyle(ChatFormatting.YELLOW).append(new TranslatableComponent("upgrade.type." + getType().name().toLowerCase(Locale.ROOT)).withStyle(ChatFormatting.WHITE)));
+        tooltip.add(new TranslationTextComponent("upgrade.type").withStyle(TextFormatting.YELLOW).append(new TranslationTextComponent("upgrade.type." + getType().name().toLowerCase(Locale.ROOT)).withStyle(TextFormatting.WHITE)));
         Item item = stack.getItem();
         if (stack.hasTag()) {
             if (item.equals(FunctionalStorage.PULLING_UPGRADE.get()) || item.equals(FunctionalStorage.PUSHING_UPGRADE.get()) || item.equals(FunctionalStorage.COLLECTOR_UPGRADE.get())) {
-                tooltip.add(new TranslatableComponent("item.utility.direction").withStyle(ChatFormatting.YELLOW).append(new TranslatableComponent(WordUtils.capitalize(getDirection(stack).getName().toLowerCase(Locale.ROOT))).withStyle(ChatFormatting.WHITE)));
-                tooltip.add(new TextComponent(""));
-                tooltip.add(new TranslatableComponent("item.utility.direction.desc").withStyle(ChatFormatting.GRAY));
+                tooltip.add(new TranslationTextComponent("item.utility.direction").withStyle(TextFormatting.YELLOW).append(new TranslationTextComponent(WordUtils.capitalize(getDirection(stack).getName().toLowerCase(Locale.ROOT))).withStyle(TextFormatting.WHITE)));
+                tooltip.add(new StringTextComponent(""));
+                tooltip.add(new TranslationTextComponent("item.utility.direction.desc").withStyle(TextFormatting.GRAY));
             }
             if (item.equals(FunctionalStorage.REDSTONE_UPGRADE.get())) {
-                tooltip.add(new TranslatableComponent("item.utility.slot").withStyle(ChatFormatting.YELLOW).append(new TextComponent(stack.getOrCreateTag().getInt("Slot") + "").withStyle(ChatFormatting.WHITE)));
-                tooltip.add(new TextComponent(""));
-                tooltip.add(new TranslatableComponent("item.utility.direction.desc").withStyle(ChatFormatting.GRAY));
+                tooltip.add(new TranslationTextComponent("item.utility.slot").withStyle(TextFormatting.YELLOW).append(new StringTextComponent(stack.getOrCreateTag().getInt("Slot") + "").withStyle(TextFormatting.WHITE)));
+                tooltip.add(new StringTextComponent(""));
+                tooltip.add(new TranslationTextComponent("item.utility.direction.desc").withStyle(TextFormatting.GRAY));
             }
         }
 
@@ -121,7 +92,7 @@ public class UpgradeItem extends BasicItem {
         return key == null;
     }
 
-    public static enum Type{
+    public enum Type{
         STORAGE,
         UTILITY
     }
