@@ -19,13 +19,11 @@
  * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
 package com.buuz135.functionalstorage.client.model;
 
-
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
+import net.minecraft.item.Item;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.data.ModelProperty;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -33,7 +31,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FramedDrawerModelData implements INBTSerializable<CompoundTag> {
+public class FramedDrawerModelData implements INBTSerializable<CompoundNBT> {
 
     public static final ModelProperty<FramedDrawerModelData> FRAMED_PROPERTY = new ModelProperty<>();
     private Map<String, Item> design;
@@ -50,14 +48,14 @@ public class FramedDrawerModelData implements INBTSerializable<CompoundTag> {
     }
 
     @Override
-    public CompoundTag serializeNBT() {
-        CompoundTag compoundTag = new CompoundTag();
+    public CompoundNBT serializeNBT() {
+        CompoundNBT compoundTag = new CompoundNBT();
         design.forEach((s, item) -> compoundTag.putString(s, ForgeRegistries.ITEMS.getKey(item).toString()));
         return compoundTag;
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(CompoundNBT nbt) {
         design = new HashMap<>();
         for (String allKey : nbt.getAllKeys()) {
             design.put(allKey, ForgeRegistries.ITEMS.getValue(new ResourceLocation(nbt.getString(allKey))));
