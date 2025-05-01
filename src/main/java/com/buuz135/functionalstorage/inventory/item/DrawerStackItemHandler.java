@@ -3,9 +3,10 @@ package com.buuz135.functionalstorage.inventory.item;
 import com.buuz135.functionalstorage.FunctionalStorage;
 import com.buuz135.functionalstorage.inventory.BigInventoryHandler;
 import com.buuz135.functionalstorage.item.StorageUpgradeItem;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.INBT;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
@@ -16,7 +17,7 @@ import java.util.List;
 
 import static com.buuz135.functionalstorage.inventory.BigInventoryHandler.*;
 
-public class DrawerStackItemHandler implements IItemHandler, INBTSerializable<CompoundTag> {
+public class DrawerStackItemHandler implements IItemHandler, INBTSerializable<CompoundNBT> {
 
     private List<BigInventoryHandler.BigStack> storedStacks;
     private ItemStack stack;
@@ -37,8 +38,8 @@ public class DrawerStackItemHandler implements IItemHandler, INBTSerializable<Co
         }
         if (stack.hasTag()) {
             deserializeNBT(stack.getTag().getCompound("Tile").getCompound("handler"));
-            for (Tag tag : stack.getOrCreateTag().getCompound("Tile").getCompound("storageUpgrades").getList("Items", Tag.TAG_COMPOUND)) {
-                ItemStack itemStack = ItemStack.of((CompoundTag) tag);
+            for (INBT tag : stack.getOrCreateTag().getCompound("Tile").getCompound("storageUpgrades").getList("Items", Constants.NBT.TAG_COMPOUND)) {
+                ItemStack itemStack = ItemStack.of((CompoundNBT) tag);
                 if (itemStack.getItem() instanceof StorageUpgradeItem) {
                     if (multiplier == 1) multiplier = ((StorageUpgradeItem) itemStack.getItem()).getStorageMultiplier();
                     else multiplier *= ((StorageUpgradeItem) itemStack.getItem()).getStorageMultiplier();
@@ -47,8 +48,8 @@ public class DrawerStackItemHandler implements IItemHandler, INBTSerializable<Co
                     this.downgrade = true;
                 }
             }
-            for (Tag tag : stack.getOrCreateTag().getCompound("Tile").getCompound("utilityUpgrades").getList("Items", Tag.TAG_COMPOUND)) {
-                ItemStack itemStack = ItemStack.of((CompoundTag) tag);
+            for (INBT tag : stack.getOrCreateTag().getCompound("Tile").getCompound("utilityUpgrades").getList("Items", Constants.NBT.TAG_COMPOUND)) {
+                ItemStack itemStack = ItemStack.of((CompoundNBT) tag);
                 if (itemStack.getItem().equals(FunctionalStorage.VOID_UPGRADE.get())) {
                     this.isVoid = true;
                 }
@@ -57,11 +58,11 @@ public class DrawerStackItemHandler implements IItemHandler, INBTSerializable<Co
     }
 
     @Override
-    public CompoundTag serializeNBT() {
-        CompoundTag compoundTag = new CompoundTag();
-        CompoundTag items = new CompoundTag();
+    public CompoundNBT serializeNBT() {
+        CompoundNBT compoundTag = new CompoundNBT();
+        CompoundNBT items = new CompoundNBT();
         for (int i = 0; i < this.storedStacks.size(); i++) {
-            CompoundTag bigStack = new CompoundTag();
+            CompoundNBT bigStack = new CompoundNBT();
             bigStack.put(STACK, this.storedStacks.get(i).getStack().serializeNBT());
             bigStack.putInt(AMOUNT, this.storedStacks.get(i).getAmount());
             items.put(i + "", bigStack);
@@ -71,7 +72,7 @@ public class DrawerStackItemHandler implements IItemHandler, INBTSerializable<Co
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(CompoundNBT nbt) {
         for (String allKey : nbt.getCompound(BIG_ITEMS).getAllKeys()) {
             this.storedStacks.get(Integer.parseInt(allKey)).setStack(ItemStack.of(nbt.getCompound(BIG_ITEMS).getCompound(allKey).getCompound(STACK)));
             this.storedStacks.get(Integer.parseInt(allKey)).setAmount(nbt.getCompound(BIG_ITEMS).getCompound(allKey).getInt(AMOUNT));
@@ -115,7 +116,7 @@ public class DrawerStackItemHandler implements IItemHandler, INBTSerializable<Co
 
     private void onChange() {
         if (stack.getOrCreateTag().contains("Tile"))
-            stack.getOrCreateTag().put("Tile", new CompoundTag());
+            stack.getOrCreateTag().put("Tile", new CompoundNBT());
         stack.getOrCreateTag().getCompound("Tile").put("handler", serializeNBT());
     }
 
