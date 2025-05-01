@@ -4,8 +4,8 @@ import com.buuz135.functionalstorage.block.tile.DrawerControllerTile;
 import com.buuz135.functionalstorage.inventory.ControllerInventoryHandler;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
-import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,7 +42,7 @@ public abstract class ControllerFluidHandler implements IFluidHandler {
     }
 
     @Override
-    public @NotNull FluidStack getFluidInTank(int tank) {
+    public @Nonnull FluidStack getFluidInTank(int tank) {
         HandlerTankSelector selector = selectorForTank(tank);
         return null != selector ? selector.getStackInSlot() : FluidStack.EMPTY;
     }
@@ -54,7 +54,7 @@ public abstract class ControllerFluidHandler implements IFluidHandler {
     }
 
     @Override
-    public boolean isFluidValid(int tank, @NotNull FluidStack stack) {
+    public boolean isFluidValid(int tank, @Nonnull FluidStack stack) {
         HandlerTankSelector selector = selectorForTank(tank);
         return null != selector && selector.isFluidValid(stack);
     }
@@ -75,7 +75,7 @@ public abstract class ControllerFluidHandler implements IFluidHandler {
     }
 
     @Override
-    public @NotNull FluidStack drain(FluidStack resource, FluidAction action) {
+    public @Nonnull FluidStack drain(FluidStack resource, FluidAction action) {
         for (HandlerTankSelector selector : this.selectors) {
             if (!selector.getStackInSlot().isEmpty() && selector.getStackInSlot().isFluidEqual(resource)) {
                 return selector.drain(resource, action);
@@ -90,7 +90,7 @@ public abstract class ControllerFluidHandler implements IFluidHandler {
     }
 
     @Override
-    public @NotNull FluidStack drain(int maxDrain, FluidAction action) {
+    public @Nonnull FluidStack drain(int maxDrain, FluidAction action) {
         for (HandlerTankSelector selector : this.selectors) {
             if (!selector.getStackInSlot().isEmpty()) {
                 return selector.drain(maxDrain, action);
@@ -115,7 +115,7 @@ class HandlerTankSelector {
         return handler.getFluidInTank(slot);
     }
 
-    public int fill(@NotNull FluidStack stack, IFluidHandler.FluidAction action) {
+    public int fill(@Nonnull FluidStack stack, IFluidHandler.FluidAction action) {
         return handler.fill(stack, action);
     }
 
@@ -131,7 +131,7 @@ class HandlerTankSelector {
         return handler.getTankCapacity(slot);
     }
 
-    public boolean isFluidValid(@NotNull FluidStack stack) {
+    public boolean isFluidValid(@Nonnull FluidStack stack) {
         return handler.isFluidValid(slot, stack);
     }
 }
