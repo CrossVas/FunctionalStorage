@@ -1,8 +1,8 @@
 package com.buuz135.functionalstorage.inventory;
 
 import com.buuz135.functionalstorage.util.CompactingUtil;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
@@ -11,7 +11,7 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class CompactingInventoryHandler implements IItemHandler, INBTSerializable<CompoundTag>, ILockable {
+public abstract class CompactingInventoryHandler implements IItemHandler, INBTSerializable<CompoundNBT>, ILockable {
 
     public static String PARENT = "Parent";
     public static String BIG_ITEMS = "BigItems";
@@ -171,13 +171,13 @@ public abstract class CompactingInventoryHandler implements IItemHandler, INBTSe
     }
 
     @Override
-    public CompoundTag serializeNBT() {
-        CompoundTag compoundTag = new CompoundTag();
+    public CompoundNBT serializeNBT() {
+        CompoundNBT compoundTag = new CompoundNBT();
         compoundTag.put(PARENT, this.getParent().serializeNBT());
         compoundTag.putInt(AMOUNT, this.amount);
-        CompoundTag items = new CompoundTag();
+        CompoundNBT items = new CompoundNBT();
         for (int i = 0; i < this.resultList.size(); i++) {
-            CompoundTag bigStack = new CompoundTag();
+            CompoundNBT bigStack = new CompoundNBT();
             bigStack.put(STACK, this.resultList.get(i).getResult().serializeNBT());
             bigStack.putInt(AMOUNT, this.resultList.get(i).getNeeded());
             items.put(i + "", bigStack);
@@ -187,7 +187,7 @@ public abstract class CompactingInventoryHandler implements IItemHandler, INBTSe
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(CompoundNBT nbt) {
         this.parent = ItemStack.of(nbt.getCompound(PARENT));
         this.amount = nbt.getInt(AMOUNT);
         for (String allKey : nbt.getCompound(BIG_ITEMS).getAllKeys()) {
