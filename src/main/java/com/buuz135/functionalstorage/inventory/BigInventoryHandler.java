@@ -1,8 +1,8 @@
 package com.buuz135.functionalstorage.inventory;
 
 import com.buuz135.functionalstorage.FunctionalStorage;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
@@ -11,7 +11,7 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class BigInventoryHandler implements IItemHandler, INBTSerializable<CompoundTag>, ILockable {
+public abstract class BigInventoryHandler implements IItemHandler, INBTSerializable<CompoundNBT>, ILockable {
 
     public static String BIG_ITEMS = "BigItems";
     public static String STACK = "Stack";
@@ -127,11 +127,11 @@ public abstract class BigInventoryHandler implements IItemHandler, INBTSerializa
     }
 
     @Override
-    public CompoundTag serializeNBT() {
-        CompoundTag compoundTag = new CompoundTag();
-        CompoundTag items = new CompoundTag();
+    public CompoundNBT serializeNBT() {
+        CompoundNBT compoundTag = new CompoundNBT();
+        CompoundNBT items = new CompoundNBT();
         for (int i = 0; i < this.storedStacks.size(); i++) {
-            CompoundTag bigStack = new CompoundTag();
+            CompoundNBT bigStack = new CompoundNBT();
             bigStack.put(STACK, this.storedStacks.get(i).getStack().serializeNBT());
             bigStack.putInt(AMOUNT, this.storedStacks.get(i).getAmount());
             items.put(i + "", bigStack);
@@ -141,7 +141,7 @@ public abstract class BigInventoryHandler implements IItemHandler, INBTSerializa
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(CompoundNBT nbt) {
         for (String allKey : nbt.getCompound(BIG_ITEMS).getAllKeys()) {
             this.storedStacks.get(Integer.parseInt(allKey)).setStack(ItemStack.of(nbt.getCompound(BIG_ITEMS).getCompound(allKey).getCompound(STACK)));
             this.storedStacks.get(Integer.parseInt(allKey)).setAmount(nbt.getCompound(BIG_ITEMS).getCompound(allKey).getInt(AMOUNT));
