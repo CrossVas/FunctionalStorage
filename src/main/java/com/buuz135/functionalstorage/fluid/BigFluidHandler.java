@@ -1,16 +1,15 @@
 package com.buuz135.functionalstorage.fluid;
 
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import java.util.function.Predicate;
 
-public abstract class BigFluidHandler implements IFluidHandler, INBTSerializable<CompoundTag> {
+public abstract class BigFluidHandler implements IFluidHandler, INBTSerializable<CompoundNBT> {
 
     private CustomFluidTank[] tanks;
     private FluidStack[] filterStack;
@@ -42,7 +41,7 @@ public abstract class BigFluidHandler implements IFluidHandler, INBTSerializable
     }
 
     @Override
-    public @NotNull FluidStack getFluidInTank(int tank) {
+    public @Nonnull FluidStack getFluidInTank(int tank) {
         return this.tanks[tank].getFluidInTank(0);
     }
 
@@ -52,7 +51,7 @@ public abstract class BigFluidHandler implements IFluidHandler, INBTSerializable
     }
 
     @Override
-    public boolean isFluidValid(int tank, @NotNull FluidStack stack) {
+    public boolean isFluidValid(int tank, @Nonnull FluidStack stack) {
         return this.tanks[tank].isFluidValid(stack);
     }
 
@@ -117,18 +116,18 @@ public abstract class BigFluidHandler implements IFluidHandler, INBTSerializable
     }
 
     @Override
-    public CompoundTag serializeNBT() {
-        CompoundTag compoundTag = new CompoundTag();
+    public CompoundNBT serializeNBT() {
+        CompoundNBT compoundTag = new CompoundNBT();
         for (int i = 0; i < this.tanks.length; i++) {
-            compoundTag.put(i + "", this.tanks[i].writeToNBT(new CompoundTag()));
-            compoundTag.put("Locked" + i, this.filterStack[i].writeToNBT(new CompoundTag()));
+            compoundTag.put(i + "", this.tanks[i].writeToNBT(new CompoundNBT()));
+            compoundTag.put("Locked" + i, this.filterStack[i].writeToNBT(new CompoundNBT()));
         }
         compoundTag.putInt("Capacity", this.capacity);
         return compoundTag;
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(CompoundNBT nbt) {
         this.capacity = nbt.getInt("Capacity");
         for (int i = 0; i < this.tanks.length; i++) {
             this.tanks[i].readFromNBT(nbt.getCompound(i + ""));
@@ -177,7 +176,7 @@ public abstract class BigFluidHandler implements IFluidHandler, INBTSerializable
         }
 
         @Override
-        public @NotNull FluidStack getFluidInTank(int tank) {
+        public @Nonnull FluidStack getFluidInTank(int tank) {
             FluidStack stack = super.getFluidInTank(tank);
             if (isDrawerCreative()) stack.setAmount(Integer.MAX_VALUE);
             return stack;
@@ -189,13 +188,13 @@ public abstract class BigFluidHandler implements IFluidHandler, INBTSerializable
         }
 
         @Override
-        public @NotNull FluidStack drain(FluidStack resource, FluidAction action) {
+        public @Nonnull FluidStack drain(FluidStack resource, FluidAction action) {
             if (isDrawerCreative()) return resource.copy();
             return super.drain(resource, action);
         }
 
         @Override
-        public @NotNull FluidStack drain(int maxDrain, FluidAction action) {
+        public @Nonnull FluidStack drain(int maxDrain, FluidAction action) {
             FluidStack fluidStack = super.drain(maxDrain, action);
             if (isDrawerCreative()) fluidStack.setAmount(maxDrain);
             return fluidStack;
@@ -207,7 +206,7 @@ public abstract class BigFluidHandler implements IFluidHandler, INBTSerializable
         }
 
         @Override
-        public @NotNull FluidStack getFluid() {
+        public @Nonnull FluidStack getFluid() {
             FluidStack stack = super.getFluid();
             if (isDrawerCreative()) stack.setAmount(Integer.MAX_VALUE);
             return stack;
