@@ -1,7 +1,7 @@
 package com.buuz135.functionalstorage.util;
 
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 
 import java.util.Locale;
 
