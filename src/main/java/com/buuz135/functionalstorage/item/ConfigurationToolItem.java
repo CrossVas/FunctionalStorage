@@ -3,25 +3,19 @@ package com.buuz135.functionalstorage.item;
 import com.buuz135.functionalstorage.FunctionalStorage;
 import com.buuz135.functionalstorage.block.tile.ControllableDrawerTile;
 import com.hrznstudio.titanium.item.BasicItem;
-import net.minecraft.ChatFormatting;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.NonNullList;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.*;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUseContext;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.*;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.*;
+import net.minecraft.world.World;
 
-import java.awt.*;
+import javax.annotation.Nullable;
+import java.awt.Color;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -42,9 +36,9 @@ public class ConfigurationToolItem extends BasicItem {
     }
 
     @Override
-    public void onCraftedBy(ItemStack p_41447_, Level p_41448_, Player p_41449_) {
-        super.onCraftedBy(p_41447_, p_41448_, p_41449_);
-        initNbt(p_41447_);
+    public void onCraftedBy(ItemStack stack, World world, PlayerEntity player) {
+        super.onCraftedBy(stack, world, player);
+        initNbt(stack);
     }
 
     private ItemStack initNbt(ItemStack stack) {
@@ -53,18 +47,18 @@ public class ConfigurationToolItem extends BasicItem {
     }
 
     @Override
-    public void fillItemCategory(CreativeModeTab group, NonNullList<ItemStack> items) {
+    public void fillItemCategory(ItemGroup group, NonNullList<ItemStack> items) {
         if (allowdedIn(group)) {
             items.add(initNbt(new ItemStack(this)));
         }
     }
 
     @Override
-    public InteractionResult useOn(UseOnContext context) {
+    public ActionResultType useOn(ItemUseContext context) {
         BlockPos pos = context.getClickedPos();
         ItemStack stack = context.getItemInHand();
-        Level level = context.getLevel();
-        BlockEntity blockEntity = level.getBlockEntity(pos);
+        World level = context.getLevel();
+        TileEntity blockEntity = level.getBlockEntity(pos);
         ConfigurationAction configuractionAction = getAction(stack);
         if (blockEntity instanceof ControllableDrawerTile) {
             if (configuractionAction == ConfigurationAction.LOCKING) {
@@ -72,37 +66,37 @@ public class ConfigurationToolItem extends BasicItem {
             } else {
                 ((ControllableDrawerTile<?>) blockEntity).toggleOption(configuractionAction);
             }
-            return InteractionResult.SUCCESS;
+            return ActionResultType.SUCCESS;
         }
         return super.useOn(context);
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level p_41432_, Player player, InteractionHand hand) {
+    public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (!stack.isEmpty()) {
             if (player.isShiftKeyDown()) {
                 ConfigurationAction action = getAction(stack);
                 ConfigurationAction newAction = ConfigurationAction.values()[(Arrays.asList(ConfigurationAction.values()).indexOf(action) + 1) % ConfigurationAction.values().length];
                 stack.getOrCreateTag().putString(NBT_MODE, newAction.name());
-                player.displayClientMessage(new TextComponent("Swapped mode to ").setStyle(Style.EMPTY.withColor(newAction.getColor()))
-                        .append(new TranslatableComponent("configurationtool.configmode." + newAction.name().toLowerCase(Locale.ROOT))), true);
+                player.displayClientMessage(new StringTextComponent("Swapped mode to ").setStyle(Style.EMPTY.withColor(newAction.getColor()))
+                        .append(new TranslationTextComponent("configurationtool.configmode." + newAction.name().toLowerCase(Locale.ROOT))), true);
                 player.playSound(SoundEvents.ITEM_FRAME_REMOVE_ITEM, 0.5f, 1);
-                return InteractionResultHolder.success(stack);
+                return ActionResult.success(stack);
             }
         }
-        return super.use(p_41432_, player, hand);
+        return super.use(world, player, hand);
     }
 
     @Override
-    public void addTooltipDetails(@Nullable BasicItem.Key key, ItemStack stack, List<Component> tooltip, boolean advanced) {
+    public void addTooltipDetails(@Nullable BasicItem.Key key, ItemStack stack, List<ITextComponent> tooltip, boolean advanced) {
         super.addTooltipDetails(key, stack, tooltip, advanced);
         ConfigurationAction linkingMode = getAction(stack);
         if (key == null) {
-            tooltip.add(new TranslatableComponent("configurationtool.configmode").withStyle(ChatFormatting.YELLOW)
-                    .append(new TranslatableComponent("configurationtool.configmode." + linkingMode.name().toLowerCase(Locale.ROOT)).withStyle(Style.EMPTY.withColor(linkingMode.getColor()))));
-            tooltip.add(new TextComponent("").withStyle(ChatFormatting.GRAY));
-            tooltip.add(new TranslatableComponent("configurationtool.use").withStyle(ChatFormatting.GRAY));
+            tooltip.add(new TranslationTextComponent("configurationtool.configmode").withStyle(TextFormatting.YELLOW)
+                    .append(new TranslationTextComponent("configurationtool.configmode." + linkingMode.name().toLowerCase(Locale.ROOT)).withStyle(Style.EMPTY.withColor(linkingMode.getColor()))));
+            tooltip.add(new StringTextComponent("").withStyle(TextFormatting.GRAY));
+            tooltip.add(new TranslationTextComponent("configurationtool.use").withStyle(TextFormatting.GRAY));
         }
     }
 
@@ -112,18 +106,18 @@ public class ConfigurationToolItem extends BasicItem {
     }
 
     public enum ConfigurationAction {
-        LOCKING(TextColor.fromRgb(new Color(40, 131, 250).getRGB())),
-        TOGGLE_NUMBERS(TextColor.fromRgb(new Color(250, 145, 40).getRGB())),
-        TOGGLE_RENDER(TextColor.fromRgb(new Color(100, 250, 40).getRGB())),
-        TOGGLE_UPGRADES(TextColor.fromRgb(new Color(166, 40, 250).getRGB()));
+        LOCKING(net.minecraft.util.text.Color.fromRgb(new Color(40, 131, 250).getRGB())),
+        TOGGLE_NUMBERS(net.minecraft.util.text.Color.fromRgb(new Color(250, 145, 40).getRGB())),
+        TOGGLE_RENDER(net.minecraft.util.text.Color.fromRgb(new Color(100, 250, 40).getRGB())),
+        TOGGLE_UPGRADES(net.minecraft.util.text.Color.fromRgb(new Color(166, 40, 250).getRGB()));
 
-        private final TextColor color;
+        private final net.minecraft.util.text.Color color;
 
-        ConfigurationAction(TextColor color) {
+        ConfigurationAction(net.minecraft.util.text.Color color) {
             this.color = color;
         }
 
-        public TextColor getColor() {
+        public net.minecraft.util.text.Color getColor() {
             return color;
         }
     }
