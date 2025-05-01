@@ -1,17 +1,14 @@
 package com.buuz135.functionalstorage.item;
 
 import com.hrznstudio.titanium.item.BasicItem;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.util.Mth;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.*;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 public class StorageUpgradeItem extends UpgradeItem{
@@ -32,13 +29,13 @@ public class StorageUpgradeItem extends UpgradeItem{
     }
 
     @Override
-    public void addTooltipDetails(@Nullable BasicItem.Key key, ItemStack stack, List<Component> tooltip, boolean advanced) {
+    public void addTooltipDetails(@Nullable BasicItem.Key key, ItemStack stack, List<ITextComponent> tooltip, boolean advanced) {
         super.addTooltipDetails(key, stack, tooltip, advanced);
         if (storageTier == StorageTier.IRON){
-            tooltip.add(new TranslatableComponent("item.utility.downgrade").withStyle(ChatFormatting.GRAY));
+            tooltip.add(new TranslationTextComponent("item.utility.downgrade").withStyle(TextFormatting.GRAY));
         } else {
-            tooltip.add(new TranslatableComponent("storageupgrade.desc.item").withStyle(ChatFormatting.GRAY).append(this.storageTier.getStorageMultiplier() + ""));
-            tooltip.add(new TranslatableComponent("storageupgrade.desc.fluid").withStyle(ChatFormatting.GRAY).append(this.storageTier.getStorageMultiplier() / 2 + ""));
+            tooltip.add(new TranslationTextComponent("storageupgrade.desc.item").withStyle(TextFormatting.GRAY).append(this.storageTier.getStorageMultiplier() + ""));
+            tooltip.add(new TranslationTextComponent("storageupgrade.desc.fluid").withStyle(TextFormatting.GRAY).append(this.storageTier.getStorageMultiplier() / 2 + ""));
         }
     }
 
@@ -50,20 +47,20 @@ public class StorageUpgradeItem extends UpgradeItem{
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public Component getName(ItemStack p_41458_) {
-        Component component = super.getName(p_41458_);
-        if (component instanceof TranslatableComponent) {
-            ((TranslatableComponent) component).setStyle(Style.EMPTY.withColor(storageTier == StorageTier.NETHERITE && Minecraft.getInstance().level != null ? Mth.hsvToRgb((Minecraft.getInstance().level.getGameTime() % 360) / 360f, 1, 1) : storageTier.getColor()));
+    public ITextComponent getName(ItemStack p_41458_) {
+        ITextComponent component = super.getName(p_41458_);
+        if (component instanceof TranslationTextComponent) {
+            ((TranslationTextComponent) component).setStyle(Style.EMPTY.withColor(Color.fromRgb(storageTier == StorageTier.NETHERITE && Minecraft.getInstance().level != null ? MathHelper.hsvToRgb((Minecraft.getInstance().level.getGameTime() % 360) / 360f, 1, 1) : storageTier.getColor())));
         }
         return component;
     }
 
     public static enum StorageTier {
-        COPPER(8, Mth.color(204, 109, 81)),
-        GOLD(16, Mth.color(233, 177, 21)),
-        DIAMOND(24, Mth.color(32, 197, 181)),
-        NETHERITE(32, Mth.color(49, 41, 42)),
-        IRON(1, Mth.color(130, 130, 130));
+        COPPER(8, MathHelper.color(204, 109, 81)),
+        GOLD(16, MathHelper.color(233, 177, 21)),
+        DIAMOND(24, MathHelper.color(32, 197, 181)),
+        NETHERITE(32, MathHelper.color(49, 41, 42)),
+        IRON(1, MathHelper.color(130, 130, 130));
 
         private final int storageMultiplier;
         private final int color;
