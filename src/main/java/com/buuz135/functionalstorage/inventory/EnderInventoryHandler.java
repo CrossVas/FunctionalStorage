@@ -2,7 +2,7 @@ package com.buuz135.functionalstorage.inventory;
 
 import com.buuz135.functionalstorage.FunctionalStorage;
 import com.buuz135.functionalstorage.world.EnderSavedData;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.CompoundNBT;
 
 public class EnderInventoryHandler extends BigInventoryHandler implements ILockable {
 
@@ -21,15 +21,15 @@ public class EnderInventoryHandler extends BigInventoryHandler implements ILocka
     }
 
     @Override
-    public CompoundTag serializeNBT() {
-        CompoundTag compoundTag = super.serializeNBT();
+    public CompoundNBT serializeNBT() {
+        CompoundNBT compoundTag = super.serializeNBT();
         compoundTag.putBoolean(NBT_LOCKED, this.locked);
         compoundTag.putBoolean(NBT_VOID, this.voidItems);
         return compoundTag;
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(CompoundNBT nbt) {
         super.deserializeNBT(nbt);
         this.locked = nbt.getBoolean(NBT_LOCKED);
         this.voidItems = nbt.getBoolean(NBT_VOID);
