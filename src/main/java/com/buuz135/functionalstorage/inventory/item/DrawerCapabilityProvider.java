@@ -1,15 +1,16 @@
 package com.buuz135.functionalstorage.inventory.item;
 
 import com.buuz135.functionalstorage.FunctionalStorage;
-import net.minecraft.core.Direction;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.Direction;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class DrawerCapabilityProvider implements ICapabilityProvider {
 
@@ -23,16 +24,16 @@ public class DrawerCapabilityProvider implements ICapabilityProvider {
         this.itemHandler = LazyOptional.of(() -> this.drawerStackItemHandler);
     }
 
-    @NotNull
+    @Nonnull
     @Override
-    public <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
+    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
         if (cap.equals(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)) return this.itemHandler.cast();
         return LazyOptional.empty();
     }
 
-    @NotNull
+    @Nonnull
     @Override
-    public <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap) {
+    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap) {
         if (cap.equals(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)) return this.itemHandler.cast();
         return LazyOptional.empty();
     }
