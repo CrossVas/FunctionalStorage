@@ -106,7 +106,7 @@ public class FluidDrawerRenderer extends TileEntityRenderer<FluidDrawerTile> {
 
     @Override
     public void render(FluidDrawerTile tile, float partialTicks, MatrixStack matrixStack, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn) {
-        if (Minecraft.getInstance().player != null && !tile.getBlockPos().closerThan(Minecraft.getInstance().player.blockPosition(), FunctionalStorageClientConfig.DRAWER_RENDER_RANGE)) {
+        if (Minecraft.getInstance().player != null && !tile.getBlockPos().closerThan(Minecraft.getInstance().player.getOnPos(), FunctionalStorageClientConfig.DRAWER_RENDER_RANGE)) {
             return;
         }
         matrixStack.pushPose();

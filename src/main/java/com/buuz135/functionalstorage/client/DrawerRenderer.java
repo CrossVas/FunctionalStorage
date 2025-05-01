@@ -6,26 +6,32 @@ import com.buuz135.functionalstorage.block.tile.DrawerTile;
 import com.buuz135.functionalstorage.inventory.BigInventoryHandler;
 import com.buuz135.functionalstorage.item.ConfigurationToolItem;
 import com.buuz135.functionalstorage.util.NumberUtils;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
-import net.minecraft.ChatFormatting;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.model.IBakedModel;
+import net.minecraft.client.renderer.model.ItemCameraTransforms;
+import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
+import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.Direction;
+import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
 
+import static com.buuz135.functionalstorage.util.MathUtils.ZERO;
 import static com.buuz135.functionalstorage.util.MathUtils.createTransformMatrix;
 
-public class DrawerRenderer implements BlockEntityRenderer<DrawerTile> {
+public class DrawerRenderer extends TileEntityRenderer<DrawerTile> {
 
-    public static void renderUpgrades(PoseStack matrixStack, MultiBufferSource bufferIn, int combinedLightIn, int combinedOverlayIn, ControllableDrawerTile<?> tile){
+    public DrawerRenderer(TileEntityRendererDispatcher dispatcher) {
+        super(dispatcher);
+    }
+
+    public static void renderUpgrades(MatrixStack matrixStack, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn, ControllableDrawerTile<?> tile){
         float scale = 0.0625f;
         if (tile.getDrawerOptions().isActive(ConfigurationToolItem.ConfigurationAction.TOGGLE_UPGRADES)){
             matrixStack.pushPose();
@@ -35,7 +41,7 @@ public class DrawerRenderer implements BlockEntityRenderer<DrawerTile> {
                 if (!stack.isEmpty()){
                     matrixStack.pushPose();
                     matrixStack.scale(scale, scale, scale);
-                    Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemTransforms.TransformType.NONE, combinedLightIn, combinedOverlayIn, matrixStack, bufferIn, 0);
+                    Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemCameraTransforms.TransformType.NONE, combinedLightIn, combinedOverlayIn, matrixStack, bufferIn);
                     matrixStack.popPose();
                     matrixStack.translate(scale,0,0);
                 }
@@ -44,46 +50,46 @@ public class DrawerRenderer implements BlockEntityRenderer<DrawerTile> {
         }
         if (tile.isVoid()) {
             matrixStack.pushPose();
-            matrixStack.mulPoseMatrix(createTransformMatrix(
-                    new Vector3f(0.969f, 0.031f, 0.469f / 16.0f), Vector3f.ZERO, scale));
-            Minecraft.getInstance().getItemRenderer().renderStatic(new ItemStack(FunctionalStorage.VOID_UPGRADE.get()), ItemTransforms.TransformType.NONE, combinedLightIn, combinedOverlayIn, matrixStack, bufferIn, 0);
+            matrixStack.last().pose().multiply(createTransformMatrix(
+                    new Vector3f(0.969f, 0.031f, 0.469f / 16.0f), ZERO, scale));
+            Minecraft.getInstance().getItemRenderer().renderStatic(new ItemStack(FunctionalStorage.VOID_UPGRADE.get()), ItemCameraTransforms.TransformType.NONE, combinedLightIn, combinedOverlayIn, matrixStack, bufferIn);
             matrixStack.popPose();
         }
     }
 
-    public static void renderStack(PoseStack matrixStack, MultiBufferSource bufferIn, int combinedLightIn, int combinedOverlayIn, ItemStack stack, int amount, float scale, ControllableDrawerTile.DrawerOptions options){
-        BakedModel model = Minecraft.getInstance().getItemRenderer().getModel(stack, Minecraft.getInstance().level, null, 0);
+    public static void renderStack(MatrixStack matrixStack, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn, ItemStack stack, int amount, float scale, ControllableDrawerTile.DrawerOptions options){
+        IBakedModel model = Minecraft.getInstance().getItemRenderer().getModel(stack, Minecraft.getInstance().level, null);
         if (model.isGui3d()) {
             float thickness = (float) FunctionalStorageClientConfig.DRAWER_RENDER_THICKNESS;
             // Avoid scaling normal matrix by using mulPoseMatrix() instead of scale()
-            matrixStack.mulPoseMatrix(createTransformMatrix(
-                    Vector3f.ZERO, Vector3f.ZERO, new Vector3f(.75f, .75f, thickness)));
+            matrixStack.last().pose().multiply(createTransformMatrix(
+                    ZERO, ZERO, new Vector3f(.75f, .75f, thickness)));
         } else {
-            matrixStack.mulPoseMatrix(createTransformMatrix(
-                    Vector3f.ZERO, Vector3f.ZERO, .4f));
+            matrixStack.last().pose().multiply(createTransformMatrix(
+                    ZERO, ZERO, .4f));
         }
 
         matrixStack.mulPose(Vector3f.YP.rotationDegrees(180));
         if (options.isActive(ConfigurationToolItem.ConfigurationAction.TOGGLE_RENDER)) {
-            Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemTransforms.TransformType.FIXED, combinedLightIn, combinedOverlayIn, matrixStack, bufferIn, 0);
+            Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemCameraTransforms.TransformType.FIXED, combinedLightIn, combinedOverlayIn, matrixStack, bufferIn);
         }
 
-        matrixStack.mulPoseMatrix(createTransformMatrix(
-                Vector3f.ZERO, new Vector3f(0, 180, 0), 1));
+        matrixStack.last().pose().multiply(createTransformMatrix(
+                ZERO, new Vector3f(0, 180, 0), 1));
         if (!model.isGui3d()) {
-            matrixStack.mulPoseMatrix(createTransformMatrix(
-                    Vector3f.ZERO, Vector3f.ZERO, new Vector3f(0.5f / 0.4f, 0.5f / 0.4f, 1)));
+            matrixStack.last().pose().multiply(createTransformMatrix(
+                    ZERO, ZERO, new Vector3f(0.5f / 0.4f, 0.5f / 0.4f, 1)));
         } else {
-            matrixStack.mulPoseMatrix(createTransformMatrix(
-                    Vector3f.ZERO, Vector3f.ZERO, .665f));
+            matrixStack.last().pose().multiply(createTransformMatrix(
+                    ZERO, ZERO, .665f));
         }
 
 
         if (options.isActive(ConfigurationToolItem.ConfigurationAction.TOGGLE_NUMBERS))
-            renderText(matrixStack, bufferIn, combinedOverlayIn, new TextComponent(ChatFormatting.WHITE + "" + NumberUtils.getFormatedBigNumber(amount)), Direction.NORTH, scale);
+            renderText(matrixStack, bufferIn, combinedOverlayIn, new StringTextComponent(NumberUtils.getFormatedBigNumber(amount)).withStyle(TextFormatting.WHITE), Direction.NORTH, scale);
     }
 
-    private void render1Slot(PoseStack matrixStack, MultiBufferSource bufferIn, int combinedLightIn, int combinedOverlayIn, DrawerTile tile){
+    private void render1Slot(MatrixStack matrixStack, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn, DrawerTile tile){
         BigInventoryHandler inventoryHandler = (BigInventoryHandler) tile.getStorage();
         if (!inventoryHandler.getStoredStacks().get(0).getStack().isEmpty()){
             matrixStack.translate(0.5, 0.5, 0.0005f);
@@ -93,31 +99,31 @@ public class DrawerRenderer implements BlockEntityRenderer<DrawerTile> {
     }
 
     @Override
-    public void render(DrawerTile tile, float partialTicks, PoseStack matrixStack, MultiBufferSource bufferIn, int combinedLightIn, int combinedOverlayIn) {
+    public void render(DrawerTile tile, float partialTicks, MatrixStack matrixStack, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn) {
         if (Minecraft.getInstance().player != null && !tile.getBlockPos().closerThan(Minecraft.getInstance().player.getOnPos(), FunctionalStorageClientConfig.DRAWER_RENDER_RANGE)) {
             return;
         }
         matrixStack.pushPose();
 
         Direction facing = tile.getFacingDirection();
-        matrixStack.mulPoseMatrix(createTransformMatrix(
-                Vector3f.ZERO, new Vector3f(0, 180, 0), 1));
+        matrixStack.last().pose().multiply(createTransformMatrix(
+                ZERO, new Vector3f(0, 180, 0), 1));
 
         if (facing == Direction.NORTH) {
-            matrixStack.mulPoseMatrix(createTransformMatrix(
-                    new Vector3f(-1, 0, 0), Vector3f.ZERO, 1));
+            matrixStack.last().pose().multiply(createTransformMatrix(
+                    new Vector3f(-1, 0, 0), ZERO, 1));
         } else if (facing == Direction.EAST) {
-            matrixStack.mulPoseMatrix(createTransformMatrix(
+            matrixStack.last().pose().multiply(createTransformMatrix(
                     new Vector3f(-1, 0, -1), new Vector3f(0, -90, 0), 1));
         } else if (facing == Direction.SOUTH) {
-            matrixStack.mulPoseMatrix(createTransformMatrix(
+            matrixStack.last().pose().multiply(createTransformMatrix(
                     new Vector3f(0, 0, -1), new Vector3f(0, 180, 0), 1));
         } else if (facing == Direction.WEST) {
-            matrixStack.mulPoseMatrix(createTransformMatrix(
+            matrixStack.last().pose().multiply(createTransformMatrix(
                     new Vector3f(0, 0, 0), new Vector3f(0, 90, 0), 1));
         }
         matrixStack.translate(0,0,-0.5/16D);
-        combinedLightIn = LevelRenderer.getLightColor(tile.getLevel(), tile.getBlockPos().relative(facing));
+        combinedLightIn = WorldRenderer.getLightColor(tile.getLevel(), tile.getBlockPos().relative(facing));
         renderUpgrades(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, tile);
         if (tile.getDrawerType() == FunctionalStorage.DrawerType.X_1) render1Slot(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, tile);
         if (tile.getDrawerType() == FunctionalStorage.DrawerType.X_2) render2Slot(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, tile);
@@ -125,56 +131,56 @@ public class DrawerRenderer implements BlockEntityRenderer<DrawerTile> {
         matrixStack.popPose();
     }
 
-    private void render2Slot(PoseStack matrixStack, MultiBufferSource bufferIn, int combinedLightIn, int combinedOverlayIn, DrawerTile tile){
+    private void render2Slot(MatrixStack matrixStack, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn, DrawerTile tile){
         BigInventoryHandler inventoryHandler = (BigInventoryHandler) tile.getStorage();
         if (!inventoryHandler.getStoredStacks().get(0).getStack().isEmpty()) {
             matrixStack.pushPose();
-            matrixStack.mulPoseMatrix(createTransformMatrix(
-                    new Vector3f(0.5f, 0.27f, 0.0005f), Vector3f.ZERO, new Vector3f(.5f, .5f, 1.0f)));
+            matrixStack.last().pose().multiply(createTransformMatrix(
+                    new Vector3f(0.5f, 0.27f, 0.0005f), ZERO, new Vector3f(.5f, .5f, 1.0f)));
             ItemStack stack = inventoryHandler.getStoredStacks().get(0).getStack();
             renderStack(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, stack, inventoryHandler.getStackInSlot(0).getCount(), 0.02f, tile.getDrawerOptions());
             matrixStack.popPose();
         }
         if (!inventoryHandler.getStoredStacks().get(1).getStack().isEmpty()) {
             matrixStack.pushPose();
-            matrixStack.mulPoseMatrix(createTransformMatrix(
-                    new Vector3f(0.5f, 0.77f, 0.0005f), Vector3f.ZERO, new Vector3f(.5f, .5f, 1.0f)));
+            matrixStack.last().pose().multiply(createTransformMatrix(
+                    new Vector3f(0.5f, 0.77f, 0.0005f), ZERO, new Vector3f(.5f, .5f, 1.0f)));
             ItemStack stack = inventoryHandler.getStoredStacks().get(1).getStack();
             renderStack(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, stack, inventoryHandler.getStackInSlot(1).getCount(), 0.02f, tile.getDrawerOptions());
             matrixStack.popPose();
         }
     }
 
-    private void render4Slot(PoseStack matrixStack, MultiBufferSource bufferIn, int combinedLightIn, int combinedOverlayIn, DrawerTile tile){
+    private void render4Slot(MatrixStack matrixStack, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn, DrawerTile tile){
         BigInventoryHandler inventoryHandler = (BigInventoryHandler) tile.getStorage();
         if (!inventoryHandler.getStoredStacks().get(0).getStack().isEmpty()) { //BOTTOM RIGHT
             matrixStack.pushPose();
-            matrixStack.mulPoseMatrix(createTransformMatrix(
-                    new Vector3f(.75f, .27f, .0005f), Vector3f.ZERO, new Vector3f(.5f, .5f, 1.0f)));
+            matrixStack.last().pose().multiply(createTransformMatrix(
+                    new Vector3f(.75f, .27f, .0005f), ZERO, new Vector3f(.5f, .5f, 1.0f)));
             ItemStack stack = inventoryHandler.getStoredStacks().get(0).getStack();
             renderStack(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, stack, inventoryHandler.getStackInSlot(0).getCount(), 0.02f, tile.getDrawerOptions());
             matrixStack.popPose();
         }
         if (!inventoryHandler.getStoredStacks().get(1).getStack().isEmpty()) { //BOTTOM LEFT
             matrixStack.pushPose();
-            matrixStack.mulPoseMatrix(createTransformMatrix(
-                    new Vector3f(.25f, .27f, .0005f), Vector3f.ZERO, new Vector3f(.5f, .5f, 1.0f)));
+            matrixStack.last().pose().multiply(createTransformMatrix(
+                    new Vector3f(.25f, .27f, .0005f), ZERO, new Vector3f(.5f, .5f, 1.0f)));
             ItemStack stack = inventoryHandler.getStoredStacks().get(1).getStack();
             renderStack(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, stack, inventoryHandler.getStackInSlot(1).getCount(), 0.02f, tile.getDrawerOptions());
             matrixStack.popPose();
         }
         if (!inventoryHandler.getStoredStacks().get(2).getStack().isEmpty()) { //TOP RIGHT
             matrixStack.pushPose();
-            matrixStack.mulPoseMatrix(createTransformMatrix(
-                    new Vector3f(.75f, .77f, .0005f), Vector3f.ZERO, new Vector3f(.5f, .5f, 1.0f)));
+            matrixStack.last().pose().multiply(createTransformMatrix(
+                    new Vector3f(.75f, .77f, .0005f), ZERO, new Vector3f(.5f, .5f, 1.0f)));
             ItemStack stack = inventoryHandler.getStoredStacks().get(2).getStack();
             renderStack(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, stack, inventoryHandler.getStackInSlot(2).getCount(), 0.02f, tile.getDrawerOptions());
             matrixStack.popPose();
         }
         if (!inventoryHandler.getStoredStacks().get(3).getStack().isEmpty()) { //TOP LEFT
             matrixStack.pushPose();
-            matrixStack.mulPoseMatrix(createTransformMatrix(
-                    new Vector3f(.25f, .77f, .0005f), Vector3f.ZERO, new Vector3f(.5f, .5f, 1.0f)));
+            matrixStack.last().pose().multiply(createTransformMatrix(
+                    new Vector3f(.25f, .77f, .0005f), ZERO, new Vector3f(.5f, .5f, 1.0f)));
             ItemStack stack = inventoryHandler.getStoredStacks().get(3).getStack();
             renderStack(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, stack, inventoryHandler.getStackInSlot(3).getCount(), 0.02f, tile.getDrawerOptions());
             matrixStack.popPose();
@@ -183,7 +189,7 @@ public class DrawerRenderer implements BlockEntityRenderer<DrawerTile> {
 
 
     /* Thanks Mekanism */
-    public static void renderText(PoseStack matrix, MultiBufferSource renderer, int overlayLight, Component text, Direction side, float maxScale) {
+    public static void renderText(MatrixStack matrix, IRenderTypeBuffer renderer, int overlayLight, ITextComponent text, Direction side, float maxScale) {
 
         matrix.translate(0, -0.745, 0);
 
@@ -193,7 +199,7 @@ public class DrawerRenderer implements BlockEntityRenderer<DrawerTile> {
         //matrix.translate(displayWidth / 2, 0, displayHeight / 2);
         //matrix.mulPose(Vector3f.XP.rotationDegrees(-90));
 
-        Font font = Minecraft.getInstance().font;
+        FontRenderer font = Minecraft.getInstance().font;
 
         int requiredWidth = Math.max(font.width(text), 1);
         int requiredHeight = font.lineHeight + 2;
