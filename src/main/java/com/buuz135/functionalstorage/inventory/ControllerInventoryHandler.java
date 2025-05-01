@@ -1,10 +1,10 @@
 package com.buuz135.functionalstorage.inventory;
 
 import com.buuz135.functionalstorage.block.tile.DrawerControllerTile;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
-import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +21,7 @@ class HandlerSlotSelector {
         return handler.getStackInSlot(slot);
     }
 
-    public ItemStack insertItem(@NotNull ItemStack stack, boolean simulate) {
+    public ItemStack insertItem(@Nonnull ItemStack stack, boolean simulate) {
         return handler.insertItem(slot, stack, simulate);
     }
 
@@ -33,7 +33,7 @@ class HandlerSlotSelector {
         return handler.getSlotLimit(slot);
     }
 
-    public boolean isItemValid(@NotNull ItemStack stack) {
+    public boolean isItemValid(@Nonnull ItemStack stack) {
         return handler.isItemValid(slot, stack);
     }
 }
@@ -70,21 +70,21 @@ public abstract class ControllerInventoryHandler implements IItemHandler {
         return slot >= 0 && slot < selectors.length ? selectors[slot] : null;
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public ItemStack getStackInSlot(int slot) {
         HandlerSlotSelector selector = selectorForSlot(slot);
         return null != selector ? selector.getStackInSlot() : ItemStack.EMPTY;
     }
 
-    @NotNull
+    @Nonnull
     @Override
-    public ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
+    public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
         HandlerSlotSelector selector = selectorForSlot(slot);
         return null != selector ? selector.insertItem(stack, simulate) : ItemStack.EMPTY;
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public ItemStack extractItem(int slot, int amount, boolean simulate) {
         HandlerSlotSelector selector = selectorForSlot(slot);
@@ -98,7 +98,7 @@ public abstract class ControllerInventoryHandler implements IItemHandler {
     }
 
     @Override
-    public boolean isItemValid(int slot, @NotNull ItemStack stack) {
+    public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
         HandlerSlotSelector selector = selectorForSlot(slot);
         return null != selector ? selector.isItemValid(stack) : false;
     }
