@@ -5,6 +5,9 @@ import net.minecraft.util.math.vector.Quaternion;
 import net.minecraft.util.math.vector.Vector3f;
 
 public class MathUtils {
+
+    public static Vector3f ZERO = new Vector3f(0.0F, 0.0F, 0.0F);
+
     public static Matrix4f createTransformMatrix(Vector3f translation, Vector3f eulerDegrees, Vector3f scale) {
         Quaternion q = fromXYZDegrees(eulerDegrees);
         return createTransformMatrix(translation, q, scale);
