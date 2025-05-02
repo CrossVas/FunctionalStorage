@@ -9,12 +9,10 @@ import com.buuz135.functionalstorage.item.ConfigurationToolItem;
 import com.buuz135.functionalstorage.item.LinkingToolItem;
 import com.hrznstudio.titanium.annotation.Save;
 import com.hrznstudio.titanium.block.BasicTileBlock;
-import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
@@ -51,8 +49,8 @@ public class DrawerControllerTile extends ItemControllableDrawerTile<DrawerContr
     private LazyOptional<IItemHandler> itemHandlerLazyOptional;
     private LazyOptional<IFluidHandler> fluidHandlerLazyOptional;
 
-    public DrawerControllerTile(BasicTileBlock<DrawerControllerTile> base, TileEntityType<DrawerControllerTile> blockEntityType, BlockPos pos, BlockState state) {
-        super(base, blockEntityType, pos, state);
+    public DrawerControllerTile(BasicTileBlock<DrawerControllerTile> base) {
+        super(base);
         this.connectedDrawers = new ConnectedDrawers(null);
         this.inventoryHandler = new ControllerInventoryHandler() {
             @Override

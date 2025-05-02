@@ -5,9 +5,6 @@ import com.buuz135.functionalstorage.client.model.FramedDrawerModelData;
 import com.buuz135.functionalstorage.util.DrawerWoodType;
 import com.hrznstudio.titanium.annotation.Save;
 import com.hrznstudio.titanium.block.BasicTileBlock;
-import net.minecraft.block.BlockState;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.client.model.data.ModelDataMap;
 
@@ -18,8 +15,8 @@ public class FramedDrawerTile extends DrawerTile{
     @Save
     private FramedDrawerModelData framedDrawerModelData;
 
-    public FramedDrawerTile(BasicTileBlock<DrawerTile> base, TileEntityType<DrawerTile> blockEntityType, BlockPos pos, BlockState state, FunctionalStorage.DrawerType type) {
-        super(base, blockEntityType, pos, state, type, DrawerWoodType.FRAMED);
+    public FramedDrawerTile(BasicTileBlock<DrawerTile> base, FunctionalStorage.DrawerType type) {
+        super(base, type, DrawerWoodType.FRAMED);
         this.framedDrawerModelData = new FramedDrawerModelData(new HashMap<>());
     }
 

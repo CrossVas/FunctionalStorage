@@ -4,14 +4,11 @@ import com.buuz135.functionalstorage.FunctionalStorage;
 import com.buuz135.functionalstorage.item.ConfigurationToolItem;
 import com.hrznstudio.titanium.block.BasicTileBlock;
 import com.hrznstudio.titanium.util.TileUtil;
-import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
@@ -21,8 +18,8 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 
 public class ControllerExtensionTile extends ItemControllableDrawerTile<ControllerExtensionTile> {
-    public ControllerExtensionTile(BasicTileBlock<ControllerExtensionTile> base, TileEntityType<ControllerExtensionTile> blockEntityType, BlockPos pos, BlockState state) {
-        super(base, blockEntityType, pos, state);
+    public ControllerExtensionTile(BasicTileBlock<ControllerExtensionTile> base) {
+        super(base);
     }
 
     @Override

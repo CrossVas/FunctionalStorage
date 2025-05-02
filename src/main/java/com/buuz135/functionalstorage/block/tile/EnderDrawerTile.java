@@ -13,7 +13,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
@@ -37,8 +36,8 @@ public class EnderDrawerTile extends ItemControllableDrawerTile<EnderDrawerTile>
     private String frequency;
     private LazyOptional<IItemHandler> lazyStorage;
 
-    public EnderDrawerTile(BasicTileBlock<EnderDrawerTile> base, TileEntityType<EnderDrawerTile> blockEntityType, BlockPos pos, BlockState state) {
-        super(base, blockEntityType, pos, state);
+    public EnderDrawerTile(BasicTileBlock<EnderDrawerTile> base) {
+        super(base);
         this.frequency = UUID.randomUUID().toString();
         this.lazyStorage = LazyOptional.empty();
     }

@@ -8,15 +8,12 @@ import com.hrznstudio.titanium.annotation.Save;
 import com.hrznstudio.titanium.api.IFactory;
 import com.hrznstudio.titanium.api.client.IScreenAddon;
 import com.hrznstudio.titanium.block.BasicTileBlock;
-import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -34,8 +31,8 @@ public class SimpleCompactingDrawerTile extends ItemControllableDrawerTile<Simpl
     public CompactingInventoryHandler handler;
     private boolean hasCheckedRecipes;
 
-    public SimpleCompactingDrawerTile(BasicTileBlock<SimpleCompactingDrawerTile> base, TileEntityType<SimpleCompactingDrawerTile> blockEntityType, BlockPos pos, BlockState state) {
-        super(base, blockEntityType, pos, state);
+    public SimpleCompactingDrawerTile(BasicTileBlock<SimpleCompactingDrawerTile> base) {
+        super(base);
         this.handler = new CompactingInventoryHandler(2) {
             @Override
             public void onChange() {

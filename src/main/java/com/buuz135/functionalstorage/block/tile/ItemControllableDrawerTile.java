@@ -7,17 +7,14 @@ import com.hrznstudio.titanium.block.BasicTileBlock;
 import com.hrznstudio.titanium.component.inventory.InventoryComponent;
 import com.hrznstudio.titanium.util.RayTraceUtils;
 import com.hrznstudio.titanium.util.TileUtil;
-import net.minecraft.block.BlockState;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraftforge.common.util.LazyOptional;
@@ -33,8 +30,8 @@ public abstract class ItemControllableDrawerTile<T extends ItemControllableDrawe
 
     private static HashMap<UUID, Long> INTERACTION_LOGGER = new HashMap<>();
 
-    public ItemControllableDrawerTile(BasicTileBlock<T> base, TileEntityType<T> entityType, BlockPos pos, BlockState state) {
-        super(base, entityType, pos, state);
+    public ItemControllableDrawerTile(BasicTileBlock<T> base) {
+        super(base);
     }
 
     @Override

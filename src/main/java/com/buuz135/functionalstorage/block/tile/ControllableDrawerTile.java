@@ -14,12 +14,10 @@ import com.hrznstudio.titanium.block.tile.ActiveTile;
 import com.hrznstudio.titanium.client.screen.addon.TextScreenAddon;
 import com.hrznstudio.titanium.component.inventory.InventoryComponent;
 import com.hrznstudio.titanium.util.TileUtil;
-import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
@@ -53,7 +51,7 @@ public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>
     @Save
     private int mult = 1;
 
-    public ControllableDrawerTile(BasicTileBlock<T> base, TileEntityType<T> entityType, BlockPos pos, BlockState state) {
+    public ControllableDrawerTile(BasicTileBlock<T> base) {
         super(base);
         this.drawerOptions = new DrawerOptions();
         this.storageUpgrades = getStorageUpgradesConstructor();
