@@ -48,7 +48,7 @@ public class CompactingFramedDrawerBlock extends CompactingDrawerBlock {
 
     @Override
     public IFactory<CompactingDrawerTile> getTileEntityFactory() {
-        return () -> new CompactingFramedDrawerTile(this,  (TileEntityType<CompactingDrawerTile>) FunctionalStorage.FRAMED_COMPACTING_DRAWER.getValue().get(), blockPos, state);
+        return () -> new CompactingFramedDrawerTile(this,  (TileEntityType<CompactingDrawerTile>) FunctionalStorage.FRAMED_COMPACTING_DRAWER.getValue().get());
     }
 
     @Override

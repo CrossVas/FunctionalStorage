@@ -103,7 +103,7 @@ public class FluidDrawerBlock extends RotatableBlock<FluidDrawerTile> {
             if (type == FunctionalStorage.DrawerType.X_4) {
                 entityType = (TileEntityType<FluidDrawerTile>) FunctionalStorage.FLUID_DRAWER_4.getRight().get();
             }
-            return new FluidDrawerTile(this, entityType, blockPos, state, type);
+            return new FluidDrawerTile(this, entityType, type);
         };
     }
 

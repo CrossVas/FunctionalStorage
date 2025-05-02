@@ -11,6 +11,7 @@ import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
@@ -30,8 +31,8 @@ public abstract class ItemControllableDrawerTile<T extends ItemControllableDrawe
 
     private static HashMap<UUID, Long> INTERACTION_LOGGER = new HashMap<>();
 
-    public ItemControllableDrawerTile(BasicTileBlock<T> base) {
-        super(base);
+    public ItemControllableDrawerTile(BasicTileBlock<T> base, TileEntityType<T> entityType) {
+        super(base, entityType);
     }
 
     @Override

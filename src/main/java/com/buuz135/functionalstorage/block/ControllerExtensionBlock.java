@@ -39,7 +39,7 @@ public class ControllerExtensionBlock extends RotatableBlock<ControllerExtension
 
     @Override
     public IFactory<ControllerExtensionTile> getTileEntityFactory() {
-        return () -> new ControllerExtensionTile(this, (TileEntityType<ControllerExtensionTile>) FunctionalStorage.CONTROLLER_EXTENSION.getRight().get(), p_155268_, p_155269_);
+        return () -> new ControllerExtensionTile(this, (TileEntityType<ControllerExtensionTile>) FunctionalStorage.CONTROLLER_EXTENSION.getRight().get());
     }
 
     @Nonnull

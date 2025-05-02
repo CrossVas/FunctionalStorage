@@ -49,7 +49,7 @@ public class FramedDrawerBlock extends DrawerBlock {
 
     @Override
     public IFactory<DrawerTile> getTileEntityFactory() {
-        return () -> new FramedDrawerTile(this, (TileEntityType<DrawerTile>) FunctionalStorage.DRAWER_TYPES.get(this.getType()).stream().filter(registryObjectRegistryObjectPair -> registryObjectRegistryObjectPair.getLeft().get().equals(this)).map(Pair::getRight).findFirst().get().get(), blockPos, state, this.getType());
+        return () -> new FramedDrawerTile(this, (TileEntityType<DrawerTile>) FunctionalStorage.DRAWER_TYPES.get(this.getType()).stream().filter(registryObjectRegistryObjectPair -> registryObjectRegistryObjectPair.getLeft().get().equals(this)).map(Pair::getRight).findFirst().get().get(), this.getType());
     }
 
     @Override

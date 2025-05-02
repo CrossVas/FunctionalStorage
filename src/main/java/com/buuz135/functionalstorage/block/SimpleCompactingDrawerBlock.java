@@ -73,7 +73,7 @@ public class SimpleCompactingDrawerBlock extends RotatableBlock<SimpleCompacting
 
     @Override
     public IFactory<SimpleCompactingDrawerTile> getTileEntityFactory() {
-        return () -> new SimpleCompactingDrawerTile(this, (TileEntityType<SimpleCompactingDrawerTile>) FunctionalStorage.SIMPLE_COMPACTING_DRAWER.getRight().get(), blockPos, state);
+        return () -> new SimpleCompactingDrawerTile(this, (TileEntityType<SimpleCompactingDrawerTile>) FunctionalStorage.SIMPLE_COMPACTING_DRAWER.getRight().get());
     }
 
     @Override

@@ -40,7 +40,7 @@ public class DrawerControllerBlock extends RotatableBlock<DrawerControllerTile> 
 
     @Override
     public IFactory<DrawerControllerTile> getTileEntityFactory() {
-        return () -> new DrawerControllerTile(this, (TileEntityType<DrawerControllerTile>) FunctionalStorage.DRAWER_CONTROLLER.getRight().get(), p_155268_, p_155269_);
+        return () -> new DrawerControllerTile(this, (TileEntityType<DrawerControllerTile>) FunctionalStorage.DRAWER_CONTROLLER.getRight().get());
     }
 
     @Nonnull

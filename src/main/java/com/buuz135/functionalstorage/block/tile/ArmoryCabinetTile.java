@@ -7,6 +7,7 @@ import com.hrznstudio.titanium.block.tile.ActiveTile;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
+import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.Direction;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
@@ -21,8 +22,9 @@ public class ArmoryCabinetTile extends ActiveTile<ArmoryCabinetTile> {
     @Save
     public ArmoryCabinetInventoryHandler handler;
     private final LazyOptional<IItemHandler> lazyStorage;
+    TileEntityType<?> entityType;
 
-    public ArmoryCabinetTile(BasicTileBlock<ArmoryCabinetTile> base) {
+    public ArmoryCabinetTile(BasicTileBlock<ArmoryCabinetTile> base, TileEntityType<?> entityType) {
         super(base);
         this.handler = new ArmoryCabinetInventoryHandler() {
             @Override
@@ -31,6 +33,12 @@ public class ArmoryCabinetTile extends ActiveTile<ArmoryCabinetTile> {
             }
         };
         this.lazyStorage = LazyOptional.of(() -> handler);
+        this.entityType = entityType;
+    }
+
+    @Override
+    public TileEntityType<?> getType() {
+        return entityType;
     }
 
     @Nonnull

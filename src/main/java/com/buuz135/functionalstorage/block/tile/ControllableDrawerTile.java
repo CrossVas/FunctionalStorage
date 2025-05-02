@@ -18,6 +18,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
@@ -50,8 +51,9 @@ public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>
     private boolean isVoid = false;
     @Save
     private int mult = 1;
+    TileEntityType<?> entityType;
 
-    public ControllableDrawerTile(BasicTileBlock<T> base) {
+    public ControllableDrawerTile(BasicTileBlock<T> base, TileEntityType<T> entityType) {
         super(base);
         this.drawerOptions = new DrawerOptions();
         this.storageUpgrades = getStorageUpgradesConstructor();
@@ -69,7 +71,12 @@ public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>
                         })
                 )
         );
+        this.entityType = entityType;
+    }
 
+    @Override
+    public TileEntityType<?> getType() {
+        return this.entityType;
     }
 
     @Override

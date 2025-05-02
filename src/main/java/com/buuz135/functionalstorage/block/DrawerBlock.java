@@ -136,7 +136,7 @@ public class DrawerBlock extends RotatableBlock<DrawerTile> {
 
     @Override
     public IFactory<DrawerTile> getTileEntityFactory() {
-        return () -> new DrawerTile(this, (TileEntityType<DrawerTile>) FunctionalStorage.DRAWER_TYPES.get(type).stream().filter(registryObjectRegistryObjectPair -> registryObjectRegistryObjectPair.getLeft().get().equals(this)).map(Pair::getRight).findFirst().get().get(), blockPos, state, type, woodType);
+        return () -> new DrawerTile(this, (TileEntityType<DrawerTile>) FunctionalStorage.DRAWER_TYPES.get(type).stream().filter(registryObjectRegistryObjectPair -> registryObjectRegistryObjectPair.getLeft().get().equals(this)).map(Pair::getRight).findFirst().get().get(), type, woodType);
     }
 
     @Override

@@ -10,6 +10,7 @@ import com.hrznstudio.titanium.api.client.IScreenAddon;
 import com.hrznstudio.titanium.block.BasicTileBlock;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
@@ -31,8 +32,8 @@ public class SimpleCompactingDrawerTile extends ItemControllableDrawerTile<Simpl
     public CompactingInventoryHandler handler;
     private boolean hasCheckedRecipes;
 
-    public SimpleCompactingDrawerTile(BasicTileBlock<SimpleCompactingDrawerTile> base) {
-        super(base);
+    public SimpleCompactingDrawerTile(BasicTileBlock<SimpleCompactingDrawerTile> base, TileEntityType<SimpleCompactingDrawerTile> blockEntityType) {
+        super(base, blockEntityType);
         this.handler = new CompactingInventoryHandler(2) {
             @Override
             public void onChange() {

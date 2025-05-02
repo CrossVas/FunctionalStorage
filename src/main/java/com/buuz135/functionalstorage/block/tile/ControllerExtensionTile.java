@@ -6,6 +6,7 @@ import com.hrznstudio.titanium.block.BasicTileBlock;
 import com.hrznstudio.titanium.util.TileUtil;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
@@ -18,8 +19,8 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 
 public class ControllerExtensionTile extends ItemControllableDrawerTile<ControllerExtensionTile> {
-    public ControllerExtensionTile(BasicTileBlock<ControllerExtensionTile> base) {
-        super(base);
+    public ControllerExtensionTile(BasicTileBlock<ControllerExtensionTile> base, TileEntityType<ControllerExtensionTile> blockEntityType) {
+        super(base, blockEntityType);
     }
 
     @Override

@@ -18,6 +18,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
@@ -45,8 +46,8 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
     private BigFluidHandler fluidHandler;
     private FunctionalStorage.DrawerType type;
 
-    public FluidDrawerTile(BasicTileBlock<FluidDrawerTile> base, FunctionalStorage.DrawerType type) {
-        super(base);
+    public FluidDrawerTile(BasicTileBlock<FluidDrawerTile> base, TileEntityType<FluidDrawerTile> blockEntityType, FunctionalStorage.DrawerType type) {
+        super(base, blockEntityType);
         this.type = type;
         this.fluidHandler = new BigFluidHandler(type.getSlots(), getTankCapacity(getStorageMultiplier())) {
             @Override

@@ -91,7 +91,7 @@ public class EnderDrawerBlock extends RotatableBlock<EnderDrawerTile> {
 
     @Override
     public IFactory<EnderDrawerTile> getTileEntityFactory() {
-        return () -> new EnderDrawerTile(this, (TileEntityType<EnderDrawerTile>) FunctionalStorage.ENDER_DRAWER.getRight().get(),blockPos, state);
+        return () -> new EnderDrawerTile(this, (TileEntityType<EnderDrawerTile>) FunctionalStorage.ENDER_DRAWER.getRight().get());
     }
 
     @Override

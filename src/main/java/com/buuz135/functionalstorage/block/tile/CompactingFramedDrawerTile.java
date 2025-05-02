@@ -16,8 +16,8 @@ public class CompactingFramedDrawerTile extends CompactingDrawerTile{
     @Save
     private FramedDrawerModelData framedDrawerModelData;
 
-    public CompactingFramedDrawerTile(BasicTileBlock<CompactingDrawerTile> base, TileEntityType<CompactingDrawerTile> blockEntityType, BlockPos pos, BlockState state) {
-        super(base, blockEntityType, pos, state);
+    public CompactingFramedDrawerTile(BasicTileBlock<CompactingDrawerTile> base, TileEntityType<CompactingDrawerTile> blockEntityType) {
+        super(base, blockEntityType);
         this.framedDrawerModelData = new FramedDrawerModelData(new HashMap<>());
     }
 

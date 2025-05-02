@@ -10,6 +10,7 @@ import com.hrznstudio.titanium.api.client.IScreenAddon;
 import com.hrznstudio.titanium.block.BasicTileBlock;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
@@ -31,8 +32,8 @@ public class DrawerTile extends ItemControllableDrawerTile<DrawerTile> {
     private FunctionalStorage.DrawerType type;
     private IWoodType woodType;
 
-    public DrawerTile(BasicTileBlock<DrawerTile> base, FunctionalStorage.DrawerType type, IWoodType woodType) {
-        super(base);
+    public DrawerTile(BasicTileBlock<DrawerTile> base, TileEntityType<DrawerTile> blockEntityType, FunctionalStorage.DrawerType type, IWoodType woodType) {
+        super(base, blockEntityType);
         this.type = type;
         this.woodType = woodType;
         this.handler = new BigInventoryHandler(type) {
