@@ -7,55 +7,53 @@ import com.buuz135.functionalstorage.block.tile.FluidDrawerTile;
 import com.buuz135.functionalstorage.inventory.item.DrawerCapabilityProvider;
 import com.buuz135.functionalstorage.item.LinkingToolItem;
 import com.buuz135.functionalstorage.util.NumberUtils;
+import com.hrznstudio.titanium.api.IFactory;
 import com.hrznstudio.titanium.block.RotatableBlock;
 import com.hrznstudio.titanium.datagenerator.loot.block.BasicBlockLootTables;
 import com.hrznstudio.titanium.recipe.generator.TitaniumShapedRecipeBuilder;
 import com.hrznstudio.titanium.util.RayTraceUtils;
 import com.hrznstudio.titanium.util.TileUtil;
-import net.minecraft.ChatFormatting;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.NonNullList;
-import net.minecraft.data.recipes.FinishedRecipe;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.data.IFinishedRecipe;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.loot.LootContext;
+import net.minecraft.loot.LootParameters;
+import net.minecraft.loot.LootTable;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.state.StateContainer;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.tooltip.TooltipComponent;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.shapes.BooleanOp;
-import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
-import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
+import net.minecraft.util.NonNullList;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.shapes.IBooleanFunction;
+import net.minecraft.util.math.shapes.ISelectionContext;
+import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.math.shapes.VoxelShapes;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.IBlockReader;
+import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fluids.FluidStack;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
 
 public class FluidDrawerBlock extends RotatableBlock<FluidDrawerTile> {
@@ -68,59 +66,60 @@ public class FluidDrawerBlock extends RotatableBlock<FluidDrawerTile> {
     private final FunctionalStorage.DrawerType type;
 
     public FluidDrawerBlock(FunctionalStorage.DrawerType type, Properties properties) {
-        super("fluid_" + type.getSlots(), properties, FluidDrawerTile.class);
+        super(properties, FluidDrawerTile.class);
+        // name: "fluid_" + type.getSlots()
         this.type = type;
         setItemGroup(FunctionalStorage.TAB);
         registerDefaultState(defaultBlockState().setValue(RotatableBlock.FACING_HORIZONTAL, Direction.NORTH).setValue(DrawerBlock.LOCKED, false));
     }
 
-    private static List<VoxelShape> getShapes(BlockState state, BlockGetter source, BlockPos pos, FunctionalStorage.DrawerType type) {
+    private static List<VoxelShape> getShapes(BlockState state, IBlockReader source, BlockPos pos, FunctionalStorage.DrawerType type) {
         List<VoxelShape> boxes = new ArrayList<>();
         DrawerBlock.CACHED_SHAPES.get(type).get(state.getValue(RotatableBlock.FACING_HORIZONTAL)).forEach(boxes::add);
-        VoxelShape total = Shapes.block();
+        VoxelShape total = VoxelShapes.block();
         boxes.add(total);
         return boxes;
     }
 
     @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> p_206840_1_) {
-        super.createBlockStateDefinition(p_206840_1_);
-        p_206840_1_.add(DrawerBlock.LOCKED);
+    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
+        builder.add(DrawerBlock.LOCKED);
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public RotationType getRotationType() {
         return RotationType.FOUR_WAY;
     }
 
     @Override
-    public BlockEntityType.BlockEntitySupplier<FluidDrawerTile> getTileEntityFactory() {
-        return (blockPos, state) -> {
-            BlockEntityType<FluidDrawerTile> entityType = (BlockEntityType<FluidDrawerTile>) FunctionalStorage.FLUID_DRAWER_1.getRight().get();
+    public IFactory<FluidDrawerTile> getTileEntityFactory() {
+        return () -> {
+            TileEntityType<FluidDrawerTile> entityType = (TileEntityType<FluidDrawerTile>) FunctionalStorage.FLUID_DRAWER_1.getRight().get();
             if (type == FunctionalStorage.DrawerType.X_2) {
-                entityType = (BlockEntityType<FluidDrawerTile>) FunctionalStorage.FLUID_DRAWER_2.getRight().get();
+                entityType = (TileEntityType<FluidDrawerTile>) FunctionalStorage.FLUID_DRAWER_2.getRight().get();
             }
             if (type == FunctionalStorage.DrawerType.X_4) {
-                entityType = (BlockEntityType<FluidDrawerTile>) FunctionalStorage.FLUID_DRAWER_4.getRight().get();
+                entityType = (TileEntityType<FluidDrawerTile>) FunctionalStorage.FLUID_DRAWER_4.getRight().get();
             }
             return new FluidDrawerTile(this, entityType, blockPos, state, type);
         };
     }
 
     @Override
-    public List<VoxelShape> getBoundingBoxes(BlockState state, BlockGetter source, BlockPos pos) {
+    public List<VoxelShape> getBoundingBoxes(BlockState state, IBlockReader source, BlockPos pos) {
         return getShapes(state, source, pos, this.type);
     }
 
     @Nonnull
     @Override
-    public VoxelShape getCollisionShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext selectionContext) {
-        return Shapes.box(0, 0, 0, 1, 1, 1);
+    public VoxelShape getCollisionShape(BlockState state, IBlockReader world, BlockPos pos, ISelectionContext selectionContext) {
+        return VoxelShapes.box(0, 0, 0, 1, 1, 1);
     }
 
     @Override
-    public boolean hasCustomBoxes(BlockState state, BlockGetter source, BlockPos pos) {
+    public boolean hasCustomBoxes(BlockState state, IBlockReader source, BlockPos pos) {
         return true;
     }
 
@@ -139,16 +138,16 @@ public class FluidDrawerBlock extends RotatableBlock<FluidDrawerTile> {
         TileUtil.getTileEntity(worldIn, pos, FluidDrawerTile.class).ifPresent(drawerTile -> drawerTile.onClicked(player, getHit(state, worldIn, pos, player)));
     }
 
-    public int getHit(BlockState state, Level worldIn, BlockPos pos, Player player) {
-        HitResult result = RayTraceUtils.rayTraceSimple(worldIn, player, 32, 0);
-        if (result instanceof BlockHitResult) {
-            VoxelShape hit = RayTraceUtils.rayTraceVoxelShape((BlockHitResult) result, worldIn, player, 32, 0);
+    public int getHit(BlockState state, World worldIn, BlockPos pos, PlayerEntity player) {
+        RayTraceResult result = RayTraceUtils.rayTraceSimple(worldIn, player, 32, 0);
+        if (result instanceof BlockRayTraceResult) {
+            VoxelShape hit = RayTraceUtils.rayTraceVoxelShape((BlockRayTraceResult) result, worldIn, player, 32, 0);
             if (hit != null) {
-                if (hit.equals(Shapes.block())) return -1;
+                if (hit.equals(VoxelShapes.block())) return -1;
                 List<VoxelShape> shapes = new ArrayList<>();
                 shapes.addAll(DrawerBlock.CACHED_SHAPES.get(type).get(state.getValue(RotatableBlock.FACING_HORIZONTAL)));
                 for (int i = 0; i < shapes.size(); i++) {
-                    if (Shapes.joinIsNotEmpty(shapes.get(i), hit, BooleanOp.AND)) {
+                    if (VoxelShapes.joinIsNotEmpty(shapes.get(i), hit, IBooleanFunction.AND)) {
                         return i;
                     }
                 }
@@ -169,13 +168,14 @@ public class FluidDrawerBlock extends RotatableBlock<FluidDrawerTile> {
 
 
     @Override
-    public List<ItemStack> getDrops(BlockState p_60537_, LootContext.Builder builder) {
+    public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
         NonNullList<ItemStack> stacks = NonNullList.create();
         ItemStack stack = new ItemStack(this);
-        BlockEntity drawerTile = builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
-        if (drawerTile instanceof FluidDrawerTile tile) {
+        TileEntity drawerTile = builder.getOptionalParameter(LootParameters.BLOCK_ENTITY);
+        if (drawerTile instanceof FluidDrawerTile) {
+            FluidDrawerTile tile = (FluidDrawerTile) drawerTile;
             if (!tile.isEverythingEmpty()) {
-                stack.getOrCreateTag().put("Tile", drawerTile.saveWithoutMetadata());
+                stack.getOrCreateTag().put("Tile", drawerTile.save(new CompoundNBT()));
             }
             if (tile.isLocked()) {
                 stack.getOrCreateTag().putBoolean("Locked", tile.isLocked());
@@ -186,29 +186,30 @@ public class FluidDrawerBlock extends RotatableBlock<FluidDrawerTile> {
     }
 
     @Override
-    public NonNullList<ItemStack> getDynamicDrops(BlockState state, Level worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
+    public NonNullList<ItemStack> getDynamicDrops(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
         return NonNullList.create();
     }
 
     @Override
-    public void setPlacedBy(Level level, BlockPos pos, BlockState p_49849_, @Nullable LivingEntity p_49850_, ItemStack stack) {
-        super.setPlacedBy(level, pos, p_49849_, p_49850_, stack);
+    public void setPlacedBy(World level, BlockPos pos, BlockState state, @Nullable LivingEntity livingEntity, ItemStack stack) {
+        super.setPlacedBy(level, pos, state, livingEntity, stack);
         if (stack.hasTag()) {
             if (stack.getTag().contains("Tile")) {
-                BlockEntity entity = level.getBlockEntity(pos);
-                if (entity instanceof ControllableDrawerTile tile) {
-                    entity.load(stack.getTag().getCompound("Tile"));
+                TileEntity entity = level.getBlockEntity(pos);
+                if (entity instanceof ControllableDrawerTile) {
+                    ControllableDrawerTile<?> tile = (ControllableDrawerTile<?>) entity;
+                    entity.load(state, stack.getTag().getCompound("Tile"));
                     tile.markForUpdate();
                 }
             }
             if (stack.getTag().contains("Locked")) {
-                level.setBlock(pos, p_49849_.setValue(DrawerBlock.LOCKED, true), 3);
+                level.setBlock(pos, state.setValue(DrawerBlock.LOCKED, true), 3);
             }
         }
     }
 
     @Override
-    public void registerRecipe(Consumer<FinishedRecipe> consumer) {
+    public void registerRecipe(Consumer<IFinishedRecipe> consumer) {
         if (type == FunctionalStorage.DrawerType.X_1) {
             TitaniumShapedRecipeBuilder.shapedRecipe(this)
                     .pattern("PPP").pattern("PCP").pattern("PPP")
@@ -237,7 +238,7 @@ public class FluidDrawerBlock extends RotatableBlock<FluidDrawerTile> {
     }
 
     @Override
-    public void onRemove(BlockState state, Level worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
+    public void onRemove(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
         if (!state.is(newState.getBlock())) {
             TileUtil.getTileEntity(worldIn, pos, FluidDrawerTile.class).ifPresent(tile -> {
                 if (tile.getControllerPos() != null) {
@@ -251,31 +252,31 @@ public class FluidDrawerBlock extends RotatableBlock<FluidDrawerTile> {
     }
 
     @Override
-    public void appendHoverText(ItemStack itemStack, @Nullable BlockGetter p_49817_, List<Component> tooltip, TooltipFlag p_49819_) {
-        super.appendHoverText(itemStack, p_49817_, tooltip, p_49819_);
+    public void appendHoverText(ItemStack itemStack, @Nullable IBlockReader reader, List<ITextComponent> tooltip, ITooltipFlag flag) {
+        super.appendHoverText(itemStack, reader, tooltip, flag);
         if (itemStack.hasTag() && itemStack.getTag().contains("Tile")) {
-            var tileTag = itemStack.getTag().getCompound("Tile").getCompound("fluidHandler");
-            tooltip.add(new TranslatableComponent("drawer.block.contents").withStyle(ChatFormatting.GRAY));
+            CompoundNBT tileTag = itemStack.getTag().getCompound("Tile").getCompound("fluidHandler");
+            tooltip.add(new TranslationTextComponent("drawer.block.contents").withStyle(TextFormatting.GRAY));
             for (int i = 0; i < type.getSlots(); i++) {
                 FluidStack stack = FluidStack.loadFluidStackFromNBT(tileTag.getCompound(i + ""));
                 if (!stack.isEmpty())
-                    tooltip.add(new TextComponent(" - " + ChatFormatting.YELLOW + NumberUtils.getFormatedFluidBigNumber(stack.getAmount()) + ChatFormatting.WHITE + " of ").append(stack.getDisplayName().copy().withStyle(ChatFormatting.GOLD)));
+                    tooltip.add(new StringTextComponent(" - " + TextFormatting.YELLOW + NumberUtils.getFormatedFluidBigNumber(stack.getAmount()) + TextFormatting.WHITE + " of ").append(stack.getDisplayName().copy().withStyle(TextFormatting.GOLD)));
             }
         }
     }
 
     @Override
-    public boolean canConnectRedstone(BlockState state, BlockGetter level, BlockPos pos, @Nullable Direction direction) {
+    public boolean canConnectRedstone(BlockState state, IBlockReader level, BlockPos pos, @Nullable Direction direction) {
         return true;
     }
 
     @Override
-    public boolean isSignalSource(BlockState p_60571_) {
+    public boolean isSignalSource(BlockState state) {
         return true;
     }
 
     @Override
-    public int getSignal(BlockState p_60483_, BlockGetter blockGetter, BlockPos blockPos, Direction p_60486_) {
+    public int getSignal(BlockState state, IBlockReader blockGetter, BlockPos blockPos, Direction direction) {
         FluidDrawerTile tile = TileUtil.getTileEntity(blockGetter, blockPos, FluidDrawerTile.class).orElse(null);
         if (tile != null) {
             for (int i = 0; i < tile.getUtilityUpgrades().getSlots(); i++) {
@@ -295,19 +296,14 @@ public class FluidDrawerBlock extends RotatableBlock<FluidDrawerTile> {
 
         private FluidDrawerBlock drawerBlock;
 
-        public DrawerItem(FluidDrawerBlock p_40565_, Properties p_40566_) {
-            super(p_40565_, p_40566_);
-            this.drawerBlock = p_40565_;
-        }
-
-        @Override
-        public Optional<TooltipComponent> getTooltipImage(ItemStack stack) {
-            return super.getTooltipImage(stack);
+        public DrawerItem(FluidDrawerBlock fluidDrawerBlock, Properties properties) {
+            super(fluidDrawerBlock, properties);
+            this.drawerBlock = fluidDrawerBlock;
         }
 
         @Nullable
         @Override
-        public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundTag nbt) {
+        public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundNBT nbt) {
             return new DrawerCapabilityProvider(stack, this.drawerBlock.getType());
         }
     }
