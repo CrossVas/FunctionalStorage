@@ -5,28 +5,27 @@ import com.buuz135.functionalstorage.client.gui.DrawerInfoGuiAddon;
 import com.buuz135.functionalstorage.inventory.CompactingInventoryHandler;
 import com.buuz135.functionalstorage.util.CompactingUtil;
 import com.hrznstudio.titanium.annotation.Save;
+import com.hrznstudio.titanium.api.IFactory;
+import com.hrznstudio.titanium.api.client.IScreenAddon;
 import com.hrznstudio.titanium.block.BasicTileBlock;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import org.apache.commons.lang3.tuple.Pair;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 
 public class SimpleCompactingDrawerTile extends ItemControllableDrawerTile<SimpleCompactingDrawerTile> {
 
@@ -35,7 +34,7 @@ public class SimpleCompactingDrawerTile extends ItemControllableDrawerTile<Simpl
     public CompactingInventoryHandler handler;
     private boolean hasCheckedRecipes;
 
-    public SimpleCompactingDrawerTile(BasicTileBlock<SimpleCompactingDrawerTile> base, BlockEntityType<SimpleCompactingDrawerTile> blockEntityType, BlockPos pos, BlockState state) {
+    public SimpleCompactingDrawerTile(BasicTileBlock<SimpleCompactingDrawerTile> base, TileEntityType<SimpleCompactingDrawerTile> blockEntityType, BlockPos pos, BlockState state) {
         super(base, blockEntityType, pos, state);
         this.handler = new CompactingInventoryHandler(2) {
             @Override
@@ -73,11 +72,10 @@ public class SimpleCompactingDrawerTile extends ItemControllableDrawerTile<Simpl
         this.hasCheckedRecipes = false;
     }
 
-    @OnlyIn(Dist.CLIENT)
     @Override
-    public void initClient() {
-        super.initClient();
-        addGuiAddonFactory(() -> new DrawerInfoGuiAddon(64, 16,
+    public List<IFactory<? extends IScreenAddon>> getScreenAddons() {
+        List<IFactory<? extends IScreenAddon>> screenAddons = super.getScreenAddons();
+        screenAddons.add(() -> new DrawerInfoGuiAddon(64, 16,
                 new ResourceLocation(FunctionalStorage.MOD_ID, "textures/blocks/simple_compacting_drawer_front.png"),
                 2,
                 integer -> {
@@ -88,11 +86,12 @@ public class SimpleCompactingDrawerTile extends ItemControllableDrawerTile<Simpl
                 integer -> getStorage().getStackInSlot(integer),
                 integer -> getStorage().getSlotLimit(integer)
         ));
+        return screenAddons;
     }
 
     @Override
-    public void serverTick(Level level, BlockPos pos, BlockState state, SimpleCompactingDrawerTile blockEntity) {
-        super.serverTick(level, pos, state, blockEntity);
+    public void tick() {
+        super.tick();
         if (!hasCheckedRecipes) {
             if (!handler.getParent().isEmpty()) {
                 CompactingUtil compactingUtil = new CompactingUtil(this.level, 2);
@@ -103,10 +102,11 @@ public class SimpleCompactingDrawerTile extends ItemControllableDrawerTile<Simpl
         }
     }
 
+    @Override
     public ActionResultType onSlotActivated(PlayerEntity playerIn, Hand hand, Direction facing, double hitX, double hitY, double hitZ, int slot) {
         ItemStack stack = playerIn.getItemInHand(hand);
         if (stack.getItem().equals(FunctionalStorage.CONFIGURATION_TOOL.get()) || stack.getItem().equals(FunctionalStorage.LINKING_TOOL.get()))
-            return InteractionResult.PASS;
+            return ActionResultType.PASS;
         if (!handler.isSetup() && slot != -1) {
             stack = playerIn.getItemInHand(hand).copy();
             stack.setCount(1);
@@ -152,7 +152,7 @@ public class SimpleCompactingDrawerTile extends ItemControllableDrawerTile<Simpl
         return super.getCapability(cap, side);
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public SimpleCompactingDrawerTile getSelf() {
         return this;
