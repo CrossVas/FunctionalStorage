@@ -51,7 +51,7 @@ import java.util.function.Consumer;
 public class SimpleCompactingDrawerBlock extends RotatableBlock<SimpleCompactingDrawerTile> {
 
 
-    public SimpleCompactingDrawerBlock(Properties properties) {
+    public SimpleCompactingDrawerBlock(String name, Properties properties) {
         super(properties, SimpleCompactingDrawerTile.class);
         setItemGroup(FunctionalStorage.TAB);
         registerDefaultState(defaultBlockState().setValue(RotatableBlock.FACING_HORIZONTAL, Direction.NORTH).setValue(DrawerBlock.LOCKED, false));

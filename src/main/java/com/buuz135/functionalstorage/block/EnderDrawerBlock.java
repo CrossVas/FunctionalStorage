@@ -120,12 +120,12 @@ public class EnderDrawerBlock extends RotatableBlock<EnderDrawerTile> {
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand hand, BlockHitResult ray) {
+    public ActionResultType use(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult ray) {
         return TileUtil.getTileEntity(worldIn, pos, EnderDrawerTile.class).map(drawerTile -> drawerTile.onSlotActivated(player, hand, ray.getDirection(), ray.getLocation().x, ray.getLocation().y, ray.getLocation().z, getHit(state, worldIn, pos, player))).orElse(InteractionResult.PASS);
     }
 
     @Override
-    public void attack(BlockState state, Level worldIn, BlockPos pos, Player player) {
+    public void attack(BlockState state, World worldIn, BlockPos pos, PlayerEntity player) {
        TileUtil.getTileEntity(worldIn, pos, EnderDrawerTile.class).ifPresent(drawerTile -> drawerTile.onClicked(player, getHit(state, worldIn, pos, player)));
     }
 
