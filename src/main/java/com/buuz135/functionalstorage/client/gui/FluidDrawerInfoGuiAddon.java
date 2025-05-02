@@ -2,28 +2,29 @@ package com.buuz135.functionalstorage.client.gui;
 
 import com.buuz135.functionalstorage.fluid.BigFluidHandler;
 import com.buuz135.functionalstorage.util.NumberUtils;
+import com.buuz135.functionalstorage.util.internal.Rect2i;
 import com.hrznstudio.titanium.client.screen.addon.BasicScreenAddon;
 import com.hrznstudio.titanium.client.screen.asset.IAssetProvider;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.Rect2i;
-import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.gui.AbstractGui;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.renderer.texture.AtlasTexture;
+import net.minecraft.client.renderer.texture.Texture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.inventory.container.PlayerContainer;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.fluids.FluidStack;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Optional;
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -89,9 +90,9 @@ public class FluidDrawerInfoGuiAddon extends BasicScreenAddon {
     }
 
     @Override
-    public void drawBackgroundLayer(PoseStack stack, Screen screen, IAssetProvider provider, int guiX, int guiY, int mouseX, int mouseY, float partialTicks) {
-        for (var i = 0; i < slotAmount; i++) {
-            var fluidStack = fluidHandlerSupplier.get().getFluidInTank(i);
+    public void drawBackgroundLayer(MatrixStack stack, Screen screen, IAssetProvider provider, int guiX, int guiY, int mouseX, int mouseY, float partialTicks) {
+        for (int i = 0; i < slotAmount; i++) {
+            FluidStack fluidStack = fluidHandlerSupplier.get().getFluidInTank(i);
             if (fluidStack.isEmpty() && fluidHandlerSupplier.get().isDrawerLocked()) {
                 fluidStack = fluidHandlerSupplier.get().getFilterStack()[i];
             }
@@ -99,16 +100,16 @@ public class FluidDrawerInfoGuiAddon extends BasicScreenAddon {
                 renderFluid(stack, screen, guiX, guiY, fluidStack, i, slotAmount);
             }
         }
-        RenderSystem.setShaderTexture(0, gui);
-        var size = 16 * 2 + 16;
+        Minecraft.getInstance().textureManager.bind(gui);
+        int size = 16 * 2 + 16;
         Screen.blit(stack, guiX + getPosX(), guiY + getPosY(), 0, 0, size, size, size, size);
-        for (var i = 0; i < slotAmount; i++) {
-            var fluidStack = fluidHandlerSupplier.get().getFluidInTank(i);
+        for (int i = 0; i < slotAmount; i++) {
+            FluidStack fluidStack = fluidHandlerSupplier.get().getFluidInTank(i);
             if (!fluidStack.isEmpty()) {
-                var x = guiX + slotPosition.apply(i).getLeft() + getPosX();
-                var y = guiY + slotPosition.apply(i).getRight() + getPosY();
-                var amount = NumberUtils.getFormatedFluidBigNumber(fluidStack.getAmount()) + "/" + NumberUtils.getFormatedFluidBigNumber(slotMaxAmount.apply(i));
-                var scale = 0.5f;
+                int x = guiX + slotPosition.apply(i).getLeft() + getPosX();
+                int y = guiY + slotPosition.apply(i).getRight() + getPosY();
+                String amount = NumberUtils.getFormatedFluidBigNumber(fluidStack.getAmount()) + "/" + NumberUtils.getFormatedFluidBigNumber(slotMaxAmount.apply(i));
+                float scale = 0.5f;
                 stack.translate(0, 0, 200);
                 stack.scale(scale, scale, scale);
                 Minecraft.getInstance().font.drawShadow(stack, amount, (x + 17 - Minecraft.getInstance().font.width(amount) / 2) * (1 / scale), (y + 12) * (1 / scale), 0xFFFFFF);
@@ -119,43 +120,43 @@ public class FluidDrawerInfoGuiAddon extends BasicScreenAddon {
     }
 
     @Override
-    public void drawForegroundLayer(PoseStack stack, Screen screen, IAssetProvider provider, int guiX, int guiY, int mouseX, int mouseY, float partialTicks) {
-        for (var i = 0; i < slotAmount; i++) {
-            var rect = getSizeForHoverSlots(i, slotAmount);
-            var x = rect.getX() + getPosX() + guiX;
-            var y = rect.getY() + getPosY() + guiY;
+    public void drawForegroundLayer(MatrixStack stack, Screen screen, IAssetProvider provider, int guiX, int guiY, int mouseX, int mouseY) {
+        for (int i = 0; i < slotAmount; i++) {
+            Rect2i rect = getSizeForHoverSlots(i, slotAmount);
+            int x = rect.getX() + getPosX() + guiX;
+            int y = rect.getY() + getPosY() + guiY;
             if (mouseX > x && mouseX < x + rect.getWidth() && mouseY > y && mouseY < y + rect.getHeight()) {
                 x = getPosX() + rect.getX();
                 y = getPosY() + rect.getY();
                 stack.translate(0, 0, 200);
-                GuiComponent.fill(stack, x, y, x + rect.getWidth(), y + rect.getHeight(), -2130706433);
+                AbstractGui.fill(stack, x, y, x + rect.getWidth(), y + rect.getHeight(), -2130706433);
                 stack.translate(0, 0, -200);
-                var componentList = new ArrayList<Component>();
-                var over = fluidHandlerSupplier.get().getFluidInTank(i);
+                List<ITextComponent> componentList = new ArrayList<>();
+                FluidStack over = fluidHandlerSupplier.get().getFluidInTank(i);
                 if (over.isEmpty()) {
-                    componentList.add(new TranslatableComponent("gui.functionalstorage.fluid").withStyle(ChatFormatting.GOLD).append(new TextComponent("Empty").withStyle(ChatFormatting.WHITE)));
+                    componentList.add(new TranslationTextComponent("gui.functionalstorage.fluid").withStyle(TextFormatting.GOLD).append(new StringTextComponent("Empty").withStyle(TextFormatting.WHITE)));
                 } else {
-                    componentList.add(new TranslatableComponent("gui.functionalstorage.fluid").withStyle(ChatFormatting.GOLD).append(over.getDisplayName().copy().withStyle(ChatFormatting.WHITE)));
-                    var amount = NumberUtils.getFormatedFluidBigNumber(over.getAmount()) + "/" + NumberUtils.getFormatedFluidBigNumber(slotMaxAmount.apply(i));
-                    componentList.add(new TranslatableComponent("gui.functionalstorage.amount").withStyle(ChatFormatting.GOLD).append(new TextComponent(amount).withStyle(ChatFormatting.WHITE)));
+                    componentList.add(new TranslationTextComponent("gui.functionalstorage.fluid").withStyle(TextFormatting.GOLD).append(over.getDisplayName().copy().withStyle(TextFormatting.WHITE)));
+                    String amount = NumberUtils.getFormatedFluidBigNumber(over.getAmount()) + "/" + NumberUtils.getFormatedFluidBigNumber(slotMaxAmount.apply(i));
+                    componentList.add(new TranslationTextComponent("gui.functionalstorage.amount").withStyle(TextFormatting.GOLD).append(new StringTextComponent(amount).withStyle(TextFormatting.WHITE)));
                 }
-                componentList.add(new TranslatableComponent("gui.functionalstorage.slot").withStyle(ChatFormatting.GOLD).append(new TextComponent(i + "").withStyle(ChatFormatting.WHITE)));
-                screen.renderTooltip(stack, componentList, Optional.empty(), mouseX - guiX, mouseY - guiY);
+                componentList.add(new TranslationTextComponent("gui.functionalstorage.slot").withStyle(TextFormatting.GOLD).append(new StringTextComponent(i + "").withStyle(TextFormatting.WHITE)));
+                screen.renderComponentTooltip(stack, componentList, mouseX - guiX, mouseY - guiY);
             }
         }
     }
 
-    public void renderFluid(PoseStack stack, Screen screen, int guiX, int guiY, FluidStack fluidStack, int slot, int slotAmount) {
+    public void renderFluid(MatrixStack stack, Screen screen, int guiX, int guiY, FluidStack fluidStack, int slot, int slotAmount) {
         ResourceLocation flowing = fluidStack.getFluid().getAttributes().getStillTexture(fluidStack);
         if (flowing != null) {
-            AbstractTexture texture = screen.getMinecraft().getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS); //getAtlasSprite
-            if (texture instanceof TextureAtlas) {
-                TextureAtlasSprite sprite = ((TextureAtlas) texture).getSprite(flowing);
+            Texture texture = screen.getMinecraft().getTextureManager().getTexture(PlayerContainer.BLOCK_ATLAS); //getAtlasSprite
+            if (texture instanceof AtlasTexture) {
+                TextureAtlasSprite sprite = ((AtlasTexture) texture).getSprite(flowing);
                 if (sprite != null) {
-                    RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
+                    Minecraft.getInstance().textureManager.bind(PlayerContainer.BLOCK_ATLAS);
                     Color color = new Color(fluidStack.getFluid().getAttributes().getColor(fluidStack));
-                    var rect = getSizeForSlots(slot, slotAmount);
-                    RenderSystem.setShaderColor(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
+                    Rect2i rect = getSizeForSlots(slot, slotAmount);
+                    RenderSystem.color4f(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
                     RenderSystem.enableBlend();
                     for (int x = 0; x < rect.getWidth(); x += 16) {
                         for (int y = 0; y < rect.getHeight(); y += 16) {
@@ -169,7 +170,7 @@ public class FluidDrawerInfoGuiAddon extends BasicScreenAddon {
                     }
 
                     RenderSystem.disableBlend();
-                    RenderSystem.setShaderColor(1, 1, 1, 1);
+                    RenderSystem.color4f(1, 1, 1, 1);
                 }
             }
         }
