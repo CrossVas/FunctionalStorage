@@ -28,44 +28,45 @@ import com.hrznstudio.titanium.network.NetworkHandler;
 import com.hrznstudio.titanium.recipe.generator.TitaniumRecipeProvider;
 import com.hrznstudio.titanium.recipe.generator.TitaniumShapedRecipeBuilder;
 import com.hrznstudio.titanium.tab.AdvancedTitaniumTab;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.data.recipes.FinishedRecipe;
-import net.minecraft.data.recipes.UpgradeRecipeBuilder;
-import net.minecraft.data.tags.BlockTagsProvider;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.RenderTypeLookup;
+import net.minecraft.data.BlockTagsProvider;
+import net.minecraft.data.IFinishedRecipe;
+import net.minecraft.data.SmithingRecipeBuilder;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.item.crafting.IRecipeSerializer;
+import net.minecraft.item.crafting.Ingredient;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ColorHandlerEvent;
-import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.client.model.generators.BlockModelProvider;
 import net.minecraftforge.client.model.generators.ItemModelProvider;
 import net.minecraftforge.common.Tags;
+import net.minecraftforge.common.ToolType;
 import net.minecraftforge.common.crafting.CraftingHelper;
 import net.minecraftforge.common.util.NonNullLazy;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.RegistryObject;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.forge.event.lifecycle.GatherDataEvent;
+import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -88,22 +89,21 @@ public class FunctionalStorage extends ModuleController {
         NETWORK.registerMessage(EnderDrawerSyncMessage.class);
     }
 
-    // Directly reference a log4j logger.
-    public static final Logger LOGGER = LogManager.getLogger();
+    private final DeferredRegistryHelper deferredRegistryHelper;
 
     public static List<IWoodType> WOOD_TYPES = new ArrayList<>();
 
-    public static HashMap<DrawerType, List<Pair<RegistryObject<Block>, RegistryObject<BlockEntityType<?>>>>> DRAWER_TYPES = new HashMap<>();
-    public static Pair<RegistryObject<Block>, RegistryObject<BlockEntityType<?>>> COMPACTING_DRAWER;
-    public static Pair<RegistryObject<Block>, RegistryObject<BlockEntityType<?>>> DRAWER_CONTROLLER;
-    public static Pair<RegistryObject<Block>, RegistryObject<BlockEntityType<?>>> ARMORY_CABINET;
-    public static Pair<RegistryObject<Block>, RegistryObject<BlockEntityType<?>>> ENDER_DRAWER;
-    public static Pair<RegistryObject<Block>, RegistryObject<BlockEntityType<?>>> FRAMED_COMPACTING_DRAWER;
-    public static Pair<RegistryObject<Block>, RegistryObject<BlockEntityType<?>>> FLUID_DRAWER_1;
-    public static Pair<RegistryObject<Block>, RegistryObject<BlockEntityType<?>>> FLUID_DRAWER_2;
-    public static Pair<RegistryObject<Block>, RegistryObject<BlockEntityType<?>>> FLUID_DRAWER_4;
-    public static Pair<RegistryObject<Block>, RegistryObject<BlockEntityType<?>>> CONTROLLER_EXTENSION;
-    public static Pair<RegistryObject<Block>, RegistryObject<BlockEntityType<?>>> SIMPLE_COMPACTING_DRAWER;
+    public static HashMap<DrawerType, List<Pair<RegistryObject<Block>, RegistryObject<TileEntityType<?>>>>> DRAWER_TYPES = new HashMap<>();
+    public static Pair<RegistryObject<Block>, RegistryObject<TileEntityType<?>>> COMPACTING_DRAWER;
+    public static Pair<RegistryObject<Block>, RegistryObject<TileEntityType<?>>> DRAWER_CONTROLLER;
+    public static Pair<RegistryObject<Block>, RegistryObject<TileEntityType<?>>> ARMORY_CABINET;
+    public static Pair<RegistryObject<Block>, RegistryObject<TileEntityType<?>>> ENDER_DRAWER;
+    public static Pair<RegistryObject<Block>, RegistryObject<TileEntityType<?>>> FRAMED_COMPACTING_DRAWER;
+    public static Pair<RegistryObject<Block>, RegistryObject<TileEntityType<?>>> FLUID_DRAWER_1;
+    public static Pair<RegistryObject<Block>, RegistryObject<TileEntityType<?>>> FLUID_DRAWER_2;
+    public static Pair<RegistryObject<Block>, RegistryObject<TileEntityType<?>>> FLUID_DRAWER_4;
+    public static Pair<RegistryObject<Block>, RegistryObject<TileEntityType<?>>> CONTROLLER_EXTENSION;
+    public static Pair<RegistryObject<Block>, RegistryObject<TileEntityType<?>>> SIMPLE_COMPACTING_DRAWER;
 
     public static RegistryObject<Item> LINKING_TOOL;
     public static HashMap<StorageUpgradeItem.StorageTier, RegistryObject<Item>> STORAGE_UPGRADES = new HashMap<>();
@@ -118,43 +118,44 @@ public class FunctionalStorage extends ModuleController {
     public static AdvancedTitaniumTab TAB = new AdvancedTitaniumTab("functionalstorage", true);
 
     public FunctionalStorage() {
+        this.deferredRegistryHelper = new DeferredRegistryHelper(MOD_ID);
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::onClient);
         EventManager.forge(BlockEvent.BreakEvent.class).process(breakEvent -> {
             if (breakEvent.getPlayer().isCreative()) {
                 if (breakEvent.getState().getBlock() instanceof DrawerBlock) {
-                    int hit = ((DrawerBlock) breakEvent.getState().getBlock()).getHit(breakEvent.getState(), breakEvent.getPlayer().getLevel(), breakEvent.getPos(), breakEvent.getPlayer());
+                    int hit = ((DrawerBlock) breakEvent.getState().getBlock()).getHit(breakEvent.getState(), breakEvent.getPlayer().level, breakEvent.getPos(), breakEvent.getPlayer());
                     if (hit != -1) {
                         breakEvent.setCanceled(true);
-                        ((DrawerBlock) breakEvent.getState().getBlock()).attack(breakEvent.getState(), breakEvent.getPlayer().getLevel(), breakEvent.getPos(), breakEvent.getPlayer());
+                        ((DrawerBlock) breakEvent.getState().getBlock()).attack(breakEvent.getState(), breakEvent.getPlayer().level, breakEvent.getPos(), breakEvent.getPlayer());
                     }
                 }
                 if (breakEvent.getState().getBlock() instanceof CompactingDrawerBlock) {
-                    int hit = ((CompactingDrawerBlock) breakEvent.getState().getBlock()).getHit(breakEvent.getState(), breakEvent.getPlayer().getLevel(), breakEvent.getPos(), breakEvent.getPlayer());
+                    int hit = ((CompactingDrawerBlock) breakEvent.getState().getBlock()).getHit(breakEvent.getState(), breakEvent.getPlayer().level, breakEvent.getPos(), breakEvent.getPlayer());
                     if (hit != -1) {
                         breakEvent.setCanceled(true);
-                        ((CompactingDrawerBlock) breakEvent.getState().getBlock()).attack(breakEvent.getState(), breakEvent.getPlayer().getLevel(), breakEvent.getPos(), breakEvent.getPlayer());
+                        ((CompactingDrawerBlock) breakEvent.getState().getBlock()).attack(breakEvent.getState(), breakEvent.getPlayer().level, breakEvent.getPos(), breakEvent.getPlayer());
                     }
                 }
                 if (breakEvent.getState().getBlock() instanceof EnderDrawerBlock) {
-                    int hit = ((EnderDrawerBlock) breakEvent.getState().getBlock()).getHit(breakEvent.getState(), breakEvent.getPlayer().getLevel(), breakEvent.getPos(), breakEvent.getPlayer());
+                    int hit = ((EnderDrawerBlock) breakEvent.getState().getBlock()).getHit(breakEvent.getState(), breakEvent.getPlayer().level, breakEvent.getPos(), breakEvent.getPlayer());
                     if (hit != -1) {
                         breakEvent.setCanceled(true);
-                        ((EnderDrawerBlock) breakEvent.getState().getBlock()).attack(breakEvent.getState(), breakEvent.getPlayer().getLevel(), breakEvent.getPos(), breakEvent.getPlayer());
+                        ((EnderDrawerBlock) breakEvent.getState().getBlock()).attack(breakEvent.getState(), breakEvent.getPlayer().level, breakEvent.getPos(), breakEvent.getPlayer());
                     }
                 }
                 if (breakEvent.getState().getBlock() instanceof FluidDrawerBlock) {
-                    int hit = ((FluidDrawerBlock) breakEvent.getState().getBlock()).getHit(breakEvent.getState(), breakEvent.getPlayer().getLevel(), breakEvent.getPos(), breakEvent.getPlayer());
+                    int hit = ((FluidDrawerBlock) breakEvent.getState().getBlock()).getHit(breakEvent.getState(), breakEvent.getPlayer().level, breakEvent.getPos(), breakEvent.getPlayer());
                     if (hit != -1) {
                         breakEvent.setCanceled(true);
-                        ((FluidDrawerBlock) breakEvent.getState().getBlock()).attack(breakEvent.getState(), breakEvent.getPlayer().getLevel(), breakEvent.getPos(), breakEvent.getPlayer());
+                        ((FluidDrawerBlock) breakEvent.getState().getBlock()).attack(breakEvent.getState(), breakEvent.getPlayer().level, breakEvent.getPos(), breakEvent.getPlayer());
                     }
                 }
             }
         }).subscribe();
-        EventManager.modGeneric(RegistryEvent.Register.class, RecipeSerializer.class).process(register -> {
+        EventManager.modGeneric(RegistryEvent.Register.class, IRecipeSerializer.class).process(register -> {
             CraftingHelper.register(DrawerlessWoodIngredient.NAME, DrawerlessWoodIngredient.SERIALIZER);
         }).subscribe();
-        EventManager.modGeneric(RegistryEvent.Register.class, RecipeSerializer.class)
+        EventManager.modGeneric(RegistryEvent.Register.class, IRecipeSerializer.class)
                 .process(register -> ((RegistryEvent.Register) register).getRegistry()
                         .registerAll(FramedDrawerRecipe.SERIALIZER.setRegistryName(new ResourceLocation(MOD_ID, "framed_recipe")))).subscribe();
         NBTManager.getInstance().scanTileClassForAnnotations(FramedDrawerTile.class);
@@ -166,34 +167,37 @@ public class FunctionalStorage extends ModuleController {
 
     @Override
     protected void initModules() {
-        WOOD_TYPES.addAll(List.of(DrawerWoodType.values()));
+        WOOD_TYPES.addAll(Arrays.asList(DrawerWoodType.values()));
         for (DrawerType value : DrawerType.values()) {
             for (IWoodType woodType : WOOD_TYPES) {
-                var name = woodType.getName() + "_" + value.getSlots();
+                String name = woodType.getName() + "_" + value.getSlots();
                 if (woodType == DrawerWoodType.FRAMED){
-                    var pair = getRegistries().registerBlockWithTileItem(name, () -> new FramedDrawerBlock(value), blockRegistryObject -> () ->
+                    Pair<RegistryObject<Block>, RegistryObject<TileEntityType<?>>> pair = getRegistries().registerBlockWithTileItem(name, () -> new FramedDrawerBlock(value), blockRegistryObject -> () ->
                             new DrawerBlock.DrawerItem((DrawerBlock) blockRegistryObject.get(), new Item.Properties().tab(TAB)));
                     DRAWER_TYPES.computeIfAbsent(value, drawerType -> new ArrayList<>()).add(pair);
                     CompactingFramedDrawerBlock.FRAMED.add(pair.getLeft());
                 } else {
-                    DRAWER_TYPES.computeIfAbsent(value, drawerType -> new ArrayList<>()).add(getRegistries().registerBlockWithTileItem(name, () -> new DrawerBlock(woodType, value, BlockBehaviour.Properties.copy(woodType.getPlanks())), blockRegistryObject -> () ->
+                    DRAWER_TYPES.computeIfAbsent(value, drawerType -> new ArrayList<>()).add(getRegistries().registerBlockWithTileItem(name, () -> new DrawerBlock(woodType, value, AbstractBlock.Properties.copy(woodType.getPlanks()).requiresCorrectToolForDrops().harvestTool(ToolType.AXE)), blockRegistryObject -> () ->
                             new DrawerBlock.DrawerItem((DrawerBlock) blockRegistryObject.get(), new Item.Properties().tab(TAB))));
                 }
             }
-            DRAWER_TYPES.get(value).forEach(blockRegistryObject -> TAB.addIconStacks(() -> new ItemStack(blockRegistryObject.getLeft().get())));
+            DRAWER_TYPES.get(value).forEach(blockRegistryObject -> TAB.addIconStacks(new ItemStack(blockRegistryObject.getLeft().get())));
         }
-        COMPACTING_DRAWER = getRegistries().registerBlockWithTile("compacting_drawer", () -> new CompactingDrawerBlock("compacting_drawer", BlockBehaviour.Properties.copy(Blocks.STONE_BRICKS)));
+
+        AbstractBlock.Properties DRAWER_PROPS = AbstractBlock.Properties.copy(Blocks.STONE_BRICKS).harvestTool(ToolType.PICKAXE).harvestLevel(1).requiresCorrectToolForDrops();
+
+        COMPACTING_DRAWER = getRegistries().registerBlockWithTile("compacting_drawer", () -> new CompactingDrawerBlock("compacting_drawer", DRAWER_PROPS));
         FRAMED_COMPACTING_DRAWER = getRegistries().registerBlockWithTile("compacting_framed_drawer", () -> new CompactingFramedDrawerBlock("compacting_framed_drawer"));
-        FLUID_DRAWER_1 = getRegistries().registerBlockWithTile("fluid_1", () -> new FluidDrawerBlock(DrawerType.X_1, BlockBehaviour.Properties.copy(Blocks.STONE_BRICKS)));
-        FLUID_DRAWER_2 = getRegistries().registerBlockWithTile("fluid_2", () -> new FluidDrawerBlock(DrawerType.X_2, BlockBehaviour.Properties.copy(Blocks.STONE_BRICKS)));
-        FLUID_DRAWER_4 = getRegistries().registerBlockWithTile("fluid_4", () -> new FluidDrawerBlock(DrawerType.X_4, BlockBehaviour.Properties.copy(Blocks.STONE_BRICKS)));
+        FLUID_DRAWER_1 = getRegistries().registerBlockWithTile("fluid_1", () -> new FluidDrawerBlock(DrawerType.X_1, DRAWER_PROPS));
+        FLUID_DRAWER_2 = getRegistries().registerBlockWithTile("fluid_2", () -> new FluidDrawerBlock(DrawerType.X_2, DRAWER_PROPS));
+        FLUID_DRAWER_4 = getRegistries().registerBlockWithTile("fluid_4", () -> new FluidDrawerBlock(DrawerType.X_4, DRAWER_PROPS));
         DRAWER_CONTROLLER = getRegistries().registerBlockWithTile("storage_controller", DrawerControllerBlock::new);
         CONTROLLER_EXTENSION = getRegistries().registerBlockWithTile("controller_extension", ControllerExtensionBlock::new);
         LINKING_TOOL = getRegistries().registerGeneric(Item.class, "linking_tool", LinkingToolItem::new);
         for (StorageUpgradeItem.StorageTier value : StorageUpgradeItem.StorageTier.values()) {
             STORAGE_UPGRADES.put(value, getRegistries().registerGeneric(Item.class, value.name().toLowerCase(Locale.ROOT) + (value == StorageUpgradeItem.StorageTier.IRON ? "_downgrade" : "_upgrade"), () -> new StorageUpgradeItem(value)));
         }
-        SIMPLE_COMPACTING_DRAWER = getRegistries().registerBlockWithTile("simple_compacting_drawer", () -> new SimpleCompactingDrawerBlock("simple_compacting_drawer", BlockBehaviour.Properties.copy(Blocks.STONE_BRICKS)));
+        SIMPLE_COMPACTING_DRAWER = getRegistries().registerBlockWithTile("simple_compacting_drawer", () -> new SimpleCompactingDrawerBlock("simple_compacting_drawer", DRAWER_PROPS));
         COLLECTOR_UPGRADE = getRegistries().registerGeneric(Item.class, "collector_upgrade", () -> new UpgradeItem(new Item.Properties(), UpgradeItem.Type.UTILITY));
         PULLING_UPGRADE = getRegistries().registerGeneric(Item.class, "puller_upgrade", () -> new UpgradeItem(new Item.Properties(), UpgradeItem.Type.UTILITY));
         PUSHING_UPGRADE = getRegistries().registerGeneric(Item.class, "pusher_upgrade", () -> new UpgradeItem(new Item.Properties(), UpgradeItem.Type.UTILITY));
@@ -254,25 +258,24 @@ public class FunctionalStorage extends ModuleController {
 
     @OnlyIn(Dist.CLIENT)
     public void onClient() {
-        EventManager.mod(EntityRenderersEvent.RegisterRenderers.class).process(registerRenderers -> {
-            for (DrawerType value : DrawerType.values()) {
-                DRAWER_TYPES.get(value).forEach(blockRegistryObject -> {
-                    registerRenderers.registerBlockEntityRenderer((BlockEntityType<? extends DrawerTile>) blockRegistryObject.getRight().get(), p_173571_ -> new DrawerRenderer());
-                });
-            }
-            registerRenderers.registerBlockEntityRenderer((BlockEntityType<? extends CompactingDrawerTile>) COMPACTING_DRAWER.getRight().get(), p_173571_ -> new CompactingDrawerRenderer());
-            registerRenderers.registerBlockEntityRenderer((BlockEntityType<? extends CompactingDrawerTile>) FRAMED_COMPACTING_DRAWER.getRight().get(), p_173571_ -> new CompactingDrawerRenderer());
-            registerRenderers.registerBlockEntityRenderer((BlockEntityType<? extends DrawerControllerTile>) DRAWER_CONTROLLER.getRight().get(), p -> new ControllerRenderer());
-            registerRenderers.registerBlockEntityRenderer((BlockEntityType<? extends EnderDrawerTile>) ENDER_DRAWER.getRight().get(), p_173571_ -> new EnderDrawerRenderer());
-            registerRenderers.registerBlockEntityRenderer((BlockEntityType<? extends FluidDrawerTile>) FLUID_DRAWER_1.getRight().get(), p_173571_ -> new FluidDrawerRenderer());
-            registerRenderers.registerBlockEntityRenderer((BlockEntityType<? extends FluidDrawerTile>) FLUID_DRAWER_2.getRight().get(), p_173571_ -> new FluidDrawerRenderer());
-            registerRenderers.registerBlockEntityRenderer((BlockEntityType<? extends FluidDrawerTile>) FLUID_DRAWER_4.getRight().get(), p_173571_ -> new FluidDrawerRenderer());
-            registerRenderers.registerBlockEntityRenderer((BlockEntityType<? extends SimpleCompactingDrawerTile>) SIMPLE_COMPACTING_DRAWER.getRight().get(), p_173571_ -> new SimpleCompactingDrawerRenderer());
+        for (DrawerType value : DrawerType.values()) {
+            DRAWER_TYPES.get(value).forEach(blockRegistryObject -> {
+                ClientRegistry.bindTileEntityRenderer((TileEntityType<? extends DrawerTile>) blockRegistryObject.getRight().get(), DrawerRenderer::new);
+            });
+        }
 
-        }).subscribe();
+        ClientRegistry.bindTileEntityRenderer((TileEntityType<? extends CompactingDrawerTile>) COMPACTING_DRAWER.getRight().get(), CompactingDrawerRenderer::new);
+        ClientRegistry.bindTileEntityRenderer((TileEntityType<? extends CompactingDrawerTile>) FRAMED_COMPACTING_DRAWER.getRight().get(), CompactingDrawerRenderer::new);
+        ClientRegistry.bindTileEntityRenderer((TileEntityType<? extends DrawerControllerTile>) DRAWER_CONTROLLER.getRight().get(), ControllerRenderer::new);
+        ClientRegistry.bindTileEntityRenderer((TileEntityType<? extends EnderDrawerTile>) ENDER_DRAWER.getRight().get(), EnderDrawerRenderer::new);
+        ClientRegistry.bindTileEntityRenderer((TileEntityType<? extends FluidDrawerTile>) FLUID_DRAWER_1.getRight().get(), FluidDrawerRenderer::new);
+        ClientRegistry.bindTileEntityRenderer((TileEntityType<? extends FluidDrawerTile>) FLUID_DRAWER_2.getRight().get(), FluidDrawerRenderer::new);
+        ClientRegistry.bindTileEntityRenderer((TileEntityType<? extends FluidDrawerTile>) FLUID_DRAWER_4.getRight().get(), FluidDrawerRenderer::new);
+        ClientRegistry.bindTileEntityRenderer((TileEntityType<? extends SimpleCompactingDrawerTile>) SIMPLE_COMPACTING_DRAWER.getRight().get(), SimpleCompactingDrawerRenderer::new);
+
         EventManager.mod(ColorHandlerEvent.Item.class).process(item -> {
             item.getItemColors().register((stack, tint) -> {
-                CompoundTag tag = stack.getOrCreateTag();
+                CompoundNBT tag = stack.getOrCreateTag();
                 LinkingToolItem.LinkingMode linkingMode = LinkingToolItem.getLinkingMode(stack);
                 LinkingToolItem.ActionMode linkingAction = LinkingToolItem.getActionMode(stack);
                 if (tint != 0 && stack.getOrCreateTag().contains(LinkingToolItem.NBT_ENDER)){
@@ -300,29 +303,29 @@ public class FunctionalStorage extends ModuleController {
         EventManager.mod(FMLClientSetupEvent.class).process(event -> {
             for (DrawerType value : DrawerType.values()) {
                 for (RegistryObject<Block> blockRegistryObject : DRAWER_TYPES.get(value).stream().map(Pair::getLeft).collect(Collectors.toList())) {
-                    ItemBlockRenderTypes.setRenderLayer(blockRegistryObject.get(), RenderType.cutout());
+                    RenderTypeLookup.setRenderLayer(blockRegistryObject.get(), RenderType.cutout());
                 }
             }
-            ItemBlockRenderTypes.setRenderLayer(COMPACTING_DRAWER.getLeft().get(), RenderType.cutout());
-            ItemBlockRenderTypes.setRenderLayer(FRAMED_COMPACTING_DRAWER.getLeft().get(), RenderType.cutout());
-            ItemBlockRenderTypes.setRenderLayer(ENDER_DRAWER.getLeft().get(), RenderType.cutout());
-            ItemBlockRenderTypes.setRenderLayer(FLUID_DRAWER_1.getLeft().get(), RenderType.cutout());
-            ItemBlockRenderTypes.setRenderLayer(FLUID_DRAWER_2.getLeft().get(), RenderType.cutout());
-            ItemBlockRenderTypes.setRenderLayer(FLUID_DRAWER_4.getLeft().get(), RenderType.cutout());
-            ItemBlockRenderTypes.setRenderLayer(SIMPLE_COMPACTING_DRAWER.getLeft().get(), RenderType.cutout());
+            RenderTypeLookup.setRenderLayer(COMPACTING_DRAWER.getLeft().get(), RenderType.cutout());
+            RenderTypeLookup.setRenderLayer(FRAMED_COMPACTING_DRAWER.getLeft().get(), RenderType.cutout());
+            RenderTypeLookup.setRenderLayer(ENDER_DRAWER.getLeft().get(), RenderType.cutout());
+            RenderTypeLookup.setRenderLayer(FLUID_DRAWER_1.getLeft().get(), RenderType.cutout());
+            RenderTypeLookup.setRenderLayer(FLUID_DRAWER_2.getLeft().get(), RenderType.cutout());
+            RenderTypeLookup.setRenderLayer(FLUID_DRAWER_4.getLeft().get(), RenderType.cutout());
+            RenderTypeLookup.setRenderLayer(SIMPLE_COMPACTING_DRAWER.getLeft().get(), RenderType.cutout());
         }).subscribe();
         EventManager.forge(RenderTooltipEvent.Pre.class).process(itemTooltipEvent -> {
-            if (itemTooltipEvent.getItemStack().getItem().equals(FunctionalStorage.ENDER_DRAWER.getLeft().get().asItem()) && itemTooltipEvent.getItemStack().hasTag()) {
-                TooltipUtil.renderItems(itemTooltipEvent.getPoseStack(), EnderDrawerBlock.getFrequencyDisplay(itemTooltipEvent.getItemStack().getTag().getCompound("Tile").getString("frequency")), itemTooltipEvent.getX() + 14, itemTooltipEvent.getY() + 11);
+            if (itemTooltipEvent.getStack().getItem().equals(FunctionalStorage.ENDER_DRAWER.getLeft().get().asItem()) && itemTooltipEvent.getStack().hasTag()) {
+                TooltipUtil.renderItems(itemTooltipEvent.getMatrixStack(), EnderDrawerBlock.getFrequencyDisplay(itemTooltipEvent.getStack().getTag().getCompound("Tile").getString("frequency")), itemTooltipEvent.getX() + 14, itemTooltipEvent.getY() + 11);
             }
-            if (itemTooltipEvent.getItemStack().is(FunctionalStorage.LINKING_TOOL.get()) && itemTooltipEvent.getItemStack().getOrCreateTag().contains(LinkingToolItem.NBT_ENDER)) {
-                TooltipUtil.renderItems(itemTooltipEvent.getPoseStack(), EnderDrawerBlock.getFrequencyDisplay(itemTooltipEvent.getItemStack().getOrCreateTag().getString(LinkingToolItem.NBT_ENDER)), itemTooltipEvent.getX() + 14, itemTooltipEvent.getY() + 11);
+            if (itemTooltipEvent.getStack().sameItem(FunctionalStorage.LINKING_TOOL.get().getDefaultInstance()) && itemTooltipEvent.getStack().getOrCreateTag().contains(LinkingToolItem.NBT_ENDER)) {
+                TooltipUtil.renderItems(itemTooltipEvent.getMatrixStack(), EnderDrawerBlock.getFrequencyDisplay(itemTooltipEvent.getStack().getOrCreateTag().getString(LinkingToolItem.NBT_ENDER)), itemTooltipEvent.getX() + 14, itemTooltipEvent.getY() + 11);
             }
-            itemTooltipEvent.getItemStack().getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(iItemHandler -> {
+            itemTooltipEvent.getStack().getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(iItemHandler -> {
                 if (iItemHandler instanceof DrawerStackItemHandler) {
                     int i = 0;
                     for (BigInventoryHandler.BigStack storedStack : ((DrawerStackItemHandler) iItemHandler).getStoredStacks()) {
-                        TooltipUtil.renderItemAdvanced(itemTooltipEvent.getPoseStack(), storedStack.getStack(), itemTooltipEvent.getX() + 20 + 26 * i, itemTooltipEvent.getY() + 11, 512, NumberUtils.getFormatedBigNumber(storedStack.getAmount()) + "/" + NumberUtils.getFormatedBigNumber(iItemHandler.getSlotLimit(i)));
+                        TooltipUtil.renderItemAdvanced(itemTooltipEvent.getMatrixStack(), storedStack.getStack(), itemTooltipEvent.getX() + 20 + 26 * i, itemTooltipEvent.getY() + 11, 512, NumberUtils.getFormatedBigNumber(storedStack.getAmount()) + "/" + NumberUtils.getFormatedBigNumber(iItemHandler.getSlotLimit(i)));
                         ++i;
                     }
                 }
@@ -398,7 +401,7 @@ public class FunctionalStorage extends ModuleController {
         }
         event.getGenerator().addProvider(new TitaniumRecipeProvider(event.getGenerator()) {
             @Override
-            public void register(Consumer<FinishedRecipe> consumer) {
+            public void register(Consumer<IFinishedRecipe> consumer) {
                 blocksToProcess.get().stream().map(block -> (BasicBlock) block).forEach(basicBlock -> basicBlock.registerRecipe(consumer));
                 TitaniumShapedRecipeBuilder.shapedRecipe(STORAGE_UPGRADES.get(StorageUpgradeItem.StorageTier.IRON).get())
                         .pattern("III").pattern("IDI").pattern("III")
@@ -426,8 +429,8 @@ public class FunctionalStorage extends ModuleController {
                         .save(consumer);
                 TitaniumShapedRecipeBuilder.shapedRecipe(STORAGE_UPGRADES.get(StorageUpgradeItem.StorageTier.COPPER).get())
                         .pattern("IBI").pattern("CDC").pattern("IBI")
-                        .define('I', Items.COPPER_INGOT)
-                        .define('B', Items.COPPER_BLOCK)
+                        .define('I', Items.COAL)
+                        .define('B', Items.COAL_BLOCK)
                         .define('C', Tags.Items.CHESTS_WOODEN)
                         .define('D', StorageTags.DRAWER)
                         .save(consumer);
@@ -452,7 +455,7 @@ public class FunctionalStorage extends ModuleController {
                         .define('C', Items.COMPARATOR)
                         .define('D', StorageTags.DRAWER)
                         .save(consumer);
-                UpgradeRecipeBuilder.smithing(Ingredient.of(STORAGE_UPGRADES.get(StorageUpgradeItem.StorageTier.DIAMOND).get()), Ingredient.of(Items.NETHERITE_INGOT), STORAGE_UPGRADES.get(StorageUpgradeItem.StorageTier.NETHERITE).get())
+                SmithingRecipeBuilder.smithing(Ingredient.of(STORAGE_UPGRADES.get(StorageUpgradeItem.StorageTier.DIAMOND).get()), Ingredient.of(Items.NETHERITE_INGOT), STORAGE_UPGRADES.get(StorageUpgradeItem.StorageTier.NETHERITE).get())
                         .unlocks("has_netherite_ingot", has(Items.NETHERITE_INGOT))
                         .save(consumer, ForgeRegistries.ITEMS.getKey(STORAGE_UPGRADES.get(StorageUpgradeItem.StorageTier.NETHERITE).get()));
                 TitaniumShapedRecipeBuilder.shapedRecipe(ARMORY_CABINET.getLeft().get())
@@ -491,5 +494,9 @@ public class FunctionalStorage extends ModuleController {
                         .save(consumer);
             }
         });
+    }
+
+    public DeferredRegistryHelper getRegistries() {
+        return deferredRegistryHelper;
     }
 }
