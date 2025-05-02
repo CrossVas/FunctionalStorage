@@ -9,34 +9,26 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.mojang.datafixers.util.Pair;
-import com.mojang.math.Vector3f;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.client.renderer.block.model.ItemOverrides;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
-import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
+import net.minecraft.client.renderer.RenderTypeLookup;
+import net.minecraft.client.renderer.model.*;
+import net.minecraft.client.renderer.texture.MissingTextureSprite;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.ModelBakery;
-import net.minecraft.client.resources.model.ModelState;
-import net.minecraft.client.resources.model.UnbakedModel;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.Vec3i;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.inventory.container.PlayerContainer;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.resources.IResourceManager;
+import net.minecraft.util.Direction;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.util.math.vector.Vector3i;
 import net.minecraftforge.client.model.*;
 import net.minecraftforge.client.model.data.EmptyModelData;
 import net.minecraftforge.client.model.data.IDynamicBakedModel;
@@ -48,14 +40,13 @@ import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.List;
 import java.util.function.Function;
-
-import static com.buuz135.functionalstorage.client.loader.FramedModel.Baked.getQuadsUsingShape;
+import java.util.stream.Collectors;
 
 /**
  * A Custom Model for Framed Drawers. <br>
@@ -82,33 +73,33 @@ public class FramedModel implements IModelGeometry<FramedModel> {
     }
 
     @Override
-    public BakedModel bake(IModelConfiguration context, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides, ResourceLocation modelLocation)
+    public IBakedModel bake(IModelConfiguration context, ModelBakery bakery, Function<RenderMaterial, TextureAtlasSprite> spriteGetter, IModelTransform modelState, ItemOverrideList overrides, ResourceLocation modelLocation)
     {
         if (logWarning)
             LOGGER.warn("Model \"" + modelLocation + "\" is using the deprecated \"parts\" field in its composite model instead of \"children\". This field will be removed in 1.20.");
 
-        Material particleLocation = context.resolveTexture("particle");
+        RenderMaterial particleLocation = context.resolveTexture("particle");
         TextureAtlasSprite particle = spriteGetter.apply(particleLocation);
 
         //var rootTransform = modelState.getRotation();
         //if (!rootTransform.isIdentity())
         //    modelState = new SimpleModelState(modelState.getRotation().compose(rootTransform), modelState.isUvLocked());
 
-        var bakedPartsBuilder = ImmutableMap.<String, BakedModel>builder();
-        for (var entry : children.entrySet())
+        ImmutableMap.Builder<String, IBakedModel> bakedPartsBuilder = ImmutableMap.<String, IBakedModel>builder();
+        for (Map.Entry<String, Submodel> entry : children.entrySet())
         {
-            var name = entry.getKey();
+            String name = entry.getKey();
             if (!context.getPartVisibility(entry.getValue(), true))
                 continue;
-            var model = entry.getValue();
+            Submodel model = entry.getValue();
             bakedPartsBuilder.put(name, model.bakeModel(bakery,  spriteGetter, modelState, modelLocation));
         }
-        var bakedParts = bakedPartsBuilder.build();
+        ImmutableMap<String, IBakedModel> bakedParts = bakedPartsBuilder.build();
 
-        var itemPassesBuilder = ImmutableList.<BakedModel>builder();
+        ImmutableList.Builder<IBakedModel> itemPassesBuilder = ImmutableList.builder();
         for (String name : this.itemPasses)
         {
-            var model = bakedParts.get(name);
+            IBakedModel model = bakedParts.get(name);
             if (model == null)
                 throw new IllegalStateException("Specified \"" + name + "\" in \"item_render_order\", but that is not a child of this model.");
             itemPassesBuilder.add(model);
@@ -118,9 +109,9 @@ public class FramedModel implements IModelGeometry<FramedModel> {
     }
 
     @Override
-    public Collection<Material> getTextures(IModelConfiguration context, Function<ResourceLocation, UnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors)
+    public Collection<RenderMaterial> getTextures(IModelConfiguration context, Function<ResourceLocation, IUnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors)
     {
-        Set<Material> textures = new HashSet<>();
+        Set<RenderMaterial> textures = new HashSet<>();
         if (context.isTexturePresent("particle"))
             textures.add(context.resolveTexture("particle"));
         for (Submodel part : children.values())
@@ -138,12 +129,12 @@ public class FramedModel implements IModelGeometry<FramedModel> {
         private final boolean isGui3d;
         private final boolean isSideLit;
         private final TextureAtlasSprite particle;
-        private final ItemOverrides overrides;
-        private final ItemTransforms transforms;
-        private final ImmutableMap<String, BakedModel> children;
-        private final ImmutableList<BakedModel> itemPasses;
+        private final ItemOverrideList overrides;
+        private final ItemCameraTransforms transforms;
+        private final ImmutableMap<String, IBakedModel> children;
+        private final ImmutableList<IBakedModel> itemPasses;
 
-        public Baked(boolean isGui3d, boolean isSideLit, boolean isAmbientOcclusion, TextureAtlasSprite particle, ItemTransforms transforms, ItemOverrides overrides, ImmutableMap<String, BakedModel> children, ImmutableList<BakedModel> itemPasses)
+        public Baked(boolean isGui3d, boolean isSideLit, boolean isAmbientOcclusion, TextureAtlasSprite particle, ItemCameraTransforms transforms, ItemOverrideList overrides, ImmutableMap<String, IBakedModel> children, ImmutableList<IBakedModel> itemPasses)
         {
             this.children = children;
             this.isAmbientOcclusion = isAmbientOcclusion;
@@ -155,12 +146,12 @@ public class FramedModel implements IModelGeometry<FramedModel> {
             this.itemPasses = itemPasses;
         }
 
-        @NotNull
+        @Nonnull
         @Override
-        public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @NotNull Random rand, @NotNull IModelData data)
+        public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @Nonnull Random rand, @Nonnull IModelData data)
         {
             List<List<BakedQuad>> quadLists = new ArrayList<>();
-            for (Map.Entry<String, BakedModel> entry : children.entrySet())
+            for (Map.Entry<String, IBakedModel> entry : children.entrySet())
             {
    
                     FramedDrawerModelData framedDrawerModelData = data.getData(FramedDrawerModelData.FRAMED_PROPERTY);
@@ -173,25 +164,26 @@ public class FramedModel implements IModelGeometry<FramedModel> {
                     }
                 
             }
-            return quadLists.stream().flatMap(Collection::stream).toList();
+            return quadLists.stream().flatMap(Collection::stream).collect(Collectors.toList());
         }
 
-        protected static List<BakedQuad> getQuadsUsingShape(@Nullable Item frameItem, List<BakedQuad> shape, @Nullable Direction side, Random rand) {
-            if (frameItem instanceof BlockItem blockItem) {
+        protected List<BakedQuad> getQuadsUsingShape(@Nullable Item frameItem, List<BakedQuad> shape, @Nullable Direction side, Random rand) {
+            if (frameItem instanceof BlockItem) {
+                BlockItem blockItem = (BlockItem) frameItem;
                 BlockState state1 = blockItem.getBlock().defaultBlockState();
-                BakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(state1);
+                IBakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(state1);
                 Optional<List<Triple<TextureAtlasSprite, Integer, int[]>>> spriteOptional = getSpriteData(model, state1, side, rand, null);
                 List<BakedQuad> returnQuads = new ArrayList<>();
                 for (BakedQuad shapeQuad : shape) {
                     List<Triple<TextureAtlasSprite, Integer, int[]>> spriteData = spriteOptional.orElse(getSpriteFromModel(shapeQuad, model, state1,null));
-                    returnQuads.addAll(framedQuad(shapeQuad, spriteData, state1.getLightEmission(Minecraft.getInstance().level, BlockPos.ZERO)));
+                    returnQuads.addAll(framedQuad(shapeQuad, spriteData, state1.getLightBlock(Minecraft.getInstance().level, BlockPos.ZERO)));
                 }
                 return returnQuads;
             }
-            return List.of();
+            return Collections.emptyList();
         }
 
-        private static Optional<List<Triple<TextureAtlasSprite, Integer, int[]>>> getSpriteData(BakedModel model, BlockState state, @Nullable Direction side, Random rand, @Nullable Direction rotation) {
+        private Optional<List<Triple<TextureAtlasSprite, Integer, int[]>>> getSpriteData(IBakedModel model, BlockState state, @Nullable Direction side, Random rand, @Nullable Direction rotation) {
             List<BakedQuad> quads = model.getQuads(state, side, rand, EmptyModelData.INSTANCE);
             List<Float> positions = new ArrayList<>();
             List<Triple<TextureAtlasSprite, Integer, int[]>> modelData = new ArrayList<>();
@@ -214,8 +206,8 @@ public class FramedModel implements IModelGeometry<FramedModel> {
             return quads.isEmpty() ? Optional.empty() : Optional.of(modelData);
         }
 
-        private static float getPositionFromDirection(float[] position, Direction side) {
-            Vec3i normal = new Vec3i(0,0,0);
+        private float getPositionFromDirection(float[] position, Direction side) {
+            Vector3i normal = new Vector3i(0,0,0);
             if (side != null) {
                 normal = side.getNormal();
             }
@@ -223,7 +215,7 @@ public class FramedModel implements IModelGeometry<FramedModel> {
             return (float) Math.sqrt(vector3f.dot(vector3f));
         }
 
-        private static List<Integer> getMinMaxPosition(List<Float> positions, Direction side) {
+        private List<Integer> getMinMaxPosition(List<Float> positions, Direction side) {
             List<Integer> index = new ArrayList<>();
             float minMax = side != null && side.getAxisDirection() == Direction.AxisDirection.POSITIVE ? Collections.max(positions) : Collections.min(positions);
             for (int i = 0; i < positions.size(); i++) {
@@ -234,7 +226,7 @@ public class FramedModel implements IModelGeometry<FramedModel> {
             return index;
         }
 
-        protected static List<Triple<TextureAtlasSprite, Integer, int[]>> getSpriteFromModel(BakedQuad shape, BakedModel model, BlockState state, Direction rotation) {
+        protected List<Triple<TextureAtlasSprite, Integer, int[]>> getSpriteFromModel(BakedQuad shape, IBakedModel model, BlockState state, Direction rotation) {
             List<BakedQuad> quads = model.getQuads(state, shape.getDirection(), new Random());
             List<Float> positions = new ArrayList<>();
             List<Triple<TextureAtlasSprite, Integer, int[]>> modelData = new ArrayList<>();
@@ -255,10 +247,10 @@ public class FramedModel implements IModelGeometry<FramedModel> {
                     modelData.add(triple);
                 }
             }
-            return quads.isEmpty() ? List.of(Triple.of(Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(MissingTextureAtlasSprite.getLocation()), -1, new int[] {0,0,0,0})) : modelData;
+            return quads.isEmpty() ? Collections.singletonList(Triple.of(Minecraft.getInstance().getTextureAtlas(PlayerContainer.BLOCK_ATLAS).apply(MissingTextureSprite.getLocation()), -1, new int[] {0,0,0,0})) : modelData;
         }
 
-        protected static List<BakedQuad> framedQuad(BakedQuad toCopy, List<Triple<TextureAtlasSprite, Integer, int[]>> modelData, int lightEmission) {
+        protected List<BakedQuad> framedQuad(BakedQuad toCopy, List<Triple<TextureAtlasSprite, Integer, int[]>> modelData, int lightEmission) {
             lightEmission = LightTexture.pack(lightEmission, lightEmission);
             List<BakedQuad> quads = new ArrayList<>();
             for (int j = 0; j < modelData.size(); j++) {
@@ -291,7 +283,7 @@ public class FramedModel implements IModelGeometry<FramedModel> {
             return quads;
         }
 
-        private static float[] unpackVertices(int[] vertices, int vertexIndex, int position, int count) {
+        private float[] unpackVertices(int[] vertices, int vertexIndex, int position, int count) {
             float[] floats = new float[count];
             int startIndex = vertexIndex * IQuadTransformer.STRIDE + position;
             for (int i = 0; i < count; i++) {
@@ -300,12 +292,12 @@ public class FramedModel implements IModelGeometry<FramedModel> {
             return floats;
         }
 
-        private static int[] getColorARGB(int[] vertices, int vertexIndex) {
+        private int[] getColorARGB(int[] vertices, int vertexIndex) {
             int color = vertices[IQuadTransformer.STRIDE * vertexIndex + IQuadTransformer.COLOR];
             return getColorARGB(color);
         }
 
-        private static int[] getColorARGB(int color) {
+        private int[] getColorARGB(int color) {
             int[] argb = new int[4];
             argb[0] = color >> 24 & 0xFF;
             argb[1] = color >> 16 & 0xFF;
@@ -314,7 +306,7 @@ public class FramedModel implements IModelGeometry<FramedModel> {
             return argb;
         }
 
-        private static int[] getUV2(int[] vertices, int vertexIndex) {
+        private int[] getUV2(int[] vertices, int vertexIndex) {
             int[] light = new int[2];
             int uv2 = vertices[IQuadTransformer.STRIDE * vertexIndex + IQuadTransformer.UV2];
             light[0] = (uv2 & 0xFFFF) >> 4;
@@ -323,21 +315,21 @@ public class FramedModel implements IModelGeometry<FramedModel> {
         }
 
 
-        public static int[] packUV(float u, float v) {
+        public int[] packUV(float u, float v) {
             int[] quadData = new int[2];
             quadData[0] = Float.floatToRawIntBits(u);
             quadData[1] = Float.floatToRawIntBits(v);
             return quadData;
         }
 
-        public static int packColor(int r, int g, int b, int a) {
+        public int packColor(int r, int g, int b, int a) {
             return ((a & 0xFF) << 24) |
                     ((r & 0xFF) << 16) |
                     ((g & 0xFF) << 8)  |
                     ((b & 0xFF));
         }
 
-        public static int packUV2(int u, int v) {
+        public int packUV2(int u, int v) {
             return u << 4 | v << 20;
         }
 
@@ -372,32 +364,34 @@ public class FramedModel implements IModelGeometry<FramedModel> {
         }
 
         @Override
-        public TextureAtlasSprite getParticleIcon(@NotNull IModelData data) {
+        public TextureAtlasSprite getParticleTexture(@Nonnull IModelData data) {
             FramedDrawerModelData framedDrawerModelData = data.getData(FramedDrawerModelData.FRAMED_PROPERTY);
             if (framedDrawerModelData != null && framedDrawerModelData.getDesign().containsKey("particle")) {
-                if (framedDrawerModelData.getDesign().get("particle") instanceof BlockItem blockItem) {
-                    return Minecraft.getInstance().getBlockRenderer().getBlockModel(blockItem.getBlock().defaultBlockState()).getParticleIcon(data);
+                Item item = framedDrawerModelData.getDesign().get("particle");
+                if (item instanceof BlockItem) {
+                    BlockItem blockItem = (BlockItem) item;
+                    return Minecraft.getInstance().getBlockRenderer().getBlockModel(blockItem.getBlock().defaultBlockState()).getParticleTexture(data);
                 }
             }
             return particle;
         }
 
         @Override
-        public ItemOverrides getOverrides()
+        public ItemOverrideList getOverrides()
         {
             return overrides;
         }
 
         @Override
-        public ItemTransforms getTransforms()
+        public ItemCameraTransforms getTransforms()
         {
             return transforms;
         }
 
         @Override
-        public List<Pair<BakedModel, RenderType>> getLayerModels(ItemStack itemStack, boolean fabulous)
+        public List<Pair<IBakedModel, RenderType>> getLayerModels(ItemStack itemStack, boolean fabulous)
         {
-            return Collections.singletonList(Pair.of(new ItemModel(this, itemStack), ItemBlockRenderTypes.getRenderType(itemStack, fabulous)));
+            return Collections.singletonList(Pair.of(new ItemModel(this, itemStack), RenderTypeLookup.getRenderType(itemStack, fabulous)));
         }
 
         @Override
@@ -406,7 +400,7 @@ public class FramedModel implements IModelGeometry<FramedModel> {
         }
 
         @Nullable
-        public BakedModel getPart(String name)
+        public IBakedModel getPart(String name)
         {
             return children.get(name);
         }
@@ -441,10 +435,10 @@ public class FramedModel implements IModelGeometry<FramedModel> {
          */
         public static IModelData resolve(IModelData modelData, String name)
         {
-            var compositeData = modelData.getData(PROPERTY);
+            Data compositeData = modelData.getData(PROPERTY);
             if (compositeData == null)
                 return modelData;
-            var partData = compositeData.get(name);
+            IModelData partData = compositeData.get(name);
             return partData != null ? partData : modelData;
         }
 
@@ -474,9 +468,7 @@ public class FramedModel implements IModelGeometry<FramedModel> {
     {
         public static final FramedModel.Loader INSTANCE = new FramedModel.Loader();
 
-        private Loader()
-        {
-        }
+        private Loader() {}
 
         @Override
         public FramedModel read(JsonDeserializationContext deserializationContext, JsonObject jsonObject)
@@ -486,16 +478,16 @@ public class FramedModel implements IModelGeometry<FramedModel> {
             readChildren(jsonObject, "children", deserializationContext, childrenBuilder, itemPasses, false);
             boolean logWarning = readChildren(jsonObject, "parts", deserializationContext, childrenBuilder, itemPasses, true);
 
-            var children = childrenBuilder.build();
+            ImmutableMap<String, Submodel> children = childrenBuilder.build();
             if (children.isEmpty())
                 throw new JsonParseException("Composite model requires a \"children\" element with at least one element.");
 
             if (jsonObject.has("item_render_order"))
             {
                 itemPasses.clear();
-                for (var element : jsonObject.getAsJsonArray("item_render_order"))
+                for (JsonElement element : jsonObject.getAsJsonArray("item_render_order"))
                 {
-                    var name = element.getAsString();
+                    String name = element.getAsString();
                     if (!children.containsKey(name))
                         throw new JsonParseException("Specified \"" + name + "\" in \"item_render_order\", but that is not a child of this model.");
                     itemPasses.add(name);
@@ -509,7 +501,7 @@ public class FramedModel implements IModelGeometry<FramedModel> {
         {
             if (!jsonObject.has(name))
                 return false;
-            var childrenJsonObject = jsonObject.getAsJsonObject(name);
+            JsonObject childrenJsonObject = jsonObject.getAsJsonObject(name);
             for (Map.Entry<String, JsonElement> entry : childrenJsonObject.entrySet())
             {
                 children.put(entry.getKey(), new Submodel(name, deserializationContext.deserialize(entry.getValue(), BlockModel.class) ));
@@ -519,10 +511,7 @@ public class FramedModel implements IModelGeometry<FramedModel> {
         }
 
         @Override
-        public void onResourceManagerReload(ResourceManager p_10758_) {
-
-        }
-
+        public void onResourceManagerReload(IResourceManager manager) {}
     }
 
     private static class Submodel implements IModelGeometryPart
@@ -543,18 +532,18 @@ public class FramedModel implements IModelGeometry<FramedModel> {
         }
 
         @Override
-        public void addQuads(IModelConfiguration owner, IModelBuilder<?> modelBuilder, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelTransform, ResourceLocation modelLocation)
+        public void addQuads(IModelConfiguration owner, IModelBuilder<?> modelBuilder, ModelBakery bakery, Function<RenderMaterial, TextureAtlasSprite> spriteGetter, IModelTransform modelTransform, ResourceLocation modelLocation)
         {
             throw new UnsupportedOperationException("Attempted to call adQuads on a Submodel instance. Please don't.");
         }
 
-        public BakedModel bakeModel(ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelTransform, ResourceLocation modelLocation)
+        public IBakedModel bakeModel(ModelBakery bakery, Function<RenderMaterial, TextureAtlasSprite> spriteGetter, IModelTransform modelTransform, ResourceLocation modelLocation)
         {
             return model.bake(bakery, spriteGetter, modelTransform, modelLocation);
         }
 
         @Override
-        public Collection<Material> getTextures(IModelConfiguration owner, Function<ResourceLocation, UnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors)
+        public Collection<RenderMaterial> getTextures(IModelConfiguration owner, Function<ResourceLocation, IUnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors)
         {
             return model.getMaterials(modelGetter, missingTextureErrors);
         }
@@ -573,19 +562,19 @@ public class FramedModel implements IModelGeometry<FramedModel> {
         @Override
         public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, Random rand, IModelData extraData) {
             List<List<BakedQuad>> quadLists = new ArrayList<>();
-            for (Map.Entry<String, BakedModel> entry : baked.children.entrySet())
+            for (Map.Entry<String, IBakedModel> entry : baked.children.entrySet())
             {
                     List<BakedQuad> quads = entry.getValue().getQuads(state, side, rand, Data.resolve(extraData, entry.getKey()));
                     FramedDrawerModelData framedDrawerModelData = FramedDrawerBlock.getDrawerModelData(itemStack);
                     if (framedDrawerModelData != null && framedDrawerModelData.getDesign().containsKey(entry.getKey())) {
                         Item item = framedDrawerModelData.getDesign().get(entry.getKey());
-                        quadLists.add(getQuadsUsingShape(item, quads, side, rand));
+                        quadLists.add(baked.getQuadsUsingShape(item, quads, side, rand));
                     } else {
                         quadLists.add(quads);
                     }
                 }
 
-            return quadLists.stream().flatMap(Collection::stream).toList();
+            return quadLists.stream().flatMap(Collection::stream).collect(Collectors.toList());
         }
 
         @Override
@@ -614,28 +603,27 @@ public class FramedModel implements IModelGeometry<FramedModel> {
         }
 
         @Override
-        public ItemOverrides getOverrides() {
-            return ItemOverrides.EMPTY;
+        public ItemOverrideList getOverrides() {
+            return ItemOverrideList.EMPTY;
         }
 
         @Override
-        public ItemTransforms getTransforms() {
+        public ItemCameraTransforms getTransforms() {
             return baked.getTransforms();
         }
     }
 
-    private class RetexturedOverride extends ItemOverrides {
+    private class RetexturedOverride extends ItemOverrideList {
 
-        private final BakedModel bakedModel;
+        private final IBakedModel bakedModel;
 
-        private RetexturedOverride(BakedModel bakedModel) {
+        private RetexturedOverride(IBakedModel bakedModel) {
             this.bakedModel = bakedModel;
         }
 
         @javax.annotation.Nullable
         @Override
-        public BakedModel resolve(BakedModel originalModel, ItemStack stack, @javax.annotation.Nullable ClientLevel world, @javax.annotation.Nullable LivingEntity entity, int pSeed) {
-
+        public IBakedModel resolve(IBakedModel originalModel, ItemStack stack, @javax.annotation.Nullable ClientWorld world, @javax.annotation.Nullable LivingEntity entity) {
             // if valid, use the block
             return bakedModel;
         }
