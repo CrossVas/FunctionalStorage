@@ -2,39 +2,40 @@ package com.buuz135.functionalstorage.block;
 
 import com.buuz135.functionalstorage.FunctionalStorage;
 import com.buuz135.functionalstorage.block.tile.ArmoryCabinetTile;
+import com.hrznstudio.titanium.api.IFactory;
 import com.hrznstudio.titanium.block.RotatableBlock;
 import com.hrznstudio.titanium.datagenerator.loot.block.BasicBlockLootTables;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.NonNullList;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.loot.LootContext;
+import net.minecraft.loot.LootParameters;
+import net.minecraft.loot.LootTable;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.NonNullList;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 
 public class ArmoryCabinetBlock extends RotatableBlock<ArmoryCabinetTile> {
 
     public ArmoryCabinetBlock() {
-        super("armory_cabinet", Properties.copy(Blocks.IRON_BLOCK), ArmoryCabinetTile.class);
+        super(Properties.copy(Blocks.IRON_BLOCK), ArmoryCabinetTile.class);
+        // name: "armory_cabinet"
         setItemGroup(FunctionalStorage.TAB);
     }
 
     @Override
-    public BlockEntityType.BlockEntitySupplier<?> getTileEntityFactory() {
-        return (p_155268_, p_155269_) -> new ArmoryCabinetTile(this, FunctionalStorage.ARMORY_CABINET.getRight().get(), p_155268_, p_155269_);
+    public IFactory<ArmoryCabinetTile> getTileEntityFactory() {
+        return () -> new ArmoryCabinetTile(this, FunctionalStorage.ARMORY_CABINET.getRight().get(), p_155268_, p_155269_);
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public RotationType getRotationType() {
         return RotationType.FOUR_WAY;
@@ -52,13 +53,13 @@ public class ArmoryCabinetBlock extends RotatableBlock<ArmoryCabinetTile> {
 
 
     @Override
-    public List<ItemStack> getDrops(BlockState p_60537_, LootContext.Builder builder) {
+    public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
         NonNullList<ItemStack> stacks = NonNullList.create();
         ItemStack stack = new ItemStack(this);
-        BlockEntity drawerTile = builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
+        TileEntity drawerTile = builder.getOptionalParameter(LootParameters.BLOCK_ENTITY);
         if (drawerTile instanceof ArmoryCabinetTile) {
             if (!((ArmoryCabinetTile) drawerTile).isEverythingEmpty()) {
-                stack.getOrCreateTag().put("Tile", drawerTile.saveWithoutMetadata());
+                stack.getOrCreateTag().put("Tile", drawerTile.save(new CompoundNBT()));
             }
         }
         stacks.add(stack);
@@ -66,17 +67,17 @@ public class ArmoryCabinetBlock extends RotatableBlock<ArmoryCabinetTile> {
     }
 
     @Override
-    public NonNullList<ItemStack> getDynamicDrops(BlockState state, Level worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
+    public NonNullList<ItemStack> getDynamicDrops(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
         return NonNullList.create();
     }
 
     @Override
-    public void setPlacedBy(Level level, BlockPos pos, BlockState p_49849_, @Nullable LivingEntity p_49850_, ItemStack stack) {
-        super.setPlacedBy(level, pos, p_49849_, p_49850_, stack);
+    public void setPlacedBy(World level, BlockPos pos, BlockState state, @Nullable LivingEntity livingEntity, ItemStack stack) {
+        super.setPlacedBy(level, pos, state, livingEntity, stack);
         if (stack.hasTag() && stack.getTag().contains("Tile")) {
-            BlockEntity entity = level.getBlockEntity(pos);
+            TileEntity entity = level.getBlockEntity(pos);
             if (entity instanceof ArmoryCabinetTile) {
-                entity.load(stack.getTag().getCompound("Tile"));
+                entity.load(state, stack.getTag().getCompound("Tile"));
                 ((ArmoryCabinetTile) entity).markForUpdate();
             }
         }
