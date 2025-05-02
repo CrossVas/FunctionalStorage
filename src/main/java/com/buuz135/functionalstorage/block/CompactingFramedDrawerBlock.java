@@ -4,39 +4,41 @@ import com.buuz135.functionalstorage.FunctionalStorage;
 import com.buuz135.functionalstorage.block.tile.CompactingDrawerTile;
 import com.buuz135.functionalstorage.block.tile.CompactingFramedDrawerTile;
 import com.buuz135.functionalstorage.block.tile.FramedDrawerTile;
+import com.hrznstudio.titanium.api.IFactory;
 import com.hrznstudio.titanium.recipe.generator.TitaniumShapedRecipeBuilder;
 import com.hrznstudio.titanium.util.TileUtil;
-import net.minecraft.ChatFormatting;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.NonNullList;
-import net.minecraft.data.recipes.FinishedRecipe;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import net.minecraft.world.phys.HitResult;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.data.IFinishedRecipe;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.item.crafting.Ingredient;
+import net.minecraft.loot.LootContext;
+import net.minecraft.loot.LootParameters;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.NonNullList;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.IBlockReader;
+import net.minecraft.world.World;
 import net.minecraftforge.common.Tags;
-import net.minecraftforge.registries.RegistryObject;
-import org.jetbrains.annotations.Nullable;
+import net.minecraftforge.fml.RegistryObject;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class CompactingFramedDrawerBlock extends CompactingDrawerBlock{
+public class CompactingFramedDrawerBlock extends CompactingDrawerBlock {
 
     public static List<RegistryObject<Block>> FRAMED = new ArrayList<>();
 
@@ -45,13 +47,13 @@ public class CompactingFramedDrawerBlock extends CompactingDrawerBlock{
     }
 
     @Override
-    public BlockEntityType.BlockEntitySupplier<CompactingDrawerTile> getTileEntityFactory() {
-        return (blockPos, state) -> new CompactingFramedDrawerTile(this,  (BlockEntityType<CompactingDrawerTile>) FunctionalStorage.FRAMED_COMPACTING_DRAWER.getValue().get(), blockPos, state);
+    public IFactory<CompactingDrawerTile> getTileEntityFactory() {
+        return () -> new CompactingFramedDrawerTile(this,  (TileEntityType<CompactingDrawerTile>) FunctionalStorage.FRAMED_COMPACTING_DRAWER.getValue().get(), blockPos, state);
     }
 
     @Override
-    public void setPlacedBy(Level level, BlockPos pos, BlockState p_49849_, @Nullable LivingEntity p_49850_, ItemStack stack) {
-        super.setPlacedBy(level, pos, p_49849_, p_49850_, stack);
+    public void setPlacedBy(World level, BlockPos pos, BlockState state, @Nullable LivingEntity livingEntity, ItemStack stack) {
+        super.setPlacedBy(level, pos, state, livingEntity, stack);
         TileUtil.getTileEntity(level, pos, CompactingFramedDrawerTile.class).ifPresent(framedDrawerTile -> {
             framedDrawerTile.setFramedDrawerModelData(FramedDrawerBlock.getDrawerModelData(stack));
         });
@@ -59,13 +61,14 @@ public class CompactingFramedDrawerBlock extends CompactingDrawerBlock{
 
 
     @Override
-    public List<ItemStack> getDrops(BlockState p_60537_, LootContext.Builder builder) {
+    public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
         NonNullList<ItemStack> stacks = NonNullList.create();
         ItemStack stack = new ItemStack(this);
-        BlockEntity drawerTile = builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
-        if (drawerTile instanceof CompactingFramedDrawerTile framedDrawerTile) {
+        TileEntity drawerTile = builder.getOptionalParameter(LootParameters.BLOCK_ENTITY);
+        if (drawerTile instanceof CompactingFramedDrawerTile) {
+            CompactingFramedDrawerTile framedDrawerTile = (CompactingFramedDrawerTile) drawerTile;
             if (!framedDrawerTile.isEverythingEmpty()) {
-                stack.getOrCreateTag().put("Tile", drawerTile.saveWithoutMetadata());
+                stack.getOrCreateTag().put("Tile", drawerTile.save(new CompoundNBT()));
             }
             if (framedDrawerTile.getFramedDrawerModelData() != null) {
                 stack.getOrCreateTag().put("Style", framedDrawerTile.getFramedDrawerModelData().serializeNBT());
@@ -79,18 +82,18 @@ public class CompactingFramedDrawerBlock extends CompactingDrawerBlock{
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter level, BlockPos pos, Player player) {
-        BlockEntity entity = level.getBlockEntity(pos);
-        if (entity instanceof FramedDrawerTile framedDrawerTile && framedDrawerTile.getFramedDrawerModelData() != null && !framedDrawerTile.getFramedDrawerModelData().getDesign().isEmpty()){
+    public ItemStack getPickBlock(BlockState state, RayTraceResult target, IBlockReader level, BlockPos pos, PlayerEntity player) {
+        TileEntity entity = level.getBlockEntity(pos);
+        if (entity instanceof FramedDrawerTile && ((FramedDrawerTile) entity).getFramedDrawerModelData() != null && !((FramedDrawerTile) entity).getFramedDrawerModelData().getDesign().isEmpty()){
             ItemStack stack = new ItemStack(this);
-            stack.getOrCreateTag().put("Style", framedDrawerTile.getFramedDrawerModelData().serializeNBT());
+            stack.getOrCreateTag().put("Style", ((FramedDrawerTile) entity).getFramedDrawerModelData().serializeNBT());
             return stack;
         }
-        return super.getCloneItemStack(state, target, level, pos, player);
+        return super.getPickBlock(state, target, level, pos, player);
     }
 
     @Override
-    public void registerRecipe(Consumer<FinishedRecipe> consumer) {
+    public void registerRecipe(Consumer<IFinishedRecipe> consumer) {
         TitaniumShapedRecipeBuilder.shapedRecipe(this)
                 .pattern("SSS").pattern("PDP").pattern("SIS")
                 .define('S', Items.IRON_NUGGET)
@@ -100,8 +103,8 @@ public class CompactingFramedDrawerBlock extends CompactingDrawerBlock{
                 .save(consumer);
     }
     @Override
-    public void appendHoverText(ItemStack p_49816_, @Nullable BlockGetter p_49817_, List<Component> components, TooltipFlag p_49819_) {
-        components.add(new TranslatableComponent("frameddrawer.use").withStyle(ChatFormatting.GRAY));
-        super.appendHoverText(p_49816_, p_49817_, components, p_49819_);
+    public void appendHoverText(ItemStack stack, @Nullable IBlockReader reader, List<ITextComponent> components, ITooltipFlag flag) {
+        components.add(new TranslationTextComponent("frameddrawer.use").withStyle(TextFormatting.GRAY));
+        super.appendHoverText(stack, reader, components, flag);
     }
 }
