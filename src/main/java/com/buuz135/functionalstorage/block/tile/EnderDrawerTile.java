@@ -6,29 +6,29 @@ import com.buuz135.functionalstorage.inventory.EnderInventoryHandler;
 import com.buuz135.functionalstorage.network.EnderDrawerSyncMessage;
 import com.buuz135.functionalstorage.world.EnderSavedData;
 import com.hrznstudio.titanium.annotation.Save;
+import com.hrznstudio.titanium.api.IFactory;
+import com.hrznstudio.titanium.api.client.IScreenAddon;
 import com.hrznstudio.titanium.block.BasicTileBlock;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.UUID;
 
 public class EnderDrawerTile extends ItemControllableDrawerTile<EnderDrawerTile> {
@@ -37,30 +37,30 @@ public class EnderDrawerTile extends ItemControllableDrawerTile<EnderDrawerTile>
     private String frequency;
     private LazyOptional<IItemHandler> lazyStorage;
 
-    public EnderDrawerTile(BasicTileBlock<EnderDrawerTile> base, BlockEntityType<EnderDrawerTile> blockEntityType, BlockPos pos, BlockState state) {
+    public EnderDrawerTile(BasicTileBlock<EnderDrawerTile> base, TileEntityType<EnderDrawerTile> blockEntityType, BlockPos pos, BlockState state) {
         super(base, blockEntityType, pos, state);
         this.frequency = UUID.randomUUID().toString();
         this.lazyStorage = LazyOptional.empty();
     }
 
     @Override
-    public void setLevel(Level p_155231_) {
-        super.setLevel(p_155231_);
+    public void setLevelAndPosition(World world, BlockPos pos) {
+        super.setLevelAndPosition(world, pos);
         this.lazyStorage.invalidate();
         this.lazyStorage = LazyOptional.of(() -> EnderSavedData.getInstance(this.level).getFrequency(this.frequency));
     }
 
-    @OnlyIn(Dist.CLIENT)
     @Override
-    public void initClient() {
-        super.initClient();
-        addGuiAddonFactory(() -> new DrawerInfoGuiAddon(64, 16,
+    public List<IFactory<? extends IScreenAddon>> getScreenAddons() {
+        List<IFactory<? extends IScreenAddon>> screenAddons = super.getScreenAddons();
+        screenAddons.add(() -> new DrawerInfoGuiAddon(64, 16,
                 new ResourceLocation(FunctionalStorage.MOD_ID, "textures/blocks/ender_front.png"),
                 1,
                 FunctionalStorage.DrawerType.X_1.getSlotPosition(),
                 integer -> getStorage().getStackInSlot(integer),
                 integer -> getStorage().getSlotLimit(integer)
         ));
+        return screenAddons;
     }
 
     @Nonnull
@@ -73,10 +73,10 @@ public class EnderDrawerTile extends ItemControllableDrawerTile<EnderDrawerTile>
     }
 
     @Override
-    public void serverTick(Level level, BlockPos pos, BlockState state, EnderDrawerTile blockEntity) {
-        super.serverTick(level, pos, state, blockEntity);
+    public void tick() {
+        super.tick();
         if (level.getGameTime() % 20 == 0){
-            FunctionalStorage.NETWORK.sendToNearby(level, pos, 32, new EnderDrawerSyncMessage(frequency, ((EnderInventoryHandler)getStorage())));
+            FunctionalStorage.NETWORK.sendToNearby(level, getBlockPos(), 32, new EnderDrawerSyncMessage(frequency, ((EnderInventoryHandler)getStorage())));
         }
         if (level.getGameTime() % 10 == 0) {
             EnderInventoryHandler handler = EnderSavedData.getInstance(this.level).getFrequency(this.frequency);
@@ -86,7 +86,7 @@ public class EnderDrawerTile extends ItemControllableDrawerTile<EnderDrawerTile>
             if (!handler.isVoid()){
                 for (int i = 0; i < getUtilityUpgrades().getSlots(); i++) {
                     ItemStack stack = getUtilityUpgrades().getStackInSlot(i);
-                    if (!stack.isEmpty() && stack.is(FunctionalStorage.VOID_UPGRADE.get())){
+                    if (!stack.isEmpty() && stack.getItem().is(FunctionalStorage.VOID_UPGRADE.get())){
                         handler.setVoidItems(true);
                         stack.shrink(1);
                         break;
@@ -98,7 +98,7 @@ public class EnderDrawerTile extends ItemControllableDrawerTile<EnderDrawerTile>
 
     @Override
     public ActionResultType onSlotActivated(PlayerEntity playerIn, Hand hand, Direction facing, double hitX, double hitY, double hitZ, int slot) {
-        InteractionResult result = super.onSlotActivated(playerIn, hand, facing, hitX, hitY, hitZ, slot);
+        ActionResultType result = super.onSlotActivated(playerIn, hand, facing, hitX, hitY, hitZ, slot);
         if (slot != -1){
             FunctionalStorage.NETWORK.sendToNearby(level, this.getBlockPos(), 32, new EnderDrawerSyncMessage(frequency, ((EnderInventoryHandler)getStorage())));
         }
@@ -106,7 +106,7 @@ public class EnderDrawerTile extends ItemControllableDrawerTile<EnderDrawerTile>
     }
 
     @Override
-    public void onClicked(Player playerIn, int slot) {
+    public void onClicked(PlayerEntity playerIn, int slot) {
         super.onClicked(playerIn, slot);
         if (slot != -1){
             FunctionalStorage.NETWORK.sendToNearby(level, this.getBlockPos(), 32, new EnderDrawerSyncMessage(frequency, ((EnderInventoryHandler)getStorage())));
@@ -114,10 +114,10 @@ public class EnderDrawerTile extends ItemControllableDrawerTile<EnderDrawerTile>
     }
 
     @Override
-    public void load(CompoundTag compound) {
+    public void load(BlockState state, CompoundNBT compound) {
         String oldFreq = this.frequency;
-        super.load(compound);
-        if (!this.frequency.equalsIgnoreCase(oldFreq) && level instanceof ServerLevel){
+        super.load(state, compound);
+        if (!this.frequency.equalsIgnoreCase(oldFreq) && level instanceof ServerWorld) {
             setFrequency(this.frequency);
         }
     }
@@ -133,11 +133,12 @@ public class EnderDrawerTile extends ItemControllableDrawerTile<EnderDrawerTile>
         return EnderSavedData.getInstance(this.level).getFrequency(this.frequency).isVoid();
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public EnderDrawerTile getSelf() {
         return this;
     }
+
     @Override
     public int getStorageSlotAmount() {
         return 0;
