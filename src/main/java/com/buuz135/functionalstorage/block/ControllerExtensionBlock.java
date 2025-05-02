@@ -5,51 +5,53 @@ import com.buuz135.functionalstorage.block.tile.ControllerExtensionTile;
 import com.buuz135.functionalstorage.block.tile.DrawerControllerTile;
 import com.buuz135.functionalstorage.item.LinkingToolItem;
 import com.buuz135.functionalstorage.util.StorageTags;
+import com.hrznstudio.titanium.api.IFactory;
 import com.hrznstudio.titanium.block.RotatableBlock;
 import com.hrznstudio.titanium.recipe.generator.TitaniumShapedRecipeBuilder;
 import com.hrznstudio.titanium.util.TileUtil;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.data.recipes.FinishedRecipe;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.data.IFinishedRecipe;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Items;
+import net.minecraft.state.StateContainer;
+import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.world.World;
 import net.minecraftforge.common.Tags;
-import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import java.util.function.Consumer;
 
 public class ControllerExtensionBlock extends RotatableBlock<ControllerExtensionTile> {
 
     public ControllerExtensionBlock() {
-        super("controller_extension", Properties.copy(Blocks.IRON_BLOCK), ControllerExtensionTile.class);
+        super(Properties.copy(Blocks.IRON_BLOCK), ControllerExtensionTile.class);
+        // name: "controller_extension"
         setItemGroup(FunctionalStorage.TAB);
         registerDefaultState(defaultBlockState().setValue(RotatableBlock.FACING_HORIZONTAL, Direction.NORTH).setValue(DrawerBlock.LOCKED, false));
     }
 
     @Override
-    public BlockEntityType.BlockEntitySupplier<?> getTileEntityFactory() {
-        return (p_155268_, p_155269_) -> new ControllerExtensionTile(this, (BlockEntityType<ControllerExtensionTile>) FunctionalStorage.CONTROLLER_EXTENSION.getRight().get(), p_155268_, p_155269_);
+    public IFactory<ControllerExtensionTile> getTileEntityFactory() {
+        return () -> new ControllerExtensionTile(this, (TileEntityType<ControllerExtensionTile>) FunctionalStorage.CONTROLLER_EXTENSION.getRight().get(), p_155268_, p_155269_);
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public RotationType getRotationType() {
         return RotationType.FOUR_WAY;
     }
 
     @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> p_206840_1_) {
-        super.createBlockStateDefinition(p_206840_1_);
-        p_206840_1_.add(DrawerBlock.LOCKED);
+    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
+        builder.add(DrawerBlock.LOCKED);
     }
 
     @Override
@@ -58,7 +60,7 @@ public class ControllerExtensionBlock extends RotatableBlock<ControllerExtension
     }
 
     @Override
-    public void onRemove(BlockState state, Level worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
+    public void onRemove(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
         if (!state.is(newState.getBlock())) {
             TileUtil.getTileEntity(worldIn, pos, ControllerExtensionTile.class).ifPresent(tile -> {
                 if (tile.getControllerPos() != null) {
@@ -72,7 +74,7 @@ public class ControllerExtensionBlock extends RotatableBlock<ControllerExtension
     }
 
     @Override
-    public void registerRecipe(Consumer<FinishedRecipe> consumer) {
+    public void registerRecipe(Consumer<IFinishedRecipe> consumer) {
         TitaniumShapedRecipeBuilder.shapedRecipe(FunctionalStorage.CONTROLLER_EXTENSION.getLeft().get())
                 .pattern("IBI").pattern("CDC").pattern("IBI")
                 .define('I', Tags.Items.STONE)
