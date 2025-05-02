@@ -3,16 +3,14 @@ package com.buuz135.functionalstorage.block.tile;
 import com.buuz135.functionalstorage.client.model.FramedDrawerModelData;
 import com.hrznstudio.titanium.annotation.Save;
 import com.hrznstudio.titanium.block.BasicTileBlock;
-import net.minecraft.block.BlockState;
 import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.client.model.data.ModelDataMap;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
 
-public class CompactingFramedDrawerTile extends CompactingDrawerTile{
+public class CompactingFramedDrawerTile extends CompactingDrawerTile {
     @Save
     private FramedDrawerModelData framedDrawerModelData;
 

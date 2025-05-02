@@ -29,7 +29,8 @@ public class EnderDrawerSyncMessage extends Message {
         this.handler = handler;
     }
 
-    public EnderDrawerSyncMessage() {}
+    public EnderDrawerSyncMessage() {
+    }
 
     @Override
     protected void handleMessage(NetworkEvent.Context context) {

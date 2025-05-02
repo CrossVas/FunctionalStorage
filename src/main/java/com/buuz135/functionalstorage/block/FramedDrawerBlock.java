@@ -60,8 +60,8 @@ public class FramedDrawerBlock extends DrawerBlock {
         });
     }
 
-    public static FramedDrawerModelData getDrawerModelData(ItemStack stack){
-        if (stack.hasTag() && stack.getTag().contains("Style")){
+    public static FramedDrawerModelData getDrawerModelData(ItemStack stack) {
+        if (stack.hasTag() && stack.getTag().contains("Style")) {
             CompoundNBT tag = stack.getTag().getCompound("Style");
             if (tag.isEmpty()) return null;
             HashMap<String, Item> data = new HashMap<>();
@@ -74,7 +74,7 @@ public class FramedDrawerBlock extends DrawerBlock {
         return null;
     }
 
-    public static ItemStack fill(ItemStack first, ItemStack second, ItemStack drawer){
+    public static ItemStack fill(ItemStack first, ItemStack second, ItemStack drawer) {
         drawer = ItemHandlerHelper.copyStackWithSize(drawer, 1);
         CompoundNBT style = drawer.getOrCreateTagElement("Style");
         style.putString("particle", ForgeRegistries.ITEMS.getKey(first.getItem()).toString());
@@ -98,7 +98,7 @@ public class FramedDrawerBlock extends DrawerBlock {
             if (framedDrawerTile.getFramedDrawerModelData() != null) {
                 stack.getOrCreateTag().put("Style", framedDrawerTile.getFramedDrawerModelData().serializeNBT());
             }
-            if (framedDrawerTile.isLocked()){
+            if (framedDrawerTile.isLocked()) {
                 stack.getOrCreateTag().putBoolean("Locked", framedDrawerTile.isLocked());
             }
         }
@@ -109,7 +109,7 @@ public class FramedDrawerBlock extends DrawerBlock {
     @Override
     public ItemStack getPickBlock(BlockState state, RayTraceResult target, IBlockReader level, BlockPos pos, PlayerEntity player) {
         TileEntity entity = level.getBlockEntity(pos);
-        if (entity instanceof FramedDrawerTile && ((FramedDrawerTile) entity).getFramedDrawerModelData() != null && !((FramedDrawerTile) entity).getFramedDrawerModelData().getDesign().isEmpty()){
+        if (entity instanceof FramedDrawerTile && ((FramedDrawerTile) entity).getFramedDrawerModelData() != null && !((FramedDrawerTile) entity).getFramedDrawerModelData().getDesign().isEmpty()) {
             ItemStack stack = new ItemStack(this);
             stack.getOrCreateTag().put("Style", ((FramedDrawerTile) entity).getFramedDrawerModelData().serializeNBT());
             return stack;
@@ -126,7 +126,7 @@ public class FramedDrawerBlock extends DrawerBlock {
                     .define('C', Tags.Items.CHESTS_WOODEN)
                     .save(consumer);
         }
-        if (this.getType() == FunctionalStorage.DrawerType.X_2){
+        if (this.getType() == FunctionalStorage.DrawerType.X_2) {
             TitaniumShapedRecipeBuilder.shapedRecipe(this, 2)
                     .pattern("PCP").pattern("PPP").pattern("PCP")
                     .define('P', Items.IRON_NUGGET)
@@ -134,7 +134,7 @@ public class FramedDrawerBlock extends DrawerBlock {
                     .save(consumer);
 
         }
-        if (this.getType() == FunctionalStorage.DrawerType.X_4){
+        if (this.getType() == FunctionalStorage.DrawerType.X_4) {
             TitaniumShapedRecipeBuilder.shapedRecipe(this, 4)
                     .pattern("CPC").pattern("PPP").pattern("CPC")
                     .define('P', Items.IRON_NUGGET)

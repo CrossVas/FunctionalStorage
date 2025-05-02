@@ -75,18 +75,18 @@ public class EnderDrawerTile extends ItemControllableDrawerTile<EnderDrawerTile>
     @Override
     public void tick() {
         super.tick();
-        if (level.getGameTime() % 20 == 0){
-            FunctionalStorage.NETWORK.sendToNearby(level, getBlockPos(), 32, new EnderDrawerSyncMessage(frequency, ((EnderInventoryHandler)getStorage())));
+        if (level.getGameTime() % 20 == 0) {
+            FunctionalStorage.NETWORK.sendToNearby(level, getBlockPos(), 32, new EnderDrawerSyncMessage(frequency, ((EnderInventoryHandler) getStorage())));
         }
         if (level.getGameTime() % 10 == 0) {
             EnderInventoryHandler handler = EnderSavedData.getInstance(this.level).getFrequency(this.frequency);
             if (handler.isLocked() != isLocked()) {
                 super.setLocked(handler.isLocked());
             }
-            if (!handler.isVoid()){
+            if (!handler.isVoid()) {
                 for (int i = 0; i < getUtilityUpgrades().getSlots(); i++) {
                     ItemStack stack = getUtilityUpgrades().getStackInSlot(i);
-                    if (!stack.isEmpty() && stack.getItem().is(FunctionalStorage.VOID_UPGRADE.get())){
+                    if (!stack.isEmpty() && stack.sameItem(FunctionalStorage.VOID_UPGRADE.get().getDefaultInstance())) {
                         handler.setVoidItems(true);
                         stack.shrink(1);
                         break;
@@ -99,8 +99,8 @@ public class EnderDrawerTile extends ItemControllableDrawerTile<EnderDrawerTile>
     @Override
     public ActionResultType onSlotActivated(PlayerEntity playerIn, Hand hand, Direction facing, double hitX, double hitY, double hitZ, int slot) {
         ActionResultType result = super.onSlotActivated(playerIn, hand, facing, hitX, hitY, hitZ, slot);
-        if (slot != -1){
-            FunctionalStorage.NETWORK.sendToNearby(level, this.getBlockPos(), 32, new EnderDrawerSyncMessage(frequency, ((EnderInventoryHandler)getStorage())));
+        if (slot != -1) {
+            FunctionalStorage.NETWORK.sendToNearby(level, this.getBlockPos(), 32, new EnderDrawerSyncMessage(frequency, ((EnderInventoryHandler) getStorage())));
         }
         return result;
     }
@@ -108,8 +108,8 @@ public class EnderDrawerTile extends ItemControllableDrawerTile<EnderDrawerTile>
     @Override
     public void onClicked(PlayerEntity playerIn, int slot) {
         super.onClicked(playerIn, slot);
-        if (slot != -1){
-            FunctionalStorage.NETWORK.sendToNearby(level, this.getBlockPos(), 32, new EnderDrawerSyncMessage(frequency, ((EnderInventoryHandler)getStorage())));
+        if (slot != -1) {
+            FunctionalStorage.NETWORK.sendToNearby(level, this.getBlockPos(), 32, new EnderDrawerSyncMessage(frequency, ((EnderInventoryHandler) getStorage())));
         }
     }
 

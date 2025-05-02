@@ -68,12 +68,10 @@ import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.awt.*;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -171,7 +169,7 @@ public class FunctionalStorage extends ModuleController {
         for (DrawerType value : DrawerType.values()) {
             for (IWoodType woodType : WOOD_TYPES) {
                 String name = woodType.getName() + "_" + value.getSlots();
-                if (woodType == DrawerWoodType.FRAMED){
+                if (woodType == DrawerWoodType.FRAMED) {
                     Pair<RegistryObject<Block>, RegistryObject<TileEntityType<?>>> pair = getRegistries().registerBlockWithTileItem(name, () -> new FramedDrawerBlock(value), blockRegistryObject -> () ->
                             new DrawerBlock.DrawerItem((DrawerBlock) blockRegistryObject.get(), new Item.Properties().tab(TAB)));
                     DRAWER_TYPES.computeIfAbsent(value, drawerType -> new ArrayList<>()).add(pair);
@@ -278,7 +276,7 @@ public class FunctionalStorage extends ModuleController {
                 CompoundNBT tag = stack.getOrCreateTag();
                 LinkingToolItem.LinkingMode linkingMode = LinkingToolItem.getLinkingMode(stack);
                 LinkingToolItem.ActionMode linkingAction = LinkingToolItem.getActionMode(stack);
-                if (tint != 0 && stack.getOrCreateTag().contains(LinkingToolItem.NBT_ENDER)){
+                if (tint != 0 && stack.getOrCreateTag().contains(LinkingToolItem.NBT_ENDER)) {
                     return new Color(44, 150, 88).getRGB();
                 }
                 if (tint == 3 && tag.contains(LinkingToolItem.NBT_CONTROLLER)) {

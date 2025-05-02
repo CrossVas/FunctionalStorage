@@ -96,10 +96,11 @@ public class DrawerTile extends ItemControllableDrawerTile<DrawerTile> {
 
     public ActionResultType onSlotActivated(PlayerEntity playerIn, Hand hand, Direction facing, double hitX, double hitY, double hitZ, int slot) {
         ItemStack stack = playerIn.getItemInHand(hand);
-        if (stack.getItem().equals(FunctionalStorage.CONFIGURATION_TOOL.get()) || stack.getItem().equals(FunctionalStorage.LINKING_TOOL.get())) return ActionResultType.PASS;
-        if (slot != -1 && !playerIn.getItemInHand(hand).isEmpty()){
+        if (stack.getItem().equals(FunctionalStorage.CONFIGURATION_TOOL.get()) || stack.getItem().equals(FunctionalStorage.LINKING_TOOL.get()))
+            return ActionResultType.PASS;
+        if (slot != -1 && !playerIn.getItemInHand(hand).isEmpty()) {
             BigInventoryHandler.BigStack bigStack = getHandler().getStoredStacks().get(slot);
-            if (bigStack.getStack().isEmpty()){
+            if (bigStack.getStack().isEmpty()) {
                 bigStack.setStack(playerIn.getItemInHand(hand));
             }
         }

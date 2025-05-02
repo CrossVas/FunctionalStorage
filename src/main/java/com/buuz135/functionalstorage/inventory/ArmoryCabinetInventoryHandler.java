@@ -27,7 +27,7 @@ public abstract class ArmoryCabinetInventoryHandler implements IItemHandler, INB
     @Nonnull
     @Override
     public ItemStack getStackInSlot(int slot) {
-        if (slot < this.stackList.size()){
+        if (slot < this.stackList.size()) {
             return this.stackList.get(slot);
         }
         return ItemStack.EMPTY;
@@ -37,7 +37,7 @@ public abstract class ArmoryCabinetInventoryHandler implements IItemHandler, INB
     @Override
     public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
         if (isValid(slot, stack)) {
-            if (!simulate){
+            if (!simulate) {
                 this.stackList.set(slot, stack);
                 onChange();
             }
@@ -51,7 +51,7 @@ public abstract class ArmoryCabinetInventoryHandler implements IItemHandler, INB
     @Nonnull
     @Override
     public ItemStack extractItem(int slot, int amount, boolean simulate) {
-        if (!simulate){
+        if (!simulate) {
             ItemStack stack = this.stackList.set(slot, ItemStack.EMPTY);
             onChange();
             return stack;
@@ -73,7 +73,7 @@ public abstract class ArmoryCabinetInventoryHandler implements IItemHandler, INB
         return !stack.isEmpty() && this.stackList.get(slot).isEmpty() && isCertifiedStack(stack);
     }
 
-    private boolean isCertifiedStack(ItemStack stack){
+    private boolean isCertifiedStack(ItemStack stack) {
         if (stack.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null).isPresent()) return false;
         if (stack.getMaxStackSize() > 1) return false;
         return stack.hasTag() || stack.isDamageableItem() || stack.isEnchantable();
@@ -84,14 +84,14 @@ public abstract class ArmoryCabinetInventoryHandler implements IItemHandler, INB
         CompoundNBT compoundTag = new CompoundNBT();
         for (int i = 0; i < this.stackList.size(); i++) {
             ItemStack stack = this.stackList.get(i);
-            if (!stack.isEmpty()){
+            if (!stack.isEmpty()) {
                 compoundTag.put(i + "", stack.serializeNBT());
             }
         }
         return compoundTag;
     }
 
-    private List<ItemStack> create(){
+    private List<ItemStack> create() {
         List<ItemStack> stackList = new ArrayList<>();
         for (int i = 0; i < FunctionalStorageConfig.ARMORY_CABINET_SIZE; i++) {
             stackList.add(ItemStack.EMPTY);
@@ -104,7 +104,7 @@ public abstract class ArmoryCabinetInventoryHandler implements IItemHandler, INB
         this.stackList = create();
         for (String allKey : nbt.getAllKeys()) {
             int pos = Integer.parseInt(allKey);
-            if (pos < this.stackList.size()){
+            if (pos < this.stackList.size()) {
                 this.stackList.set(pos, ItemStack.of(nbt.getCompound(allKey)));
             }
         }

@@ -24,6 +24,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.LogicalSide;
 
 import javax.annotation.Nullable;
+import java.awt.*;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,10 +54,10 @@ public class LinkingToolItem extends BasicItem {
     }
 
     static {
-        EventManager.forge(PlayerInteractEvent.LeftClickBlock.class).filter(leftClickBlock -> leftClickBlock.getSide() == LogicalSide.SERVER && leftClickBlock.getItemStack().getItem().is(FunctionalStorage.LINKING_TOOL.get())).process(leftClickBlock -> {
+        EventManager.forge(PlayerInteractEvent.LeftClickBlock.class).filter(leftClickBlock -> leftClickBlock.getSide() == LogicalSide.SERVER && leftClickBlock.getItemStack().sameItem(FunctionalStorage.LINKING_TOOL.get().getDefaultInstance())).process(leftClickBlock -> {
             ItemStack stack = leftClickBlock.getItemStack();
             TileEntity blockEntity = leftClickBlock.getWorld().getBlockEntity(leftClickBlock.getPos());
-            if (blockEntity instanceof EnderDrawerTile){
+            if (blockEntity instanceof EnderDrawerTile) {
                 stack.getOrCreateTag().putString(NBT_ENDER, ((EnderDrawerTile) blockEntity).getFrequency());
                 leftClickBlock.getPlayer().displayClientMessage(new StringTextComponent("Stored frequency in the tool").setStyle(Style.EMPTY.withColor(LinkingMode.SINGLE.color)), true);
                 leftClickBlock.setCanceled(true);
@@ -96,12 +97,12 @@ public class LinkingToolItem extends BasicItem {
     public boolean canAttackBlock(BlockState state, World level, BlockPos pos, PlayerEntity player) {
         ItemStack stack = player.getItemInHand(Hand.MAIN_HAND);
         TileEntity blockEntity = level.getBlockEntity(pos);
-        if (blockEntity instanceof EnderDrawerTile){
+        if (blockEntity instanceof EnderDrawerTile) {
             stack.getOrCreateTag().putString(NBT_ENDER, ((EnderDrawerTile) blockEntity).getFrequency());
             player.displayClientMessage(new StringTextComponent("Stored frequency in the tool").setStyle(Style.EMPTY.withColor(LinkingMode.SINGLE.color)), true);
             return false;
         }
-        return super.canAttackBlock(state,level, pos, player);
+        return super.canAttackBlock(state, level, pos, player);
     }
 
     @Override
@@ -112,11 +113,11 @@ public class LinkingToolItem extends BasicItem {
         TileEntity blockEntity = level.getBlockEntity(pos);
         LinkingMode linkingMode = getLinkingMode(stack);
         ActionMode linkingAction = getActionMode(stack);
-        if (blockEntity instanceof EnderDrawerTile){
-            if (stack.getOrCreateTag().contains(NBT_ENDER)){
+        if (blockEntity instanceof EnderDrawerTile) {
+            if (stack.getOrCreateTag().contains(NBT_ENDER)) {
                 String frequency = stack.getOrCreateTag().getString(NBT_ENDER);
                 EnderInventoryHandler inventory = EnderSavedData.getInstance(context.getLevel()).getFrequency(((EnderDrawerTile) blockEntity).getFrequency());
-                if (inventory.getStackInSlot(0).isEmpty() || (context.getPlayer().isShiftKeyDown() && stack.getOrCreateTag().contains(NBT_ENDER))){
+                if (inventory.getStackInSlot(0).isEmpty() || (context.getPlayer().isShiftKeyDown() && stack.getOrCreateTag().contains(NBT_ENDER))) {
                     ((EnderDrawerTile) blockEntity).setFrequency(frequency);
                     context.getPlayer().displayClientMessage(new StringTextComponent("Changed drawer frequency").setStyle(Style.EMPTY.withColor(linkingMode.color)), true);
                     stack.getOrCreateTag().remove(NBT_ENDER_SAFETY);
@@ -143,9 +144,9 @@ public class LinkingToolItem extends BasicItem {
             if (controller instanceof DrawerControllerTile) {
                 if (linkingMode == LinkingMode.SINGLE) {
                     ((DrawerControllerTile) controller).addConnectedDrawers(linkingAction, pos);
-                    if (linkingAction == ActionMode.ADD){
+                    if (linkingAction == ActionMode.ADD) {
                         context.getPlayer().displayClientMessage(new StringTextComponent("Linked drawer to the controller").setStyle(Style.EMPTY.withColor(linkingMode.color)), true);
-                    }else {
+                    } else {
                         context.getPlayer().displayClientMessage(new StringTextComponent("Removed drawer from the controller").setStyle(Style.EMPTY.withColor(linkingMode.color)), true);
                     }
                 } else {
@@ -155,9 +156,9 @@ public class LinkingToolItem extends BasicItem {
                         AxisAlignedBB aabb = new AxisAlignedBB(Math.min(firstPos.getX(), pos.getX()), Math.min(firstPos.getY(), pos.getY()), Math.min(firstPos.getZ(), pos.getZ()), Math.max(firstPos.getX(), pos.getX()) + 1, Math.max(firstPos.getY(), pos.getY()) + 1, Math.max(firstPos.getZ(), pos.getZ()) + 1);
                         ((DrawerControllerTile) controller).addConnectedDrawers(linkingAction, getBlockPosInAABB(aabb).toArray(new BlockPos[0]));
                         stack.getOrCreateTag().remove(NBT_FIRST);
-                        if (linkingAction == ActionMode.ADD){
+                        if (linkingAction == ActionMode.ADD) {
                             context.getPlayer().displayClientMessage(new StringTextComponent("Linked drawers to the controller").setStyle(Style.EMPTY.withColor(linkingMode.color)), true);
-                        }else {
+                        } else {
                             context.getPlayer().displayClientMessage(new StringTextComponent("Removed drawers from the controller").setStyle(Style.EMPTY.withColor(linkingMode.color)), true);
                         }
                     } else {
@@ -179,8 +180,8 @@ public class LinkingToolItem extends BasicItem {
     public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (!stack.isEmpty()) {
-            if (stack.getOrCreateTag().contains(NBT_ENDER)){
-                if (player.isShiftKeyDown()){
+            if (stack.getOrCreateTag().contains(NBT_ENDER)) {
+                if (player.isShiftKeyDown()) {
                     stack.getOrCreateTag().remove(NBT_ENDER);
                     player.displayClientMessage(new StringTextComponent("Cleared drawer frequency").setStyle(Style.EMPTY.withColor(ActionMode.ADD.getColor())), true);
                 }
@@ -218,7 +219,7 @@ public class LinkingToolItem extends BasicItem {
         LinkingMode linkingMode = getLinkingMode(stack);
         ActionMode linkingAction = getActionMode(stack);
         if (key == null) {
-            if (stack.getOrCreateTag().contains(NBT_ENDER)){
+            if (stack.getOrCreateTag().contains(NBT_ENDER)) {
                 TranslationTextComponent text = new TranslationTextComponent("linkingtool.ender.frequency");
                 //frequencyDisplay.forEach(item -> text.append(item.getName(new ItemStack(item))));
                 tooltip.add(text.withStyle(TextFormatting.GRAY));

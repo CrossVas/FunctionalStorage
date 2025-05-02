@@ -12,7 +12,7 @@ import net.minecraftforge.client.model.data.ModelDataMap;
 import javax.annotation.Nonnull;
 import java.util.HashMap;
 
-public class FramedDrawerTile extends DrawerTile{
+public class FramedDrawerTile extends DrawerTile {
     @Save
     private FramedDrawerModelData framedDrawerModelData;
 

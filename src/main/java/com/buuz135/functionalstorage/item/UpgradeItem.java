@@ -21,7 +21,7 @@ import java.util.Locale;
 
 public class UpgradeItem extends BasicItem {
 
-    public static Direction getDirection(ItemStack stack){
+    public static Direction getDirection(ItemStack stack) {
         if (stack.hasTag() && stack.getTag().contains("Direction")) {
             Item item = stack.getItem();
             if (item.equals(FunctionalStorage.PULLING_UPGRADE.get()) || item.equals(FunctionalStorage.PUSHING_UPGRADE.get()) || item.equals(FunctionalStorage.COLLECTOR_UPGRADE.get())) {
@@ -45,12 +45,12 @@ public class UpgradeItem extends BasicItem {
         initNbt(stack);
     }
 
-    private ItemStack initNbt(ItemStack stack){
+    private ItemStack initNbt(ItemStack stack) {
         Item item = stack.getItem();
-        if (item.equals(FunctionalStorage.PULLING_UPGRADE.get()) || item.equals(FunctionalStorage.PUSHING_UPGRADE.get()) || item.equals(FunctionalStorage.COLLECTOR_UPGRADE.get())){
+        if (item.equals(FunctionalStorage.PULLING_UPGRADE.get()) || item.equals(FunctionalStorage.PUSHING_UPGRADE.get()) || item.equals(FunctionalStorage.COLLECTOR_UPGRADE.get())) {
             stack.getOrCreateTag().putString("Direction", Direction.values()[0].getName());
         }
-        if (item.equals(FunctionalStorage.REDSTONE_UPGRADE.get())){
+        if (item.equals(FunctionalStorage.REDSTONE_UPGRADE.get())) {
             stack.getOrCreateTag().putInt("Slot", 0);
         }
         return stack;
@@ -92,7 +92,7 @@ public class UpgradeItem extends BasicItem {
         return key == null;
     }
 
-    public enum Type{
+    public enum Type {
         STORAGE,
         UTILITY
     }

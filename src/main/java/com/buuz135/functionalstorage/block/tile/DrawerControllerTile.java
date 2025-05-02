@@ -190,7 +190,7 @@ public class DrawerControllerTile extends ItemControllableDrawerTile<DrawerContr
                 ControllableDrawerTile<?> controllableDrawerTile = (ControllableDrawerTile<?>) this.getLevel().getBlockEntity(position);
                 if (action == LinkingToolItem.ActionMode.ADD) {
                     controllableDrawerTile.setControllerPos(this.getBlockPos());
-                    if (!connectedDrawers.getConnectedDrawers().contains(position.asLong())){
+                    if (!connectedDrawers.getConnectedDrawers().contains(position.asLong())) {
                         this.connectedDrawers.getConnectedDrawers().add(position.asLong());
                     }
                 }

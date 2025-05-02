@@ -55,18 +55,18 @@ public class CompactingDrawerBlock extends RotatableBlock<CompactingDrawerTile> 
     public static Multimap<Direction, VoxelShape> CACHED_SHAPES = MultimapBuilder.hashKeys().arrayListValues().build();
 
     static {
-        CACHED_SHAPES.put(Direction.NORTH, VoxelShapes.box(1/16D, 1/16D, 0, 7/16D, 7/16D, 1/16D));
-        CACHED_SHAPES.put(Direction.NORTH, VoxelShapes.box(9/16D, 1/16D, 0, 15/16D, 7/16D, 1/16D));
-        CACHED_SHAPES.put(Direction.NORTH, VoxelShapes.box(1/16D, 9/16D, 0, 15/16D, 15/16D, 1/16D));
-        CACHED_SHAPES.put(Direction.SOUTH, VoxelShapes.box(9/16D, 1/16D, 15/16D, 15/16D, 7/16D, 1));
-        CACHED_SHAPES.put(Direction.SOUTH, VoxelShapes.box(1/16D, 1/16D, 15/16D, 7/16D, 7/16D, 1));
-        CACHED_SHAPES.put(Direction.SOUTH, VoxelShapes.box(1/16D, 9/16D, 15/16D, 15/16D, 15/16D, 1));
-        CACHED_SHAPES.put(Direction.EAST, VoxelShapes.box(15/16D, 1/16D, 1/16D, 1, 7/16D, 7/16D));
-        CACHED_SHAPES.put(Direction.EAST, VoxelShapes.box(15/16D, 1/16D, 9/16D, 1, 7/16D, 15/16D));
-        CACHED_SHAPES.put(Direction.EAST, VoxelShapes.box(15/16D, 9/16D, 1/16D, 1, 15/16D, 15/16D));
-        CACHED_SHAPES.put(Direction.WEST, VoxelShapes.box(0, 1/16D, 9/16D, 1/16D, 7/16D, 15/16D));
-        CACHED_SHAPES.put(Direction.WEST, VoxelShapes.box(0, 1/16D, 1/16D, 1/16D, 7/16D, 7/16D));
-        CACHED_SHAPES.put(Direction.WEST, VoxelShapes.box(0, 9/16D, 1/16D, 1/16D, 15/16D, 15/16D));
+        CACHED_SHAPES.put(Direction.NORTH, VoxelShapes.box(1 / 16D, 1 / 16D, 0, 7 / 16D, 7 / 16D, 1 / 16D));
+        CACHED_SHAPES.put(Direction.NORTH, VoxelShapes.box(9 / 16D, 1 / 16D, 0, 15 / 16D, 7 / 16D, 1 / 16D));
+        CACHED_SHAPES.put(Direction.NORTH, VoxelShapes.box(1 / 16D, 9 / 16D, 0, 15 / 16D, 15 / 16D, 1 / 16D));
+        CACHED_SHAPES.put(Direction.SOUTH, VoxelShapes.box(9 / 16D, 1 / 16D, 15 / 16D, 15 / 16D, 7 / 16D, 1));
+        CACHED_SHAPES.put(Direction.SOUTH, VoxelShapes.box(1 / 16D, 1 / 16D, 15 / 16D, 7 / 16D, 7 / 16D, 1));
+        CACHED_SHAPES.put(Direction.SOUTH, VoxelShapes.box(1 / 16D, 9 / 16D, 15 / 16D, 15 / 16D, 15 / 16D, 1));
+        CACHED_SHAPES.put(Direction.EAST, VoxelShapes.box(15 / 16D, 1 / 16D, 1 / 16D, 1, 7 / 16D, 7 / 16D));
+        CACHED_SHAPES.put(Direction.EAST, VoxelShapes.box(15 / 16D, 1 / 16D, 9 / 16D, 1, 7 / 16D, 15 / 16D));
+        CACHED_SHAPES.put(Direction.EAST, VoxelShapes.box(15 / 16D, 9 / 16D, 1 / 16D, 1, 15 / 16D, 15 / 16D));
+        CACHED_SHAPES.put(Direction.WEST, VoxelShapes.box(0, 1 / 16D, 9 / 16D, 1 / 16D, 7 / 16D, 15 / 16D));
+        CACHED_SHAPES.put(Direction.WEST, VoxelShapes.box(0, 1 / 16D, 1 / 16D, 1 / 16D, 7 / 16D, 7 / 16D));
+        CACHED_SHAPES.put(Direction.WEST, VoxelShapes.box(0, 9 / 16D, 1 / 16D, 1 / 16D, 15 / 16D, 15 / 16D));
     }
 
 
@@ -92,7 +92,7 @@ public class CompactingDrawerBlock extends RotatableBlock<CompactingDrawerTile> 
         return getShapes(state, source, pos);
     }
 
-    private static List<VoxelShape> getShapes(BlockState state, IBlockReader source, BlockPos pos){
+    private static List<VoxelShape> getShapes(BlockState state, IBlockReader source, BlockPos pos) {
         List<VoxelShape> boxes = new ArrayList<>();
         CACHED_SHAPES.get(state.getValue(RotatableBlock.FACING_HORIZONTAL)).forEach(boxes::add);
         VoxelShape total = VoxelShapes.block();
@@ -109,7 +109,7 @@ public class CompactingDrawerBlock extends RotatableBlock<CompactingDrawerTile> 
     @Nonnull
     @Override
     public VoxelShape getCollisionShape(BlockState state, IBlockReader world, BlockPos pos, ISelectionContext selectionContext) {
-        return VoxelShapes.box(0, 0, 0, 1,1,1);
+        return VoxelShapes.box(0, 0, 0, 1, 1, 1);
     }
 
     @Override
@@ -129,7 +129,7 @@ public class CompactingDrawerBlock extends RotatableBlock<CompactingDrawerTile> 
 
     @Override
     public void attack(BlockState state, World worldIn, BlockPos pos, PlayerEntity player) {
-       TileUtil.getTileEntity(worldIn, pos, CompactingDrawerTile.class).ifPresent(drawerTile -> drawerTile.onClicked(player, getHit(state, worldIn, pos, player)));
+        TileUtil.getTileEntity(worldIn, pos, CompactingDrawerTile.class).ifPresent(drawerTile -> drawerTile.onClicked(player, getHit(state, worldIn, pos, player)));
     }
 
     public int getHit(BlockState state, World worldIn, BlockPos pos, PlayerEntity player) {
@@ -170,7 +170,7 @@ public class CompactingDrawerBlock extends RotatableBlock<CompactingDrawerTile> 
             if (!tile.isEverythingEmpty()) {
                 stack.getOrCreateTag().put("Tile", drawerTile.save(new CompoundNBT()));
             }
-            if (tile.isLocked()){
+            if (tile.isLocked()) {
                 stack.getOrCreateTag().putBoolean("Locked", tile.isLocked());
             }
         }
@@ -187,7 +187,7 @@ public class CompactingDrawerBlock extends RotatableBlock<CompactingDrawerTile> 
     public void setPlacedBy(World level, BlockPos pos, BlockState state, @Nullable LivingEntity livingEntity, ItemStack stack) {
         super.setPlacedBy(level, pos, state, livingEntity, stack);
         if (stack.hasTag()) {
-            if (stack.getTag().contains("Tile")){
+            if (stack.getTag().contains("Tile")) {
                 TileEntity entity = level.getBlockEntity(pos);
                 if (entity instanceof ControllableDrawerTile) {
                     ControllableDrawerTile<?> tile = (ControllableDrawerTile<?>) entity;
@@ -195,7 +195,7 @@ public class CompactingDrawerBlock extends RotatableBlock<CompactingDrawerTile> 
                     tile.markForUpdate();
                 }
             }
-            if (stack.getTag().contains("Locked")){
+            if (stack.getTag().contains("Locked")) {
                 TileEntity entity = level.getBlockEntity(pos);
                 if (entity instanceof ControllableDrawerTile) {
                     ControllableDrawerTile<?> tile = (ControllableDrawerTile<?>) entity;
@@ -218,9 +218,9 @@ public class CompactingDrawerBlock extends RotatableBlock<CompactingDrawerTile> 
 
     @Override
     public void onRemove(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
-        if (!state.is(newState.getBlock())){
+        if (!state.is(newState.getBlock())) {
             TileUtil.getTileEntity(worldIn, pos, CompactingDrawerTile.class).ifPresent(tile -> {
-                if (tile.getControllerPos() != null){
+                if (tile.getControllerPos() != null) {
                     TileUtil.getTileEntity(worldIn, tile.getControllerPos(), DrawerControllerTile.class).ifPresent(drawerControllerTile -> {
                         drawerControllerTile.addConnectedDrawers(LinkingToolItem.ActionMode.REMOVE, pos);
                     });
@@ -244,7 +244,7 @@ public class CompactingDrawerBlock extends RotatableBlock<CompactingDrawerTile> 
     @Override
     public int getSignal(BlockState p_60483_, IBlockReader blockGetter, BlockPos blockPos, Direction p_60486_) {
         ItemControllableDrawerTile tile = TileUtil.getTileEntity(blockGetter, blockPos, ItemControllableDrawerTile.class).orElse(null);
-        if (tile != null){
+        if (tile != null) {
             for (int i = 0; i < tile.getUtilityUpgrades().getSlots(); i++) {
                 ItemStack stack = tile.getUtilityUpgrades().getStackInSlot(i);
                 if (stack.getItem().equals(FunctionalStorage.REDSTONE_UPGRADE.get())) {

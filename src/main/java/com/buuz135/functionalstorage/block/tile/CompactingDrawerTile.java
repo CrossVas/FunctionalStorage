@@ -102,15 +102,16 @@ public class CompactingDrawerTile extends ItemControllableDrawerTile<CompactingD
 
     public ActionResultType onSlotActivated(PlayerEntity playerIn, Hand hand, Direction facing, double hitX, double hitY, double hitZ, int slot) {
         ItemStack stack = playerIn.getItemInHand(hand);
-        if (stack.getItem().equals(FunctionalStorage.CONFIGURATION_TOOL.get()) || stack.getItem().equals(FunctionalStorage.LINKING_TOOL.get())) return ActionResultType.PASS;
-        if (!handler.isSetup() && slot != -1){
+        if (stack.getItem().equals(FunctionalStorage.CONFIGURATION_TOOL.get()) || stack.getItem().equals(FunctionalStorage.LINKING_TOOL.get()))
+            return ActionResultType.PASS;
+        if (!handler.isSetup() && slot != -1) {
             stack = playerIn.getItemInHand(hand).copy();
             stack.setCount(1);
             CompactingUtil compactingUtil = new CompactingUtil(this.level, 3);
             compactingUtil.setup(stack);
             handler.setup(compactingUtil);
             for (int i = 0; i < handler.getResultList().size(); i++) {
-                if (ItemStack.isSame(handler.getResultList().get(i).getResult(), stack)){
+                if (ItemStack.isSame(handler.getResultList().get(i).getResult(), stack)) {
                     slot = i;
                     break;
                 }

@@ -48,7 +48,7 @@ public class CompactingFramedDrawerBlock extends CompactingDrawerBlock {
 
     @Override
     public IFactory<CompactingDrawerTile> getTileEntityFactory() {
-        return () -> new CompactingFramedDrawerTile(this,  (TileEntityType<CompactingDrawerTile>) FunctionalStorage.FRAMED_COMPACTING_DRAWER.getValue().get());
+        return () -> new CompactingFramedDrawerTile(this, (TileEntityType<CompactingDrawerTile>) FunctionalStorage.FRAMED_COMPACTING_DRAWER.getValue().get());
     }
 
     @Override
@@ -73,7 +73,7 @@ public class CompactingFramedDrawerBlock extends CompactingDrawerBlock {
             if (framedDrawerTile.getFramedDrawerModelData() != null) {
                 stack.getOrCreateTag().put("Style", framedDrawerTile.getFramedDrawerModelData().serializeNBT());
             }
-            if (framedDrawerTile.isLocked()){
+            if (framedDrawerTile.isLocked()) {
                 stack.getOrCreateTag().putBoolean("Locked", framedDrawerTile.isLocked());
             }
         }
@@ -84,7 +84,7 @@ public class CompactingFramedDrawerBlock extends CompactingDrawerBlock {
     @Override
     public ItemStack getPickBlock(BlockState state, RayTraceResult target, IBlockReader level, BlockPos pos, PlayerEntity player) {
         TileEntity entity = level.getBlockEntity(pos);
-        if (entity instanceof FramedDrawerTile && ((FramedDrawerTile) entity).getFramedDrawerModelData() != null && !((FramedDrawerTile) entity).getFramedDrawerModelData().getDesign().isEmpty()){
+        if (entity instanceof FramedDrawerTile && ((FramedDrawerTile) entity).getFramedDrawerModelData() != null && !((FramedDrawerTile) entity).getFramedDrawerModelData().getDesign().isEmpty()) {
             ItemStack stack = new ItemStack(this);
             stack.getOrCreateTag().put("Style", ((FramedDrawerTile) entity).getFramedDrawerModelData().serializeNBT());
             return stack;
@@ -102,6 +102,7 @@ public class CompactingFramedDrawerBlock extends CompactingDrawerBlock {
                 .define('I', Tags.Items.INGOTS_IRON)
                 .save(consumer);
     }
+
     @Override
     public void appendHoverText(ItemStack stack, @Nullable IBlockReader reader, List<ITextComponent> components, ITooltipFlag flag) {
         components.add(new TranslationTextComponent("frameddrawer.use").withStyle(TextFormatting.GRAY));

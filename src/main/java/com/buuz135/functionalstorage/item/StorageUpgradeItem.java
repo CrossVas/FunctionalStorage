@@ -11,7 +11,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class StorageUpgradeItem extends UpgradeItem{
+public class StorageUpgradeItem extends UpgradeItem {
 
     private final StorageTier storageTier;
 
@@ -31,7 +31,7 @@ public class StorageUpgradeItem extends UpgradeItem{
     @Override
     public void addTooltipDetails(@Nullable BasicItem.Key key, ItemStack stack, List<ITextComponent> tooltip, boolean advanced) {
         super.addTooltipDetails(key, stack, tooltip, advanced);
-        if (storageTier == StorageTier.IRON){
+        if (storageTier == StorageTier.IRON) {
             tooltip.add(new TranslationTextComponent("item.utility.downgrade").withStyle(TextFormatting.GRAY));
         } else {
             tooltip.add(new TranslationTextComponent("storageupgrade.desc.item").withStyle(TextFormatting.GRAY).append(this.storageTier.getStorageMultiplier() + ""));

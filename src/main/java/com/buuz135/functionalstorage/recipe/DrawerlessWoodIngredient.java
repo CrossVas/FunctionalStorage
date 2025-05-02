@@ -46,11 +46,11 @@ public class DrawerlessWoodIngredient extends Ingredient {
         return SERIALIZER;
     }
 
-    private List<Item> getWoods(){
-        if (woodless == null){
+    private List<Item> getWoods() {
+        if (woodless == null) {
             woodless = ForgeRegistries.ITEMS.getEntries().stream().map(Map.Entry::getValue)
                     .filter(item -> item.is(ItemTags.PLANKS) && !ForgeRegistries.ITEMS.getKey(item).getNamespace().equalsIgnoreCase("minecraft")).collect(Collectors.toList());
-            if (woodless.isEmpty()){
+            if (woodless.isEmpty()) {
                 woodless.add(Items.OAK_PLANKS);
             }
         }
@@ -70,7 +70,7 @@ public class DrawerlessWoodIngredient extends Ingredient {
         this.woodless = null;
     }
 
-    public static class WoodlessIngredientSerializer implements IIngredientSerializer<Ingredient>{
+    public static class WoodlessIngredientSerializer implements IIngredientSerializer<Ingredient> {
 
         @Override
         public Ingredient parse(PacketBuffer buffer) {

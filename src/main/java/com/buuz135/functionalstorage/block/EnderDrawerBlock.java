@@ -70,7 +70,7 @@ public class EnderDrawerBlock extends RotatableBlock<EnderDrawerTile> {
 
     public static HashMap<String, List<ItemStack>> FREQUENCY_LOOK = new HashMap<>();
 
-    public static List<ItemStack> getFrequencyDisplay(String string){
+    public static List<ItemStack> getFrequencyDisplay(String string) {
         return FREQUENCY_LOOK.computeIfAbsent(string, s -> {
             List<Item> minecraftItems = ForgeRegistries.ITEMS.getValues().stream().filter(item -> item != Items.AIR && ForgeRegistries.ITEMS.getKey(item).getNamespace().equals("minecraft") && !(item instanceof BlockItem)).collect(Collectors.toList());
             return Arrays.stream(string.split("-")).map(s1 -> new ItemStack(minecraftItems.get(Math.abs(s1.hashCode()) % minecraftItems.size()))).collect(Collectors.toList());
@@ -110,7 +110,7 @@ public class EnderDrawerBlock extends RotatableBlock<EnderDrawerTile> {
     @Nonnull
     @Override
     public VoxelShape getCollisionShape(BlockState state, IBlockReader world, BlockPos pos, ISelectionContext selectionContext) {
-        return VoxelShapes.box(0, 0, 0, 1,1,1);
+        return VoxelShapes.box(0, 0, 0, 1, 1, 1);
     }
 
     @Override
@@ -130,7 +130,7 @@ public class EnderDrawerBlock extends RotatableBlock<EnderDrawerTile> {
 
     @Override
     public void attack(BlockState state, World worldIn, BlockPos pos, PlayerEntity player) {
-       TileUtil.getTileEntity(worldIn, pos, EnderDrawerTile.class).ifPresent(drawerTile -> drawerTile.onClicked(player, getHit(state, worldIn, pos, player)));
+        TileUtil.getTileEntity(worldIn, pos, EnderDrawerTile.class).ifPresent(drawerTile -> drawerTile.onClicked(player, getHit(state, worldIn, pos, player)));
     }
 
     public int getHit(BlockState state, World worldIn, BlockPos pos, PlayerEntity player) {
@@ -199,7 +199,7 @@ public class EnderDrawerBlock extends RotatableBlock<EnderDrawerTile> {
 
     @Override
     public void onRemove(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
-        if (!state.is(newState.getBlock())){
+        if (!state.is(newState.getBlock())) {
             TileUtil.getTileEntity(worldIn, pos, EnderDrawerTile.class).ifPresent(tile -> {
                 if (tile.getControllerPos() != null) {
                     TileUtil.getTileEntity(worldIn, tile.getControllerPos(), DrawerControllerTile.class).ifPresent(drawerControllerTile -> {
@@ -236,7 +236,7 @@ public class EnderDrawerBlock extends RotatableBlock<EnderDrawerTile> {
     @Override
     public int getSignal(BlockState p_60483_, IBlockReader blockGetter, BlockPos blockPos, Direction p_60486_) {
         ItemControllableDrawerTile tile = TileUtil.getTileEntity(blockGetter, blockPos, ItemControllableDrawerTile.class).orElse(null);
-        if (tile != null){
+        if (tile != null) {
             for (int i = 0; i < tile.getUtilityUpgrades().getSlots(); i++) {
                 ItemStack stack = tile.getUtilityUpgrades().getStackInSlot(i);
                 if (stack.getItem().equals(FunctionalStorage.REDSTONE_UPGRADE.get())) {

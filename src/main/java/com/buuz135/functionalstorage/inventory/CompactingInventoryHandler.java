@@ -81,11 +81,11 @@ public abstract class CompactingInventoryHandler implements IItemHandler, INBTSe
         return false;
     }
 
-    public boolean isSetup(){
-        return !this.resultList.get(this.resultList.size() -1).getResult().isEmpty();
+    public boolean isSetup() {
+        return !this.resultList.get(this.resultList.size() - 1).getResult().isEmpty();
     }
 
-    public void setup(CompactingUtil compactingUtil){
+    public void setup(CompactingUtil compactingUtil) {
         this.resultList = compactingUtil.getResults();
         this.parent = compactingUtil.getResults().get(0).getResult();
         if (this.parent.isEmpty()) {
@@ -97,7 +97,7 @@ public abstract class CompactingInventoryHandler implements IItemHandler, INBTSe
         onChange();
     }
 
-    public void reset(){
+    public void reset() {
         if (isLocked()) return;
         this.resultList.forEach(result -> {
             result.setResult(ItemStack.EMPTY);
@@ -161,7 +161,7 @@ public abstract class CompactingInventoryHandler implements IItemHandler, INBTSe
         return isSetup() && !stack.isEmpty();
     }
 
-    private boolean isValid(int slot, @Nonnull ItemStack stack){
+    private boolean isValid(int slot, @Nonnull ItemStack stack) {
         if (slot < this.slots) {
             CompactingUtil.Result bigStack = this.resultList.get(slot);
             ItemStack fl = bigStack.getResult();
