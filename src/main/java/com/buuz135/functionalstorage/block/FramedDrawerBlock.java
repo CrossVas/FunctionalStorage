@@ -5,14 +5,38 @@ import com.buuz135.functionalstorage.block.tile.DrawerTile;
 import com.buuz135.functionalstorage.block.tile.FramedDrawerTile;
 import com.buuz135.functionalstorage.client.model.FramedDrawerModelData;
 import com.buuz135.functionalstorage.util.DrawerWoodType;
+import com.hrznstudio.titanium.api.IFactory;
 import com.hrznstudio.titanium.recipe.generator.TitaniumShapedRecipeBuilder;
 import com.hrznstudio.titanium.util.TileUtil;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.data.IFinishedRecipe;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.loot.LootContext;
+import net.minecraft.loot.LootParameters;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.NonNullList;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.IBlockReader;
+import net.minecraft.world.World;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
@@ -24,13 +48,13 @@ public class FramedDrawerBlock extends DrawerBlock {
     }
 
     @Override
-    public BlockEntityType.BlockEntitySupplier<DrawerTile> getTileEntityFactory() {
-        return (blockPos, state) -> new FramedDrawerTile(this, (BlockEntityType<DrawerTile>) FunctionalStorage.DRAWER_TYPES.get(this.getType()).stream().filter(registryObjectRegistryObjectPair -> registryObjectRegistryObjectPair.getLeft().get().equals(this)).map(Pair::getRight).findFirst().get().get(), blockPos, state, this.getType());
+    public IFactory<DrawerTile> getTileEntityFactory() {
+        return () -> new FramedDrawerTile(this, (TileEntityType<DrawerTile>) FunctionalStorage.DRAWER_TYPES.get(this.getType()).stream().filter(registryObjectRegistryObjectPair -> registryObjectRegistryObjectPair.getLeft().get().equals(this)).map(Pair::getRight).findFirst().get().get(), blockPos, state, this.getType());
     }
 
     @Override
-    public void setPlacedBy(Level level, BlockPos pos, BlockState p_49849_, @Nullable LivingEntity p_49850_, ItemStack stack) {
-        super.setPlacedBy(level, pos, p_49849_, p_49850_, stack);
+    public void setPlacedBy(World level, BlockPos pos, BlockState state, @Nullable LivingEntity livingEntity, ItemStack stack) {
+        super.setPlacedBy(level, pos, state, livingEntity, stack);
         TileUtil.getTileEntity(level, pos, FramedDrawerTile.class).ifPresent(framedDrawerTile -> {
             framedDrawerTile.setFramedDrawerModelData(getDrawerModelData(stack));
         });
@@ -38,7 +62,7 @@ public class FramedDrawerBlock extends DrawerBlock {
 
     public static FramedDrawerModelData getDrawerModelData(ItemStack stack){
         if (stack.hasTag() && stack.getTag().contains("Style")){
-            CompoundTag tag = stack.getTag().getCompound("Style");
+            CompoundNBT tag = stack.getTag().getCompound("Style");
             if (tag.isEmpty()) return null;
             HashMap<String, Item> data = new HashMap<>();
             data.put("particle", ForgeRegistries.ITEMS.getValue(new ResourceLocation(tag.getString("particle"))));
@@ -52,7 +76,7 @@ public class FramedDrawerBlock extends DrawerBlock {
 
     public static ItemStack fill(ItemStack first, ItemStack second, ItemStack drawer){
         drawer = ItemHandlerHelper.copyStackWithSize(drawer, 1);
-        CompoundTag style = drawer.getOrCreateTagElement("Style");
+        CompoundNBT style = drawer.getOrCreateTagElement("Style");
         style.putString("particle", ForgeRegistries.ITEMS.getKey(first.getItem()).toString());
         style.putString("side", ForgeRegistries.ITEMS.getKey(first.getItem()).toString());
         style.putString("front", ForgeRegistries.ITEMS.getKey(second.getItem()).toString());
@@ -62,13 +86,14 @@ public class FramedDrawerBlock extends DrawerBlock {
     }
 
     @Override
-    public List<ItemStack> getDrops(BlockState p_60537_, LootContext.Builder builder) {
+    public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
         NonNullList<ItemStack> stacks = NonNullList.create();
         ItemStack stack = new ItemStack(this);
-        BlockEntity drawerTile = builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
-        if (drawerTile instanceof FramedDrawerTile framedDrawerTile) {
+        TileEntity drawerTile = builder.getOptionalParameter(LootParameters.BLOCK_ENTITY);
+        if (drawerTile instanceof FramedDrawerTile) {
+            FramedDrawerTile framedDrawerTile = (FramedDrawerTile) drawerTile;
             if (!framedDrawerTile.isEverythingEmpty()) {
-                stack.getOrCreateTag().put("Tile", drawerTile.saveWithoutMetadata());
+                stack.getOrCreateTag().put("Tile", drawerTile.save(new CompoundNBT()));
             }
             if (framedDrawerTile.getFramedDrawerModelData() != null) {
                 stack.getOrCreateTag().put("Style", framedDrawerTile.getFramedDrawerModelData().serializeNBT());
@@ -82,18 +107,18 @@ public class FramedDrawerBlock extends DrawerBlock {
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter level, BlockPos pos, Player player) {
-        BlockEntity entity = level.getBlockEntity(pos);
-        if (entity instanceof FramedDrawerTile framedDrawerTile && framedDrawerTile.getFramedDrawerModelData() != null && !framedDrawerTile.getFramedDrawerModelData().getDesign().isEmpty()){
+    public ItemStack getPickBlock(BlockState state, RayTraceResult target, IBlockReader level, BlockPos pos, PlayerEntity player) {
+        TileEntity entity = level.getBlockEntity(pos);
+        if (entity instanceof FramedDrawerTile && ((FramedDrawerTile) entity).getFramedDrawerModelData() != null && !((FramedDrawerTile) entity).getFramedDrawerModelData().getDesign().isEmpty()){
             ItemStack stack = new ItemStack(this);
-            stack.getOrCreateTag().put("Style", framedDrawerTile.getFramedDrawerModelData().serializeNBT());
+            stack.getOrCreateTag().put("Style", ((FramedDrawerTile) entity).getFramedDrawerModelData().serializeNBT());
             return stack;
         }
-        return super.getCloneItemStack(state, target, level, pos, player);
+        return super.getPickBlock(state, target, level, pos, player);
     }
 
     @Override
-    public void registerRecipe(Consumer<FinishedRecipe> consumer) {
+    public void registerRecipe(Consumer<IFinishedRecipe> consumer) {
         if (this.getType() == FunctionalStorage.DrawerType.X_1) {
             TitaniumShapedRecipeBuilder.shapedRecipe(this)
                     .pattern("PPP").pattern("PCP").pattern("PPP")
@@ -120,8 +145,8 @@ public class FramedDrawerBlock extends DrawerBlock {
     }
 
     @Override
-    public void appendHoverText(ItemStack p_49816_, @Nullable BlockGetter p_49817_, List<Component> components, TooltipFlag p_49819_) {
-        components.add(new TranslatableComponent("frameddrawer.use").withStyle(ChatFormatting.GRAY));
-        super.appendHoverText(p_49816_, p_49817_, components, p_49819_);
+    public void appendHoverText(ItemStack stack, @Nullable IBlockReader reader, List<ITextComponent> components, ITooltipFlag flag) {
+        components.add(new TranslationTextComponent("frameddrawer.use").withStyle(TextFormatting.GRAY));
+        super.appendHoverText(stack, reader, components, flag);
     }
 }
