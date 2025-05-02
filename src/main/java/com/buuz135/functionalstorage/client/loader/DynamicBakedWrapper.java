@@ -1,12 +1,10 @@
 package com.buuz135.functionalstorage.client.loader;
 
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.core.Direction;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.block.BlockState;
+import net.minecraft.client.renderer.model.BakedQuad;
+import net.minecraft.client.renderer.model.IBakedModel;
+import net.minecraft.util.Direction;
 import net.minecraftforge.client.model.BakedModelWrapper;
-import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.client.model.data.IModelData;
 
 import javax.annotation.Nullable;
@@ -21,12 +19,11 @@ import java.util.Random;
  * @param <T> Baked model parent
  */
 @SuppressWarnings("WeakerAccess")
-public abstract class DynamicBakedWrapper<T extends BakedModel> extends BakedModelWrapper<T> {
+public abstract class DynamicBakedWrapper<T extends IBakedModel> extends BakedModelWrapper<T> {
 
     protected DynamicBakedWrapper(T originalModel) {
         super(originalModel);
     }
-
 
     @Override
     public abstract List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, Random rand, IModelData extraData);
