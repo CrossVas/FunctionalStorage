@@ -4,25 +4,24 @@ import com.buuz135.functionalstorage.FunctionalStorage;
 import com.buuz135.functionalstorage.item.ConfigurationToolItem;
 import com.hrznstudio.titanium.block.BasicTileBlock;
 import com.hrznstudio.titanium.util.TileUtil;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Optional;
 
 public class ControllerExtensionTile extends ItemControllableDrawerTile<ControllerExtensionTile> {
-    public ControllerExtensionTile(BasicTileBlock<ControllerExtensionTile> base, BlockEntityType<ControllerExtensionTile> blockEntityType, BlockPos pos, BlockState state) {
+    public ControllerExtensionTile(BasicTileBlock<ControllerExtensionTile> base, TileEntityType<ControllerExtensionTile> blockEntityType, BlockPos pos, BlockState state) {
         super(base, blockEntityType, pos, state);
     }
 
@@ -31,14 +30,14 @@ public class ControllerExtensionTile extends ItemControllableDrawerTile<Controll
         return 1;
     }
 
-    public InteractionResult onSlotActivated(Player playerIn, InteractionHand hand, Direction facing, double hitX, double hitY, double hitZ) {
+    public ActionResultType onSlotActivated(PlayerEntity playerIn, Hand hand, Direction facing, double hitX, double hitY, double hitZ) {
         ItemStack stack = playerIn.getItemInHand(hand);
         if (stack.getItem().equals(FunctionalStorage.CONFIGURATION_TOOL.get()) || stack.getItem().equals(FunctionalStorage.LINKING_TOOL.get()))
-            return InteractionResult.PASS;
+            return ActionResultType.PASS;
         if (isServer()) {
-            return getControllerInstance().map(drawerControllerTile -> drawerControllerTile.onSlotActivated(playerIn, hand, facing, hitX, hitY, hitZ)).orElse(InteractionResult.PASS);
+            return getControllerInstance().map(drawerControllerTile -> drawerControllerTile.onSlotActivated(playerIn, hand, facing, hitX, hitY, hitZ)).orElse(ActionResultType.PASS);
         }
-        return InteractionResult.SUCCESS;
+        return ActionResultType.SUCCESS;
     }
 
     @Override
@@ -72,7 +71,7 @@ public class ControllerExtensionTile extends ItemControllableDrawerTile<Controll
         }
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public ControllerExtensionTile getSelf() {
         return this;
