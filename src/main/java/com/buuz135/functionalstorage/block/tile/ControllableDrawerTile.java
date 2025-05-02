@@ -7,30 +7,30 @@ import com.buuz135.functionalstorage.item.LinkingToolItem;
 import com.buuz135.functionalstorage.item.StorageUpgradeItem;
 import com.buuz135.functionalstorage.item.UpgradeItem;
 import com.hrznstudio.titanium.annotation.Save;
+import com.hrznstudio.titanium.api.IFactory;
+import com.hrznstudio.titanium.api.client.IScreenAddon;
 import com.hrznstudio.titanium.block.BasicTileBlock;
 import com.hrznstudio.titanium.block.tile.ActiveTile;
 import com.hrznstudio.titanium.client.screen.addon.TextScreenAddon;
 import com.hrznstudio.titanium.component.inventory.InventoryComponent;
 import com.hrznstudio.titanium.util.TileUtil;
-import net.minecraft.ChatFormatting;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.items.ItemHandlerHelper;
 
 import java.util.HashMap;
+import java.util.List;
 
 public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>> extends ActiveTile<T> {
 
@@ -53,8 +53,8 @@ public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>
     @Save
     private int mult = 1;
 
-    public ControllableDrawerTile(BasicTileBlock<T> base, BlockEntityType<T> entityType, BlockPos pos, BlockState state) {
-        super(base, entityType, pos, state);
+    public ControllableDrawerTile(BasicTileBlock<T> base, TileEntityType<T> entityType, BlockPos pos, BlockState state) {
+        super(base);
         this.drawerOptions = new DrawerOptions();
         this.storageUpgrades = getStorageUpgradesConstructor();
         if (getStorageSlotAmount() > 0) {
@@ -75,34 +75,34 @@ public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public void initClient() {
-        super.initClient();
+    public List<IFactory<? extends IScreenAddon>> getScreenAddons() {
+        List<IFactory<? extends IScreenAddon>> screenAddons = super.getScreenAddons();
         if (getStorageSlotAmount() > 0) {
-            addGuiAddonFactory(() -> new TextScreenAddon("Storage", 10, 59, false, ChatFormatting.DARK_GRAY.getColor()) {
+            screenAddons.add(() -> new TextScreenAddon("Storage", 10, 59, false, TextFormatting.DARK_GRAY.getColor()) {
                 @Override
                 public String getText() {
-                    return new TranslatableComponent("key.categories.storage").getString();
+                    return new TranslationTextComponent("key.categories.storage").getString();
                 }
             });
         }
-        addGuiAddonFactory(() -> new TextScreenAddon("Utility", 114, 59, false, ChatFormatting.DARK_GRAY.getColor()) {
+        screenAddons.add(() -> new TextScreenAddon("Utility", 114, 59, false, TextFormatting.DARK_GRAY.getColor()) {
             @Override
             public String getText() {
-                return new TranslatableComponent("key.categories.utility").getString();
+                return new TranslationTextComponent("key.categories.utility").getString();
             }
         });
-        addGuiAddonFactory(() -> new TextScreenAddon("key.categories.inventory", 8, 92, false, ChatFormatting.DARK_GRAY.getColor()) {
+        screenAddons.add(() -> new TextScreenAddon("key.categories.inventory", 8, 92, false, TextFormatting.DARK_GRAY.getColor()) {
             @Override
             public String getText() {
-                return new TranslatableComponent("key.categories.inventory").getString();
+                return new TranslationTextComponent("key.categories.inventory").getString();
             }
         });
+        return screenAddons;
     }
 
     @Override
-    public void serverTick(Level level, BlockPos pos, BlockState state, T blockEntity) {
-        super.serverTick(level, pos, state, blockEntity);
+    public void tick() {
+        super.tick();
         if (level.getGameTime() % 20 == 0) {
             for (int i = 0; i < this.utilityUpgrades.getSlots(); i++) {
                 ItemStack stack = this.utilityUpgrades.getStackInSlot(i);
@@ -153,17 +153,17 @@ public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>
         this.needsUpgradeCache = needsUpgradeCache;
     }
 
-    public InteractionResult onSlotActivated(Player playerIn, InteractionHand hand, Direction facing, double hitX, double hitY, double hitZ, int slot) {
+    public ActionResultType onSlotActivated(PlayerEntity playerIn, Hand hand, Direction facing, double hitX, double hitY, double hitZ, int slot) {
         ItemStack stack = playerIn.getItemInHand(hand);
         if (stack.getItem().equals(FunctionalStorage.CONFIGURATION_TOOL.get()) || stack.getItem().equals(FunctionalStorage.LINKING_TOOL.get()))
-            return InteractionResult.PASS;
+            return ActionResultType.PASS;
         if (!stack.isEmpty() && stack.getItem() instanceof UpgradeItem upgradeItem) {
             if (upgradeItem instanceof StorageUpgradeItem storageUpgradeItem) {
                 InventoryComponent component = storageUpgrades;
                 for (int i = 0; i < component.getSlots(); i++) {
                     if (component.getStackInSlot(i).isEmpty()) {
                         playerIn.setItemInHand(hand, component.insertItem(i, stack, false));
-                        return InteractionResult.SUCCESS;
+                        return ActionResultType.SUCCESS;
                     }
                 }
                 for (int i = 0; i < component.getSlots(); i++) {
@@ -173,7 +173,7 @@ public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>
                         upgradeStack.setCount(1);
                         component.setStackInSlot(i, upgradeStack);
                         stack.shrink(1);
-                        return InteractionResult.SUCCESS;
+                        return ActionResultType.SUCCESS;
                     }
                 }
             } else {
@@ -181,23 +181,23 @@ public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>
                 for (int i = 0; i < component.getSlots(); i++) {
                     if (component.getStackInSlot(i).isEmpty()) {
                         playerIn.setItemInHand(hand, component.insertItem(i, stack, false));
-                        return InteractionResult.SUCCESS;
+                        return ActionResultType.SUCCESS;
                     }
                 }
             }
         }
-        if (super.onActivated(playerIn, hand, facing, hitX, hitY, hitZ) == InteractionResult.SUCCESS) {
-            return InteractionResult.SUCCESS;
+        if (super.onActivated(playerIn, hand, facing, hitX, hitY, hitZ) == ActionResultType.SUCCESS) {
+            return ActionResultType.SUCCESS;
         }
         if (slot == -1) {
             openGui(playerIn);
         }
-        return InteractionResult.SUCCESS;
+        return ActionResultType.SUCCESS;
     }
 
     public abstract int getStorageSlotAmount();
 
-    public void onClicked(Player playerIn, int slot) {
+    public void onClicked(PlayerEntity playerIn, int slot) {
 
     }
 
@@ -217,7 +217,7 @@ public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>
                     isCreative = true;
                 }
                 if (upgrade instanceof StorageUpgradeItem) {
-                    var calculated = ((StorageUpgradeItem) upgrade).getStorageMultiplier() / getStorageDiv();
+                    double calculated = ((StorageUpgradeItem) upgrade).getStorageMultiplier() / getStorageDiv();
                     mult *= calculated;
                 }
             }
@@ -289,7 +289,7 @@ public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>
 
     public abstract InventoryComponent<ControllableDrawerTile<T>> getStorageUpgradesConstructor();
 
-    public static class DrawerOptions implements INBTSerializable<CompoundTag> {
+    public static class DrawerOptions implements INBTSerializable<CompoundNBT> {
 
         public HashMap<ConfigurationToolItem.ConfigurationAction, Boolean> options;
 
@@ -309,8 +309,8 @@ public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>
         }
 
         @Override
-        public CompoundTag serializeNBT() {
-            CompoundTag compoundTag = new CompoundTag();
+        public CompoundNBT serializeNBT() {
+            CompoundNBT compoundTag = new CompoundNBT();
             for (ConfigurationToolItem.ConfigurationAction action : this.options.keySet()) {
                 compoundTag.putBoolean(action.name(), this.options.get(action));
             }
@@ -318,7 +318,7 @@ public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>
         }
 
         @Override
-        public void deserializeNBT(CompoundTag nbt) {
+        public void deserializeNBT(CompoundNBT nbt) {
             for (String allKey : nbt.getAllKeys()) {
                 this.options.put(ConfigurationToolItem.ConfigurationAction.valueOf(allKey), nbt.getBoolean(allKey));
             }

@@ -116,7 +116,7 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
 
     @Override
     public void serverTick(Level level, BlockPos pos, BlockState stateOwn, FluidDrawerTile blockEntity) {
-        super.serverTick(level, pos, stateOwn, blockEntity);
+        super.tick();
         if (level.getGameTime() % 4 == 0) {
             for (int i = 0; i < this.getUtilityUpgrades().getSlots(); i++) {
                 var stack = this.getUtilityUpgrades().getStackInSlot(i);

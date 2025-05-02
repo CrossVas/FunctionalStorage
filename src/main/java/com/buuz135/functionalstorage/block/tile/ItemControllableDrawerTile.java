@@ -48,7 +48,7 @@ public abstract class ItemControllableDrawerTile<T extends ItemControllableDrawe
 
     @Override
     public void serverTick(Level level, BlockPos pos, BlockState state, T blockEntity) {
-        super.serverTick(level, pos, state, blockEntity);
+        super.tick();
         if (level.getGameTime() % 4 == 0) {
             for (int i = 0; i < this.getUtilityUpgrades().getSlots(); i++) {
                 ItemStack stack = this.getUtilityUpgrades().getStackInSlot(i);
