@@ -6,25 +6,28 @@ import com.buuz135.functionalstorage.fluid.BigFluidHandler;
 import com.buuz135.functionalstorage.item.StorageUpgradeItem;
 import com.buuz135.functionalstorage.item.UpgradeItem;
 import com.hrznstudio.titanium.annotation.Save;
+import com.hrznstudio.titanium.api.IFactory;
+import com.hrznstudio.titanium.api.client.IScreenAddon;
 import com.hrznstudio.titanium.block.BasicTileBlock;
 import com.hrznstudio.titanium.component.inventory.InventoryComponent;
 import com.hrznstudio.titanium.util.TileUtil;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.BucketPickup;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.IBucketPickupHandler;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.fluid.FluidState;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.fluids.FluidActionResult;
+import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.IFluidBlock;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
@@ -32,10 +35,10 @@ import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.wrappers.BucketPickupHandlerWrapper;
 import net.minecraftforge.fluids.capability.wrappers.FluidBlockWrapper;
 import net.minecraftforge.items.CapabilityItemHandler;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 
 public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
 
@@ -44,7 +47,7 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
     private BigFluidHandler fluidHandler;
     private FunctionalStorage.DrawerType type;
 
-    public FluidDrawerTile(BasicTileBlock<FluidDrawerTile> base, BlockEntityType<FluidDrawerTile> blockEntityType, BlockPos pos, BlockState state, FunctionalStorage.DrawerType type) {
+    public FluidDrawerTile(BasicTileBlock<FluidDrawerTile> base, TileEntityType<FluidDrawerTile> blockEntityType, BlockPos pos, BlockState state, FunctionalStorage.DrawerType type) {
         super(base, blockEntityType, pos, state);
         this.type = type;
         this.fluidHandler = new BigFluidHandler(type.getSlots(), getTankCapacity(getStorageMultiplier())) {
@@ -76,11 +79,10 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
         return (int) Math.min(Integer.MAX_VALUE, maxCap);
     }
 
-    @OnlyIn(Dist.CLIENT)
     @Override
-    public void initClient() {
-        super.initClient();
-        var slotName = "";
+    public List<IFactory<? extends IScreenAddon>> getScreenAddons() {
+        List<IFactory<? extends IScreenAddon>> screenAddons = super.getScreenAddons();
+        String slotName = "";
         if (type.getSlots() == 2) {
             slotName = "_2";
         }
@@ -88,13 +90,14 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
             slotName = "_4";
         }
         String finalSlotName = slotName;
-        addGuiAddonFactory(() -> new FluidDrawerInfoGuiAddon(64, 16,
+        screenAddons.add(() -> new FluidDrawerInfoGuiAddon(64, 16,
                 new ResourceLocation(FunctionalStorage.MOD_ID, "textures/blocks/fluid_front" + finalSlotName + ".png"),
                 type.getSlots(),
                 type.getSlotPosition(),
                 this::getFluidHandler,
                 integer -> getFluidHandler().getTankCapacity(integer)
         ));
+        return screenAddons;
     }
 
     @Nonnull
@@ -115,23 +118,23 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
     }
 
     @Override
-    public void serverTick(Level level, BlockPos pos, BlockState stateOwn, FluidDrawerTile blockEntity) {
+    public void tick() {
         super.tick();
         if (level.getGameTime() % 4 == 0) {
             for (int i = 0; i < this.getUtilityUpgrades().getSlots(); i++) {
-                var stack = this.getUtilityUpgrades().getStackInSlot(i);
+                net.minecraft.item.ItemStack stack = this.getUtilityUpgrades().getStackInSlot(i);
                 if (!stack.isEmpty()) {
-                    var item = stack.getItem();
+                    Item item = stack.getItem();
                     if (item.equals(FunctionalStorage.PUSHING_UPGRADE.get())) {
-                        var direction = UpgradeItem.getDirection(stack);
-                        TileUtil.getTileEntity(level, pos.relative(direction)).ifPresent(blockEntity1 -> {
+                        Direction direction = UpgradeItem.getDirection(stack);
+                        TileUtil.getTileEntity(level, getBlockPos().relative(direction)).ifPresent(blockEntity1 -> {
                             blockEntity1.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, direction.getOpposite()).ifPresent(otherFluidHandler -> {
                                 for (int tankId = 0; tankId < this.getFluidHandler().getTanks(); tankId++) {
-                                    var fluidTank = this.fluidHandler.getTankList()[tankId];
+                                    BigFluidHandler.CustomFluidTank fluidTank = this.fluidHandler.getTankList()[tankId];
                                     if (fluidTank.getFluid().isEmpty()) continue;
-                                    var extracted = fluidTank.drain(500, IFluidHandler.FluidAction.SIMULATE);
+                                    FluidStack extracted = fluidTank.drain(500, IFluidHandler.FluidAction.SIMULATE);
                                     if (extracted.isEmpty()) continue;
-                                    var insertedAmount = otherFluidHandler.fill(extracted, IFluidHandler.FluidAction.EXECUTE);
+                                    int insertedAmount = otherFluidHandler.fill(extracted, IFluidHandler.FluidAction.EXECUTE);
                                     if (insertedAmount > 0) {
                                         fluidTank.drain(insertedAmount, IFluidHandler.FluidAction.EXECUTE);
                                         this.fluidHandler.onChange();
@@ -142,14 +145,14 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
                         });
                     }
                     if (item.equals(FunctionalStorage.PULLING_UPGRADE.get())) {
-                        var direction = UpgradeItem.getDirection(stack);
-                        TileUtil.getTileEntity(level, pos.relative(direction)).ifPresent(blockEntity1 -> {
+                        Direction direction = UpgradeItem.getDirection(stack);
+                        TileUtil.getTileEntity(level, getBlockPos().relative(direction)).ifPresent(blockEntity1 -> {
                             blockEntity1.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, direction.getOpposite()).ifPresent(otherFluidHandler -> {
                                 for (int tankId = 0; tankId < this.getFluidHandler().getTanks(); tankId++) {
-                                    var fluidTank = this.fluidHandler.getTankList()[tankId];
-                                    var extracted = otherFluidHandler.drain(500, IFluidHandler.FluidAction.SIMULATE);
+                                    BigFluidHandler.CustomFluidTank fluidTank = this.fluidHandler.getTankList()[tankId];
+                                    FluidStack extracted = otherFluidHandler.drain(500, IFluidHandler.FluidAction.SIMULATE);
                                     if (extracted.isEmpty()) continue;
-                                    var insertedAmount = fluidTank.fill(extracted, IFluidHandler.FluidAction.EXECUTE);
+                                    int insertedAmount = fluidTank.fill(extracted, IFluidHandler.FluidAction.EXECUTE);
                                     if (insertedAmount > 0) {
                                         otherFluidHandler.drain(insertedAmount, IFluidHandler.FluidAction.EXECUTE);
                                         this.fluidHandler.onChange();
@@ -160,23 +163,23 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
                         });
                     }
                     if (item.equals(FunctionalStorage.COLLECTOR_UPGRADE.get()) && level.getGameTime() % 20 == 0) {
-                        var direction = UpgradeItem.getDirection(stack);
-                        var fluidstate = this.level.getFluidState(this.getBlockPos().relative(direction));
+                        Direction direction = UpgradeItem.getDirection(stack);
+                        FluidState fluidstate = this.level.getFluidState(this.getBlockPos().relative(direction));
                         if (!fluidstate.isEmpty() && fluidstate.isSource()) {
-                            BlockState state = level.getBlockState(pos.relative(direction));
+                            BlockState state = level.getBlockState(getBlockPos().relative(direction));
                             Block block = state.getBlock();
                             IFluidHandler targetFluidHandler = null;
                             if (block instanceof IFluidBlock) {
-                                targetFluidHandler = new FluidBlockWrapper((IFluidBlock) block, level, pos.relative(direction));
-                            } else if (block instanceof BucketPickup) {
-                                targetFluidHandler = new BucketPickupHandlerWrapper((BucketPickup) block, level, pos.relative(direction));
+                                targetFluidHandler = new FluidBlockWrapper((IFluidBlock) block, level, getBlockPos().relative(direction));
+                            } else if (block instanceof IBucketPickupHandler) {
+                                targetFluidHandler = new BucketPickupHandlerWrapper((IBucketPickupHandler) block, level, getBlockPos().relative(direction));
                             }
                             if (targetFluidHandler != null) {
-                                var drained = targetFluidHandler.drain(Integer.MAX_VALUE, IFluidHandler.FluidAction.SIMULATE);
+                                FluidStack drained = targetFluidHandler.drain(Integer.MAX_VALUE, IFluidHandler.FluidAction.SIMULATE);
                                 if (!drained.isEmpty()) {
                                     for (int tankId = 0; tankId < this.getFluidHandler().getTanks(); tankId++) {
-                                        var fluidTank = this.fluidHandler.getTankList()[tankId];
-                                        var insertedAmount = fluidTank.fill(drained, IFluidHandler.FluidAction.SIMULATE);
+                                        BigFluidHandler.CustomFluidTank fluidTank = this.fluidHandler.getTankList()[tankId];
+                                        int insertedAmount = fluidTank.fill(drained, IFluidHandler.FluidAction.SIMULATE);
                                         if (insertedAmount == drained.getAmount()) {
                                             fluidTank.fill(drained, IFluidHandler.FluidAction.EXECUTE);
                                             targetFluidHandler.drain(insertedAmount, IFluidHandler.FluidAction.EXECUTE);
@@ -197,19 +200,19 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
     public ActionResultType onSlotActivated(PlayerEntity playerIn, Hand hand, Direction facing, double hitX, double hitY, double hitZ, int slot) {
         ItemStack stack = playerIn.getItemInHand(hand);
         if (stack.getItem().equals(FunctionalStorage.CONFIGURATION_TOOL.get()) || stack.getItem().equals(FunctionalStorage.LINKING_TOOL.get()))
-            return InteractionResult.PASS;
+            return ActionResultType.PASS;
         if (slot != -1 && !playerIn.getItemInHand(hand).isEmpty()) {
-            var interactionResult = stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).map(iFluidHandlerItem -> {
+            ActionResultType interactionResult = stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).map(iFluidHandlerItem -> {
                 return playerIn.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).map(iItemHandler -> {
-                    var result = FluidUtil.tryEmptyContainerAndStow(stack, this.fluidHandler.getTankList()[slot], iItemHandler, Integer.MAX_VALUE, playerIn, true);
+                    FluidActionResult result = FluidUtil.tryEmptyContainerAndStow(stack, this.fluidHandler.getTankList()[slot], iItemHandler, Integer.MAX_VALUE, playerIn, true);
                     if (result.isSuccess()) {
                         playerIn.setItemInHand(playerIn.getUsedItemHand(), result.getResult());
-                        return InteractionResult.SUCCESS;
+                        return ActionResultType.SUCCESS;
                     }
-                    return InteractionResult.PASS;
-                }).orElse(InteractionResult.PASS);
-            }).orElse(InteractionResult.PASS);
-            if (interactionResult == InteractionResult.SUCCESS) {
+                    return ActionResultType.PASS;
+                }).orElse(ActionResultType.PASS);
+            }).orElse(ActionResultType.PASS);
+            if (interactionResult == ActionResultType.SUCCESS) {
                 return interactionResult;
             }
         }
@@ -217,12 +220,12 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
     }
 
     @Override
-    public void onClicked(Player playerIn, int slot) {
+    public void onClicked(PlayerEntity playerIn, int slot) {
         ItemStack stack = playerIn.getItemInHand(playerIn.getUsedItemHand());
         if (slot != -1 && !stack.isEmpty()) {
             stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).ifPresent(iFluidHandlerItem -> {
                 playerIn.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(iItemHandler -> {
-                    var result = FluidUtil.tryFillContainerAndStow(stack, this.fluidHandler.getTankList()[slot], iItemHandler, Integer.MAX_VALUE, playerIn, true);
+                    FluidActionResult result = FluidUtil.tryFillContainerAndStow(stack, this.fluidHandler.getTankList()[slot], iItemHandler, Integer.MAX_VALUE, playerIn, true);
                     if (result.isSuccess()) {
                         playerIn.setItemInHand(playerIn.getUsedItemHand(), result.getResult());
                     }
@@ -231,7 +234,7 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
         }
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public FluidDrawerTile getSelf() {
         return this;
@@ -285,7 +288,7 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
     @Override
     public InventoryComponent<ControllableDrawerTile<FluidDrawerTile>> getStorageUpgradesConstructor() {
         return new InventoryComponent<ControllableDrawerTile<FluidDrawerTile>>("storage_upgrades", 10, 70, getStorageSlotAmount()) {
-            @NotNull
+            @Nonnull
             @Override
             public ItemStack extractItem(int slot, int amount, boolean simulate) {
                 ItemStack stack = this.getStackInSlot(slot);
@@ -294,7 +297,7 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
                     for (int i = 0; i < getStorageUpgrades().getSlots(); i++) {
                         if (getStorageUpgrades().getStackInSlot(i).getItem() instanceof StorageUpgradeItem) {
                             if (i == slot) continue;
-                            var calculated = ((StorageUpgradeItem) getStorageUpgrades().getStackInSlot(i).getItem()).getStorageMultiplier() / getStorageDiv();
+                            double calculated = ((StorageUpgradeItem) getStorageUpgrades().getStackInSlot(i).getItem()).getStorageMultiplier() / getStorageDiv();
                             if (mult == 1)
                                 mult = (int) calculated;
                             else
@@ -324,6 +327,4 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
                 })
                 .setSlotLimit(1);
     }
-
-
 }
