@@ -38,7 +38,7 @@ public class FramedColors implements IBlockColor, IItemColor {
                 FramedDrawerTile tile = (FramedDrawerTile) entity;
                 FramedDrawerModelData framedDrawerModelData = tile.getFramedDrawerModelData();
                 if (framedDrawerModelData != null) {
-                    for (Map.Entry<String, Item> entry: framedDrawerModelData.getDesign().entrySet()) {
+                    for (Map.Entry<String, Item> entry : framedDrawerModelData.getDesign().entrySet()) {
                         if (entry.getValue() instanceof BlockItem) {
                             BlockItem blockItem = (BlockItem) entry.getValue();
                             BlockState state1 = blockItem.getBlock().defaultBlockState();
@@ -60,7 +60,7 @@ public class FramedColors implements IBlockColor, IItemColor {
             if (item instanceof BlockItem && (((BlockItem) item).getBlock() instanceof FramedDrawerBlock || ((BlockItem) item).getBlock() instanceof CompactingFramedDrawerBlock)) {
                 FramedDrawerModelData framedDrawerModelData = FramedDrawerBlock.getDrawerModelData(itemStack);
                 if (framedDrawerModelData != null) {
-                    for (Map.Entry<String, Item> entry: framedDrawerModelData.getDesign().entrySet()) {
+                    for (Map.Entry<String, Item> entry : framedDrawerModelData.getDesign().entrySet()) {
                         if (entry.getValue() instanceof BlockItem) {
                             int color = Minecraft.getInstance().getItemColors().getColor(itemStack, tintIndex);
                             if (color != -1)

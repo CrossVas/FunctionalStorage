@@ -31,19 +31,19 @@ public class DrawerRenderer extends TileEntityRenderer<DrawerTile> {
         super(dispatcher);
     }
 
-    public static void renderUpgrades(MatrixStack matrixStack, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn, ControllableDrawerTile<?> tile){
+    public static void renderUpgrades(MatrixStack matrixStack, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn, ControllableDrawerTile<?> tile) {
         float scale = 0.0625f;
-        if (tile.getDrawerOptions().isActive(ConfigurationToolItem.ConfigurationAction.TOGGLE_UPGRADES)){
+        if (tile.getDrawerOptions().isActive(ConfigurationToolItem.ConfigurationAction.TOGGLE_UPGRADES)) {
             matrixStack.pushPose();
-            matrixStack.translate(0.031,0.031f,0.472/16D);
+            matrixStack.translate(0.031, 0.031f, 0.472 / 16D);
             for (int i = 0; i < tile.getStorageUpgrades().getSlots(); i++) {
                 ItemStack stack = tile.getStorageUpgrades().getStackInSlot(i);
-                if (!stack.isEmpty()){
+                if (!stack.isEmpty()) {
                     matrixStack.pushPose();
                     matrixStack.scale(scale, scale, scale);
                     Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemCameraTransforms.TransformType.NONE, combinedLightIn, combinedOverlayIn, matrixStack, bufferIn);
                     matrixStack.popPose();
-                    matrixStack.translate(scale,0,0);
+                    matrixStack.translate(scale, 0, 0);
                 }
             }
             matrixStack.popPose();
@@ -57,7 +57,7 @@ public class DrawerRenderer extends TileEntityRenderer<DrawerTile> {
         }
     }
 
-    public static void renderStack(MatrixStack matrixStack, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn, ItemStack stack, int amount, float scale, ControllableDrawerTile.DrawerOptions options){
+    public static void renderStack(MatrixStack matrixStack, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn, ItemStack stack, int amount, float scale, ControllableDrawerTile.DrawerOptions options) {
         IBakedModel model = Minecraft.getInstance().getItemRenderer().getModel(stack, Minecraft.getInstance().level, null);
         if (model.isGui3d()) {
             float thickness = (float) FunctionalStorageClientConfig.DRAWER_RENDER_THICKNESS;
@@ -89,9 +89,9 @@ public class DrawerRenderer extends TileEntityRenderer<DrawerTile> {
             renderText(matrixStack, bufferIn, combinedOverlayIn, new StringTextComponent(NumberUtils.getFormatedBigNumber(amount)).withStyle(TextFormatting.WHITE), Direction.NORTH, scale);
     }
 
-    private void render1Slot(MatrixStack matrixStack, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn, DrawerTile tile){
+    private void render1Slot(MatrixStack matrixStack, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn, DrawerTile tile) {
         BigInventoryHandler inventoryHandler = (BigInventoryHandler) tile.getStorage();
-        if (!inventoryHandler.getStoredStacks().get(0).getStack().isEmpty()){
+        if (!inventoryHandler.getStoredStacks().get(0).getStack().isEmpty()) {
             matrixStack.translate(0.5, 0.5, 0.0005f);
             ItemStack stack = inventoryHandler.getStoredStacks().get(0).getStack();
             renderStack(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, stack, inventoryHandler.getStackInSlot(0).getCount(), 0.015f, tile.getDrawerOptions());
@@ -122,16 +122,19 @@ public class DrawerRenderer extends TileEntityRenderer<DrawerTile> {
             matrixStack.last().pose().multiply(createTransformMatrix(
                     new Vector3f(0, 0, 0), new Vector3f(0, 90, 0), 1));
         }
-        matrixStack.translate(0,0,-0.5/16D);
+        matrixStack.translate(0, 0, -0.5 / 16D);
         combinedLightIn = WorldRenderer.getLightColor(tile.getLevel(), tile.getBlockPos().relative(facing));
         renderUpgrades(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, tile);
-        if (tile.getDrawerType() == FunctionalStorage.DrawerType.X_1) render1Slot(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, tile);
-        if (tile.getDrawerType() == FunctionalStorage.DrawerType.X_2) render2Slot(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, tile);
-        if (tile.getDrawerType() == FunctionalStorage.DrawerType.X_4) render4Slot(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, tile);
+        if (tile.getDrawerType() == FunctionalStorage.DrawerType.X_1)
+            render1Slot(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, tile);
+        if (tile.getDrawerType() == FunctionalStorage.DrawerType.X_2)
+            render2Slot(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, tile);
+        if (tile.getDrawerType() == FunctionalStorage.DrawerType.X_4)
+            render4Slot(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, tile);
         matrixStack.popPose();
     }
 
-    private void render2Slot(MatrixStack matrixStack, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn, DrawerTile tile){
+    private void render2Slot(MatrixStack matrixStack, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn, DrawerTile tile) {
         BigInventoryHandler inventoryHandler = (BigInventoryHandler) tile.getStorage();
         if (!inventoryHandler.getStoredStacks().get(0).getStack().isEmpty()) {
             matrixStack.pushPose();
@@ -151,7 +154,7 @@ public class DrawerRenderer extends TileEntityRenderer<DrawerTile> {
         }
     }
 
-    private void render4Slot(MatrixStack matrixStack, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn, DrawerTile tile){
+    private void render4Slot(MatrixStack matrixStack, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn, DrawerTile tile) {
         BigInventoryHandler inventoryHandler = (BigInventoryHandler) tile.getStorage();
         if (!inventoryHandler.getStoredStacks().get(0).getStack().isEmpty()) { //BOTTOM RIGHT
             matrixStack.pushPose();

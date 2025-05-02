@@ -45,7 +45,7 @@ public class CompactingDrawerRenderer extends TileEntityRenderer<CompactingDrawe
                     new Vector3f(0, 0, 0), new Vector3f(0, 90, 0), 1));
         }
 
-        matrixStack.translate(0,0,-0.5/16D);
+        matrixStack.translate(0, 0, -0.5 / 16D);
         combinedLightIn = WorldRenderer.getLightColor(tile.getLevel(), tile.getBlockPos().relative(facing));
         DrawerRenderer.renderUpgrades(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, tile);
         ItemStack stack = tile.getHandler().getResultList().get(0).getResult();

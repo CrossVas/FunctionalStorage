@@ -26,19 +26,19 @@ public class EnderDrawerRenderer extends TileEntityRenderer<EnderDrawerTile> {
         super(dispatcher);
     }
 
-    public static void renderUpgrades(MatrixStack matrixStack, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn, ControllableDrawerTile<?> tile){
+    public static void renderUpgrades(MatrixStack matrixStack, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn, ControllableDrawerTile<?> tile) {
         float scale = 0.0625f;
-        if (tile.getDrawerOptions().isActive(ConfigurationToolItem.ConfigurationAction.TOGGLE_UPGRADES)){
+        if (tile.getDrawerOptions().isActive(ConfigurationToolItem.ConfigurationAction.TOGGLE_UPGRADES)) {
             matrixStack.pushPose();
-            matrixStack.translate(0.031,0.031f,0.472/16D);
+            matrixStack.translate(0.031, 0.031f, 0.472 / 16D);
             for (int i = 0; i < tile.getStorageUpgrades().getSlots(); i++) {
                 ItemStack stack = tile.getStorageUpgrades().getStackInSlot(i);
-                if (!stack.isEmpty()){
+                if (!stack.isEmpty()) {
                     matrixStack.pushPose();
                     matrixStack.scale(scale, scale, scale);
                     Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemCameraTransforms.TransformType.NONE, combinedLightIn, combinedOverlayIn, matrixStack, bufferIn);
                     matrixStack.popPose();
-                    matrixStack.translate(scale,0,0);
+                    matrixStack.translate(scale, 0, 0);
                 }
             }
             matrixStack.popPose();
@@ -77,19 +77,19 @@ public class EnderDrawerRenderer extends TileEntityRenderer<EnderDrawerTile> {
                     new Vector3f(0, 0, 0), new Vector3f(0, 90, 0), 1));
         }
 
-        matrixStack.translate(0,0,-0.5/16D);
+        matrixStack.translate(0, 0, -0.5 / 16D);
         combinedLightIn = WorldRenderer.getLightColor(tile.getLevel(), tile.getBlockPos().relative(facing));
         renderUpgrades(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, tile);
         render1Slot(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, tile);
         matrixStack.popPose();
     }
 
-    private void render1Slot(MatrixStack matrixStack, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn, EnderDrawerTile tile){
-        EnderInventoryHandler inventoryHandler =  EnderSavedData.getInstance(tile.getLevel()).getFrequency(tile.getFrequency());
-        if (!inventoryHandler.getStoredStacks().get(0).getStack().isEmpty()){
+    private void render1Slot(MatrixStack matrixStack, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn, EnderDrawerTile tile) {
+        EnderInventoryHandler inventoryHandler = EnderSavedData.getInstance(tile.getLevel()).getFrequency(tile.getFrequency());
+        if (!inventoryHandler.getStoredStacks().get(0).getStack().isEmpty()) {
             matrixStack.translate(0.5, 0.5, 0.0005f);
             ItemStack stack = inventoryHandler.getStoredStacks().get(0).getStack();
-            DrawerRenderer.renderStack(matrixStack,  bufferIn, combinedLightIn, combinedOverlayIn, stack, inventoryHandler.getStoredStacks().get(0).getAmount(), 0.015f, tile.getDrawerOptions());
+            DrawerRenderer.renderStack(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, stack, inventoryHandler.getStoredStacks().get(0).getAmount(), 0.015f, tile.getDrawerOptions());
         }
     }
 

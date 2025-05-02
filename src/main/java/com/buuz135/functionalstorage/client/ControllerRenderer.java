@@ -68,7 +68,7 @@ public class ControllerRenderer extends TileEntityRenderer<DrawerControllerTile>
                 CompoundNBT firstpos = stack.getOrCreateTag().getCompound(NBT_FIRST);
                 BlockPos firstPos = new BlockPos(firstpos.getInt("X"), firstpos.getInt("Y"), firstpos.getInt("Z"));
                 RayTraceResult result = RayTraceUtils.rayTraceSimple(Minecraft.getInstance().level, Minecraft.getInstance().player, 8, partialTicks);
-                if (result.getType() == RayTraceResult.Type.BLOCK){
+                if (result.getType() == RayTraceResult.Type.BLOCK) {
                     BlockPos hit = ((BlockRayTraceResult) result).getBlockPos();
                     AxisAlignedBB aabb = new AxisAlignedBB(Math.min(firstPos.getX(), hit.getX()), Math.min(firstPos.getY(), hit.getY()), Math.min(firstPos.getZ(), hit.getZ()), Math.max(firstPos.getX(), hit.getX()) + 1, Math.max(firstPos.getY(), hit.getY()) + 1, Math.max(firstPos.getZ(), hit.getZ()) + 1);
                     VoxelShape shape = VoxelShapes.create(aabb);

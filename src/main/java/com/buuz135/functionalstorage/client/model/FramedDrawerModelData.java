@@ -63,7 +63,7 @@ public class FramedDrawerModelData implements INBTSerializable<CompoundNBT> {
         this.generateCode();
     }
 
-    private void generateCode(){
+    private void generateCode() {
         this.code = "";
         this.design.forEach((s, item) -> {
             this.code += (s + ForgeRegistries.ITEMS.getKey(item).toString());
