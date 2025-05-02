@@ -157,8 +157,10 @@ public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>
         ItemStack stack = playerIn.getItemInHand(hand);
         if (stack.getItem().equals(FunctionalStorage.CONFIGURATION_TOOL.get()) || stack.getItem().equals(FunctionalStorage.LINKING_TOOL.get()))
             return ActionResultType.PASS;
-        if (!stack.isEmpty() && stack.getItem() instanceof UpgradeItem upgradeItem) {
-            if (upgradeItem instanceof StorageUpgradeItem storageUpgradeItem) {
+        if (!stack.isEmpty() && stack.getItem() instanceof UpgradeItem) {
+            UpgradeItem upgradeItem = (UpgradeItem) stack.getItem();
+            if (upgradeItem instanceof StorageUpgradeItem) {
+                StorageUpgradeItem storageUpgradeItem = (StorageUpgradeItem) upgradeItem;
                 InventoryComponent component = storageUpgrades;
                 for (int i = 0; i < component.getSlots(); i++) {
                     if (component.getStackInSlot(i).isEmpty()) {
@@ -167,7 +169,7 @@ public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>
                     }
                 }
                 for (int i = 0; i < component.getSlots(); i++) {
-                    if (!component.getStackInSlot(i).isEmpty() && component.getStackInSlot(i).getItem() instanceof StorageUpgradeItem instertedUpgrade && instertedUpgrade.getStorageMultiplier() < storageUpgradeItem.getStorageMultiplier()) {
+                    if (!component.getStackInSlot(i).isEmpty() && component.getStackInSlot(i).getItem() instanceof StorageUpgradeItem && ((StorageUpgradeItem) component.getStackInSlot(i).getItem()).getStorageMultiplier() < storageUpgradeItem.getStorageMultiplier()) {
                         ItemHandlerHelper.giveItemToPlayer(playerIn, component.getStackInSlot(i).copy());
                         ItemStack upgradeStack = stack.copy();
                         upgradeStack.setCount(1);

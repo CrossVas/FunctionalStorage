@@ -7,28 +7,25 @@ import com.hrznstudio.titanium.block.BasicTileBlock;
 import com.hrznstudio.titanium.component.inventory.InventoryComponent;
 import com.hrznstudio.titanium.util.RayTraceUtils;
 import com.hrznstudio.titanium.util.TileUtil;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
-import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -36,18 +33,12 @@ public abstract class ItemControllableDrawerTile<T extends ItemControllableDrawe
 
     private static HashMap<UUID, Long> INTERACTION_LOGGER = new HashMap<>();
 
-    public ItemControllableDrawerTile(BasicTileBlock<T> base, BlockEntityType<T> entityType, BlockPos pos, BlockState state) {
+    public ItemControllableDrawerTile(BasicTileBlock<T> base, TileEntityType<T> entityType, BlockPos pos, BlockState state) {
         super(base, entityType, pos, state);
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public void initClient() {
-        super.initClient();
-    }
-
-    @Override
-    public void serverTick(Level level, BlockPos pos, BlockState state, T blockEntity) {
+    public void tick() {
         super.tick();
         if (level.getGameTime() % 4 == 0) {
             for (int i = 0; i < this.getUtilityUpgrades().getSlots(); i++) {
@@ -56,7 +47,7 @@ public abstract class ItemControllableDrawerTile<T extends ItemControllableDrawe
                     Item item = stack.getItem();
                     if (item.equals(FunctionalStorage.PULLING_UPGRADE.get())) {
                         Direction direction = UpgradeItem.getDirection(stack);
-                        TileUtil.getTileEntity(level, pos.relative(direction)).ifPresent(blockEntity1 -> {
+                        TileUtil.getTileEntity(level, getBlockPos().relative(direction)).ifPresent(blockEntity1 -> {
                             blockEntity1.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction.getOpposite()).ifPresent(iItemHandler -> {
                                 for (int otherSlot = 0; otherSlot < iItemHandler.getSlots(); otherSlot++) {
                                     ItemStack pulledStack = iItemHandler.extractItem(otherSlot, 2, true);
@@ -78,7 +69,7 @@ public abstract class ItemControllableDrawerTile<T extends ItemControllableDrawe
                     }
                     if (item.equals(FunctionalStorage.PUSHING_UPGRADE.get())) {
                         Direction direction = UpgradeItem.getDirection(stack);
-                        TileUtil.getTileEntity(level, pos.relative(direction)).ifPresent(blockEntity1 -> {
+                        TileUtil.getTileEntity(level, getBlockPos().relative(direction)).ifPresent(blockEntity1 -> {
                             blockEntity1.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction.getOpposite()).ifPresent(otherHandler -> {
                                 for (int otherSlot = 0; otherSlot < getStorage().getSlots(); otherSlot++) {
                                     ItemStack pulledStack = getStorage().extractItem(otherSlot, 2, true);
@@ -99,7 +90,7 @@ public abstract class ItemControllableDrawerTile<T extends ItemControllableDrawe
                     }
                     if (item.equals(FunctionalStorage.COLLECTOR_UPGRADE.get())) {
                         Direction direction = UpgradeItem.getDirection(stack);
-                        AABB box = new AABB(pos.relative(direction));
+                        AxisAlignedBB box = new AxisAlignedBB(getBlockPos().relative(direction));
                         for (ItemEntity entitiesOfClass : level.getEntitiesOfClass(ItemEntity.class, box)) {
                             ItemStack pulledStack = ItemHandlerHelper.copyStackWithSize(entitiesOfClass.getItem(), Math.min(entitiesOfClass.getItem().getCount(), 4));
                             if (pulledStack.isEmpty()) continue;
@@ -122,17 +113,17 @@ public abstract class ItemControllableDrawerTile<T extends ItemControllableDrawe
     }
 
     @Override
-    public InteractionResult onSlotActivated(Player playerIn, InteractionHand hand, Direction facing, double hitX, double hitY, double hitZ, int slot) {
+    public ActionResultType onSlotActivated(PlayerEntity playerIn, Hand hand, Direction facing, double hitX, double hitY, double hitZ, int slot) {
         ItemStack stack = playerIn.getItemInHand(hand);
-        if (super.onActivated(playerIn, hand, facing, hitX, hitY, hitZ) == InteractionResult.SUCCESS) {
-            return InteractionResult.SUCCESS;
+        if (super.onActivated(playerIn, hand, facing, hitX, hitY, hitZ) == ActionResultType.SUCCESS) {
+            return ActionResultType.SUCCESS;
         }
         if (slot != -1 && isServer()) {
             if (!stack.isEmpty() && getStorage().insertItem(slot, stack, true).getCount() != stack.getCount()) {
                 playerIn.setItemInHand(hand, getStorage().insertItem(slot, stack, false));
-                return InteractionResult.SUCCESS;
+                return ActionResultType.SUCCESS;
             } else if (System.currentTimeMillis() - INTERACTION_LOGGER.getOrDefault(playerIn.getUUID(), System.currentTimeMillis()) < 300) {
-                for (ItemStack itemStack : playerIn.getInventory().items) {
+                for (ItemStack itemStack : playerIn.inventory.items) {
                     if (!itemStack.isEmpty() && getStorage().insertItem(slot, itemStack, true).getCount() != itemStack.getCount()) {
                         itemStack.setCount(getStorage().insertItem(slot, itemStack.copy(), false).getCount());
                     }
@@ -140,19 +131,19 @@ public abstract class ItemControllableDrawerTile<T extends ItemControllableDrawe
             }
             INTERACTION_LOGGER.put(playerIn.getUUID(), System.currentTimeMillis());
         }
-        if (super.onSlotActivated(playerIn, hand, facing, hitX, hitY, hitZ, slot) == InteractionResult.SUCCESS) {
-            return InteractionResult.SUCCESS;
+        if (super.onSlotActivated(playerIn, hand, facing, hitX, hitY, hitZ, slot) == ActionResultType.SUCCESS) {
+            return ActionResultType.SUCCESS;
         }
-        return InteractionResult.SUCCESS;
+        return ActionResultType.SUCCESS;
     }
 
     public abstract int getStorageSlotAmount();
 
-    public void onClicked(Player playerIn, int slot) {
+    public void onClicked(PlayerEntity playerIn, int slot) {
         if (isServer() && slot != -1) {
-            HitResult rayTraceResult = RayTraceUtils.rayTraceSimple(this.level, playerIn, 16, 0);
-            if (rayTraceResult.getType() == HitResult.Type.BLOCK) {
-                BlockHitResult blockResult = (BlockHitResult) rayTraceResult;
+            RayTraceResult rayTraceResult = RayTraceUtils.rayTraceSimple(this.level, playerIn, 16, 0);
+            if (rayTraceResult.getType() == RayTraceResult.Type.BLOCK) {
+                BlockRayTraceResult blockResult = (BlockRayTraceResult) rayTraceResult;
                 Direction facing = blockResult.getDirection();
                 if (facing.equals(this.getFacingDirection())) {
                     ItemHandlerHelper.giveItemToPlayer(playerIn, getStorage().extractItem(slot, playerIn.isShiftKeyDown() ? getStorage().getStackInSlot(slot).getMaxStackSize() : 1, false));
@@ -176,7 +167,7 @@ public abstract class ItemControllableDrawerTile<T extends ItemControllableDrawe
     @Override
     public InventoryComponent<ControllableDrawerTile<T>> getStorageUpgradesConstructor() {
         return new InventoryComponent<ControllableDrawerTile<T>>("storage_upgrades", 10, 70, getStorageSlotAmount()) {
-            @NotNull
+            @Nonnull
             @Override
             public ItemStack extractItem(int slot, int amount, boolean simulate) {
                 ItemStack stack = this.getStackInSlot(slot);

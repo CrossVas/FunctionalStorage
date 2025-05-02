@@ -96,7 +96,7 @@ public class DrawerTile extends ItemControllableDrawerTile<DrawerTile> {
         return super.getCapability(cap, side);
     }
 
-    public InteractionResult onSlotActivated(Player playerIn, InteractionHand hand, Direction facing, double hitX, double hitY, double hitZ, int slot) {
+    public ActionResultType onSlotActivated(PlayerEntity playerIn, Hand hand, Direction facing, double hitX, double hitY, double hitZ, int slot) {
         ItemStack stack = playerIn.getItemInHand(hand);
         if (stack.getItem().equals(FunctionalStorage.CONFIGURATION_TOOL.get()) || stack.getItem().equals(FunctionalStorage.LINKING_TOOL.get())) return InteractionResult.PASS;
         if (slot != -1 && !playerIn.getItemInHand(hand).isEmpty()){
