@@ -3,9 +3,9 @@ package com.buuz135.functionalstorage.block.tile;
 import com.buuz135.functionalstorage.client.model.FramedDrawerModelData;
 import com.hrznstudio.titanium.annotation.Save;
 import com.hrznstudio.titanium.block.BasicTileBlock;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.block.BlockState;
+import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.client.model.data.ModelDataMap;
 
@@ -16,7 +16,7 @@ public class CompactingFramedDrawerTile extends CompactingDrawerTile{
     @Save
     private FramedDrawerModelData framedDrawerModelData;
 
-    public CompactingFramedDrawerTile(BasicTileBlock<CompactingDrawerTile> base, BlockEntityType<CompactingDrawerTile> blockEntityType, BlockPos pos, BlockState state) {
+    public CompactingFramedDrawerTile(BasicTileBlock<CompactingDrawerTile> base, TileEntityType<CompactingDrawerTile> blockEntityType, BlockPos pos, BlockState state) {
         super(base, blockEntityType, pos, state);
         this.framedDrawerModelData = new FramedDrawerModelData(new HashMap<>());
     }
