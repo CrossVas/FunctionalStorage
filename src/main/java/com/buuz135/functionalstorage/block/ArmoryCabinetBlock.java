@@ -26,13 +26,13 @@ public class ArmoryCabinetBlock extends RotatableBlock<ArmoryCabinetTile> {
 
     public ArmoryCabinetBlock() {
         super(Properties.copy(Blocks.IRON_BLOCK), ArmoryCabinetTile.class);
-        // name: "armory_cabinet"
+        this.setRegistryName("armory_cabinet");
         setItemGroup(FunctionalStorage.TAB);
     }
 
     @Override
     public IFactory<ArmoryCabinetTile> getTileEntityFactory() {
-        return () -> new ArmoryCabinetTile(this, FunctionalStorage.ARMORY_CABINET.getRight().get());
+        return () -> new ArmoryCabinetTile(this);
     }
 
     @Nonnull

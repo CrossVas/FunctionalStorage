@@ -1,6 +1,6 @@
 package com.buuz135.functionalstorage.inventory.item;
 
-import com.buuz135.functionalstorage.FunctionalStorage;
+import com.buuz135.functionalstorage.util.DrawerType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Direction;
 import net.minecraftforge.common.capabilities.Capability;
@@ -18,7 +18,7 @@ public class DrawerCapabilityProvider implements ICapabilityProvider {
     private final DrawerStackItemHandler drawerStackItemHandler;
     private final LazyOptional<IItemHandler> itemHandler;
 
-    public DrawerCapabilityProvider(ItemStack stack, FunctionalStorage.DrawerType type) {
+    public DrawerCapabilityProvider(ItemStack stack, DrawerType type) {
         this.stack = stack;
         this.drawerStackItemHandler = new DrawerStackItemHandler(stack, type);
         this.itemHandler = LazyOptional.of(() -> this.drawerStackItemHandler);

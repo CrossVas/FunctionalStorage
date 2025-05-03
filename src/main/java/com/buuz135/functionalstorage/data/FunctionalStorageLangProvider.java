@@ -1,17 +1,13 @@
 package com.buuz135.functionalstorage.data;
 
-import com.buuz135.functionalstorage.FunctionalStorage;
 import com.buuz135.functionalstorage.block.DrawerBlock;
-import com.buuz135.functionalstorage.item.StorageUpgradeItem;
-import net.minecraft.block.Block;
+import com.buuz135.functionalstorage.init.FunctionalBlocks;
+import com.buuz135.functionalstorage.init.FunctionalItems;
+import com.buuz135.functionalstorage.util.DrawerType;
 import net.minecraft.data.DataGenerator;
 import net.minecraftforge.common.data.LanguageProvider;
-import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.text.WordUtils;
-import org.apache.commons.lang3.tuple.Pair;
-
-import java.util.stream.Collectors;
 
 public class FunctionalStorageLangProvider extends LanguageProvider {
 
@@ -22,20 +18,18 @@ public class FunctionalStorageLangProvider extends LanguageProvider {
     @Override
     protected void addTranslations() {
         this.add("itemGroup.functionalstorage", "Functional Storage");
-        for (FunctionalStorage.DrawerType drawerType : FunctionalStorage.DRAWER_TYPES.keySet()) {
-            for (RegistryObject<Block> blockRegistryObject : FunctionalStorage.DRAWER_TYPES.get(drawerType).stream().map(Pair::getLeft).collect(Collectors.toList())) {
-                DrawerBlock drawerBlock = (DrawerBlock) blockRegistryObject.get();
-                this.add(drawerBlock, WordUtils.capitalize(drawerBlock.getWoodType().getName().replace('_', ' ').toLowerCase()) + " Drawer (" + drawerBlock.getType().getDisplayName() + ")");
-            }
-        }
-        this.add(FunctionalStorage.FLUID_DRAWER_1.getLeft().get(), "Fluid Drawer (" + FunctionalStorage.DrawerType.X_1.getDisplayName() + ")");
-        this.add(FunctionalStorage.FLUID_DRAWER_2.getLeft().get(), "Fluid Drawer (" + FunctionalStorage.DrawerType.X_2.getDisplayName() + ")");
-        this.add(FunctionalStorage.FLUID_DRAWER_4.getLeft().get(), "Fluid Drawer (" + FunctionalStorage.DrawerType.X_4.getDisplayName() + ")");
-        this.add(FunctionalStorage.SIMPLE_COMPACTING_DRAWER.getLeft().get(), "Simple Compacting Drawer");
-        this.add(FunctionalStorage.COMPACTING_DRAWER.getLeft().get(), "Compacting Drawer");
-        this.add(FunctionalStorage.FRAMED_COMPACTING_DRAWER.getLeft().get(), "Framed Compacting Drawer");
-        this.add(FunctionalStorage.ENDER_DRAWER.getLeft().get(), "Ender Drawer");
-        this.add(FunctionalStorage.CONTROLLER_EXTENSION.getLeft().get(), "Controller Extension");
+        FunctionalBlocks.TYPED_DRAWER_BLOCKS.forEach(blockRegistryObject -> {
+            DrawerBlock drawerBlock = (DrawerBlock) blockRegistryObject;
+            this.add(drawerBlock, WordUtils.capitalize(drawerBlock.getWoodType().getName().replace('_', ' ').toLowerCase()) + " Drawer (" + drawerBlock.getType().getDisplayName() + ")");
+        });
+        this.add(FunctionalBlocks.FLUID_1, "Fluid Drawer (" + DrawerType.X_1.getDisplayName() + ")");
+        this.add(FunctionalBlocks.FLUID_2, "Fluid Drawer (" + DrawerType.X_2.getDisplayName() + ")");
+        this.add(FunctionalBlocks.FLUID_4, "Fluid Drawer (" + DrawerType.X_4.getDisplayName() + ")");
+        this.add(FunctionalBlocks.SIMPLE_COMPACTING, "Simple Compacting Drawer");
+        this.add(FunctionalBlocks.COMPACTING, "Compacting Drawer");
+        this.add(FunctionalBlocks.FRAMED_COMPACTING, "Framed Compacting Drawer");
+        this.add(FunctionalBlocks.ENDER, "Ender Drawer");
+        this.add(FunctionalBlocks.CONTROLLER_EXTENSION, "Controller Extension");
         this.add("linkingtool.linkingmode", "Linking Mode: ");
         this.add("linkingtool.linkingmode.single", "Single");
         this.add("linkingtool.linkingmode.single.desc", "Links a drawer to a controller");
@@ -48,21 +42,23 @@ public class FunctionalStorageLangProvider extends LanguageProvider {
         this.add("linkingtool.linkingaction.remove", "Remove");
         this.add("key.categories.utility", "Utility");
         this.add("key.categories.storage", "Storage");
-        this.add(FunctionalStorage.LINKING_TOOL.get(), "Linking Tool");
-        this.add(FunctionalStorage.DRAWER_CONTROLLER.getLeft().get(), "Storage Controller");
+        this.add(FunctionalItems.LINKING_TOOL.get(), "Linking Tool");
+        this.add(FunctionalBlocks.CONTROLLER, "Storage Controller");
         this.add("storageupgrade.desc.item", "Multiplies the block item storage by ");
         this.add("storageupgrade.desc.fluid", "Multiplies the block fluid storage by ");
-        for (StorageUpgradeItem.StorageTier storageTier : FunctionalStorage.STORAGE_UPGRADES.keySet()) {
-            this.add(FunctionalStorage.STORAGE_UPGRADES.get(storageTier).get(), WordUtils.capitalize(storageTier.name().toLowerCase()) + (storageTier == StorageUpgradeItem.StorageTier.IRON ? " Downgrade" : " Upgrade"));
-        }
-        this.add(FunctionalStorage.COLLECTOR_UPGRADE.get(), WordUtils.capitalize(ForgeRegistries.ITEMS.getKey(FunctionalStorage.COLLECTOR_UPGRADE.get()).getPath().replace('_', ' ').toLowerCase()));
-        this.add(FunctionalStorage.PULLING_UPGRADE.get(), WordUtils.capitalize(ForgeRegistries.ITEMS.getKey(FunctionalStorage.PULLING_UPGRADE.get()).getPath().replace('_', ' ').toLowerCase()));
-        this.add(FunctionalStorage.PUSHING_UPGRADE.get(), WordUtils.capitalize(ForgeRegistries.ITEMS.getKey(FunctionalStorage.PUSHING_UPGRADE.get()).getPath().replace('_', ' ').toLowerCase()));
-        this.add(FunctionalStorage.VOID_UPGRADE.get(), WordUtils.capitalize(ForgeRegistries.ITEMS.getKey(FunctionalStorage.VOID_UPGRADE.get()).getPath().replace('_', ' ').toLowerCase()));
-        this.add(FunctionalStorage.REDSTONE_UPGRADE.get(), WordUtils.capitalize(ForgeRegistries.ITEMS.getKey(FunctionalStorage.REDSTONE_UPGRADE.get()).getPath().replace('_', ' ').toLowerCase()));
-        this.add(FunctionalStorage.CREATIVE_UPGRADE.get(), WordUtils.capitalize(ForgeRegistries.ITEMS.getKey(FunctionalStorage.CREATIVE_UPGRADE.get()).getPath().replace('_', ' ').toLowerCase()));
-        this.add(FunctionalStorage.ARMORY_CABINET.getLeft().get(), "Armory Cabinet");
-        this.add(FunctionalStorage.CONFIGURATION_TOOL.get(), "Configuration Tool");
+
+        FunctionalItems.STORAGE_UPGRADE.forEach(itemRegistryObject -> {
+            this.add(itemRegistryObject.get(), WordUtils.capitalizeFully(itemRegistryObject.get().getRegistryName().getPath(), '_', ' '));
+        });
+
+        this.add(FunctionalItems.COLLECTOR_UPGRADE.get(), WordUtils.capitalize(ForgeRegistries.ITEMS.getKey(FunctionalItems.COLLECTOR_UPGRADE.get()).getPath().replace('_', ' ').toLowerCase()));
+        this.add(FunctionalItems.PULLING_UPGRADE.get(), WordUtils.capitalize(ForgeRegistries.ITEMS.getKey(FunctionalItems.PULLING_UPGRADE.get()).getPath().replace('_', ' ').toLowerCase()));
+        this.add(FunctionalItems.PUSHING_UPGRADE.get(), WordUtils.capitalize(ForgeRegistries.ITEMS.getKey(FunctionalItems.PUSHING_UPGRADE.get()).getPath().replace('_', ' ').toLowerCase()));
+        this.add(FunctionalItems.VOID_UPGRADE.get(), WordUtils.capitalize(ForgeRegistries.ITEMS.getKey(FunctionalItems.VOID_UPGRADE.get()).getPath().replace('_', ' ').toLowerCase()));
+        this.add(FunctionalItems.REDSTONE_UPGRADE.get(), WordUtils.capitalize(ForgeRegistries.ITEMS.getKey(FunctionalItems.REDSTONE_UPGRADE.get()).getPath().replace('_', ' ').toLowerCase()));
+        this.add(FunctionalItems.CREATIVE_UPGRADE.get(), WordUtils.capitalize(ForgeRegistries.ITEMS.getKey(FunctionalItems.CREATIVE_UPGRADE.get()).getPath().replace('_', ' ').toLowerCase()));
+        this.add(FunctionalBlocks.ARMORY_CABINET, "Armory Cabinet");
+        this.add(FunctionalItems.CONFIGURATION_TOOL.get(), "Configuration Tool");
         this.add("item.utility.downgrade", "Downgrades the slots to a max of 64 items");
         this.add("item.utility.direction", "Direction: ");
         this.add("item.utility.direction.desc", "Right click in a GUI to change direction");

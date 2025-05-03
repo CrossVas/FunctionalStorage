@@ -1,8 +1,9 @@
 package com.buuz135.functionalstorage.inventory.item;
 
-import com.buuz135.functionalstorage.FunctionalStorage;
+import com.buuz135.functionalstorage.init.FunctionalItems;
 import com.buuz135.functionalstorage.inventory.BigInventoryHandler;
 import com.buuz135.functionalstorage.item.StorageUpgradeItem;
+import com.buuz135.functionalstorage.util.DrawerType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
@@ -21,12 +22,12 @@ public class DrawerStackItemHandler implements IItemHandler, INBTSerializable<Co
 
     private List<BigInventoryHandler.BigStack> storedStacks;
     private ItemStack stack;
-    private FunctionalStorage.DrawerType type;
+    private DrawerType type;
     private int multiplier;
     private boolean downgrade;
     private boolean isVoid;
 
-    public DrawerStackItemHandler(ItemStack stack, FunctionalStorage.DrawerType drawerType) {
+    public DrawerStackItemHandler(ItemStack stack, DrawerType drawerType) {
         this.stack = stack;
         this.storedStacks = new ArrayList<>();
         this.type = drawerType;
@@ -44,13 +45,13 @@ public class DrawerStackItemHandler implements IItemHandler, INBTSerializable<Co
                     if (multiplier == 1) multiplier = ((StorageUpgradeItem) itemStack.getItem()).getStorageMultiplier();
                     else multiplier *= ((StorageUpgradeItem) itemStack.getItem()).getStorageMultiplier();
                 }
-                if (itemStack.getItem().equals(FunctionalStorage.STORAGE_UPGRADES.get(StorageUpgradeItem.StorageTier.IRON).get())) {
+                if (itemStack.getItem().equals(FunctionalItems.IRON_UPGRADE.get())) {
                     this.downgrade = true;
                 }
             }
             for (INBT tag : stack.getOrCreateTag().getCompound("Tile").getCompound("utilityUpgrades").getList("Items", Constants.NBT.TAG_COMPOUND)) {
                 ItemStack itemStack = ItemStack.of((CompoundNBT) tag);
-                if (itemStack.getItem().equals(FunctionalStorage.VOID_UPGRADE.get())) {
+                if (itemStack.getItem().equals(FunctionalItems.VOID_UPGRADE.get())) {
                     this.isVoid = true;
                 }
             }

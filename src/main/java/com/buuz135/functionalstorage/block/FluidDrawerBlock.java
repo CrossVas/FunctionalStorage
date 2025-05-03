@@ -4,8 +4,10 @@ import com.buuz135.functionalstorage.FunctionalStorage;
 import com.buuz135.functionalstorage.block.tile.ControllableDrawerTile;
 import com.buuz135.functionalstorage.block.tile.DrawerControllerTile;
 import com.buuz135.functionalstorage.block.tile.FluidDrawerTile;
+import com.buuz135.functionalstorage.init.FunctionalItems;
 import com.buuz135.functionalstorage.inventory.item.DrawerCapabilityProvider;
 import com.buuz135.functionalstorage.item.LinkingToolItem;
+import com.buuz135.functionalstorage.util.DrawerType;
 import com.buuz135.functionalstorage.util.NumberUtils;
 import com.hrznstudio.titanium.api.IFactory;
 import com.hrznstudio.titanium.block.RotatableBlock;
@@ -29,7 +31,6 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.state.StateContainer;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
@@ -63,17 +64,17 @@ public class FluidDrawerBlock extends RotatableBlock<FluidDrawerTile> {
      * Gas rendering
      */
 
-    private final FunctionalStorage.DrawerType type;
+    private final DrawerType type;
 
-    public FluidDrawerBlock(FunctionalStorage.DrawerType type, Properties properties) {
+    public FluidDrawerBlock(DrawerType type, Properties properties) {
         super(properties, FluidDrawerTile.class);
-        // name: "fluid_" + type.getSlots()
+        this.setRegistryName("fluid_" + type.getSlots());
         this.type = type;
         setItemGroup(FunctionalStorage.TAB);
         registerDefaultState(defaultBlockState().setValue(RotatableBlock.FACING_HORIZONTAL, Direction.NORTH).setValue(DrawerBlock.LOCKED, false));
     }
 
-    private static List<VoxelShape> getShapes(BlockState state, IBlockReader source, BlockPos pos, FunctionalStorage.DrawerType type) {
+    private static List<VoxelShape> getShapes(BlockState state, IBlockReader source, BlockPos pos, DrawerType type) {
         List<VoxelShape> boxes = new ArrayList<>();
         DrawerBlock.CACHED_SHAPES.get(type).get(state.getValue(RotatableBlock.FACING_HORIZONTAL)).forEach(boxes::add);
         VoxelShape total = VoxelShapes.block();
@@ -95,16 +96,7 @@ public class FluidDrawerBlock extends RotatableBlock<FluidDrawerTile> {
 
     @Override
     public IFactory<FluidDrawerTile> getTileEntityFactory() {
-        return () -> {
-            TileEntityType<FluidDrawerTile> entityType = (TileEntityType<FluidDrawerTile>) FunctionalStorage.FLUID_DRAWER_1.getRight().get();
-            if (type == FunctionalStorage.DrawerType.X_2) {
-                entityType = (TileEntityType<FluidDrawerTile>) FunctionalStorage.FLUID_DRAWER_2.getRight().get();
-            }
-            if (type == FunctionalStorage.DrawerType.X_4) {
-                entityType = (TileEntityType<FluidDrawerTile>) FunctionalStorage.FLUID_DRAWER_4.getRight().get();
-            }
-            return new FluidDrawerTile(this, entityType, type);
-        };
+        return () -> new FluidDrawerTile(this, type);
     }
 
     @Override
@@ -130,7 +122,7 @@ public class FluidDrawerBlock extends RotatableBlock<FluidDrawerTile> {
 
     @Override
     public ActionResultType use(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult ray) {
-        return TileUtil.getTileEntity(worldIn, pos, FluidDrawerTile.class).map(drawerTile -> drawerTile.onSlotActivated(player, hand, ray.getDirection(), ray.getLocation().x, ray.getLocation().y, ray.getLocation().z, getHit(state, worldIn, pos, player))).orElse(InteractionResult.PASS);
+        return TileUtil.getTileEntity(worldIn, pos, FluidDrawerTile.class).map(drawerTile -> drawerTile.onSlotActivated(player, hand, ray.getDirection(), ray.getLocation().x, ray.getLocation().y, ray.getLocation().z, getHit(state, worldIn, pos, player))).orElse(ActionResultType.PASS);
     }
 
     @Override
@@ -210,21 +202,21 @@ public class FluidDrawerBlock extends RotatableBlock<FluidDrawerTile> {
 
     @Override
     public void registerRecipe(Consumer<IFinishedRecipe> consumer) {
-        if (type == FunctionalStorage.DrawerType.X_1) {
+        if (type == DrawerType.X_1) {
             TitaniumShapedRecipeBuilder.shapedRecipe(this)
                     .pattern("PPP").pattern("PCP").pattern("PPP")
                     .define('P', ItemTags.PLANKS)
                     .define('C', Items.BUCKET)
                     .save(consumer);
         }
-        if (type == FunctionalStorage.DrawerType.X_2) {
+        if (type == DrawerType.X_2) {
             TitaniumShapedRecipeBuilder.shapedRecipe(this, 2)
                     .pattern("PCP").pattern("PPP").pattern("PCP")
                     .define('P', ItemTags.PLANKS)
                     .define('C', Items.BUCKET)
                     .save(consumer);
         }
-        if (type == FunctionalStorage.DrawerType.X_4) {
+        if (type == DrawerType.X_4) {
             TitaniumShapedRecipeBuilder.shapedRecipe(this, 4)
                     .pattern("CPC").pattern("PPP").pattern("CPC")
                     .define('P', ItemTags.PLANKS)
@@ -233,7 +225,7 @@ public class FluidDrawerBlock extends RotatableBlock<FluidDrawerTile> {
         }
     }
 
-    public FunctionalStorage.DrawerType getType() {
+    public DrawerType getType() {
         return type;
     }
 
@@ -281,7 +273,7 @@ public class FluidDrawerBlock extends RotatableBlock<FluidDrawerTile> {
         if (tile != null) {
             for (int i = 0; i < tile.getUtilityUpgrades().getSlots(); i++) {
                 ItemStack stack = tile.getUtilityUpgrades().getStackInSlot(i);
-                if (stack.getItem().equals(FunctionalStorage.REDSTONE_UPGRADE.get())) {
+                if (stack.getItem().equals(FunctionalItems.REDSTONE_UPGRADE.get())) {
                     int redstoneSlot = stack.getOrCreateTag().getInt("Slot");
                     if (redstoneSlot < tile.getFluidHandler().getTanks()) {
                         return tile.getFluidHandler().getFluidInTank(redstoneSlot).getAmount() * 15 / tile.getFluidHandler().getTankCapacity(redstoneSlot);

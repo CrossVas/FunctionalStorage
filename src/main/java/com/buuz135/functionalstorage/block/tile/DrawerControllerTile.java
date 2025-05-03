@@ -1,8 +1,9 @@
 package com.buuz135.functionalstorage.block.tile;
 
-import com.buuz135.functionalstorage.FunctionalStorage;
 import com.buuz135.functionalstorage.block.config.FunctionalStorageConfig;
 import com.buuz135.functionalstorage.fluid.ControllerFluidHandler;
+import com.buuz135.functionalstorage.init.FunctionalBlocks;
+import com.buuz135.functionalstorage.init.FunctionalItems;
 import com.buuz135.functionalstorage.inventory.ControllerInventoryHandler;
 import com.buuz135.functionalstorage.inventory.ILockable;
 import com.buuz135.functionalstorage.item.ConfigurationToolItem;
@@ -13,7 +14,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
@@ -50,8 +50,8 @@ public class DrawerControllerTile extends ItemControllableDrawerTile<DrawerContr
     private LazyOptional<IItemHandler> itemHandlerLazyOptional;
     private LazyOptional<IFluidHandler> fluidHandlerLazyOptional;
 
-    public DrawerControllerTile(BasicTileBlock<DrawerControllerTile> base, TileEntityType<DrawerControllerTile> blockEntityType) {
-        super(base, blockEntityType);
+    public DrawerControllerTile(BasicTileBlock<DrawerControllerTile> base) {
+        super(base);
         this.connectedDrawers = new ConnectedDrawers(null);
         this.inventoryHandler = new ControllerInventoryHandler() {
             @Override
@@ -88,7 +88,7 @@ public class DrawerControllerTile extends ItemControllableDrawerTile<DrawerContr
 
     public ActionResultType onSlotActivated(PlayerEntity playerIn, Hand hand, Direction facing, double hitX, double hitY, double hitZ) {
         ItemStack stack = playerIn.getItemInHand(hand);
-        if (stack.getItem().equals(FunctionalStorage.CONFIGURATION_TOOL.get()) || stack.getItem().equals(FunctionalStorage.LINKING_TOOL.get()))
+        if (stack.getItem().equals(FunctionalItems.CONFIGURATION_TOOL.get()) || stack.getItem().equals(FunctionalItems.LINKING_TOOL.get()))
             return ActionResultType.PASS;
         if (isServer()) {
             for (IItemHandler iItemHandler : this.getConnectedDrawers().itemHandlers) {
@@ -185,7 +185,7 @@ public class DrawerControllerTile extends ItemControllableDrawerTile<DrawerContr
     public void addConnectedDrawers(LinkingToolItem.ActionMode action, BlockPos... positions) {
         AxisAlignedBB area = new AxisAlignedBB(this.getBlockPos()).inflate(FunctionalStorageConfig.DRAWER_CONTROLLER_LINKING_RANGE);
         for (BlockPos position : positions) {
-            if (level.getBlockState(position).is(FunctionalStorage.DRAWER_CONTROLLER.getLeft().get())) continue;
+            if (level.getBlockState(position).is(FunctionalBlocks.CONTROLLER)) continue;
             if (area.contains(Vector3d.atCenterOf(position)) && this.getLevel().getBlockEntity(position) instanceof ControllableDrawerTile<?>) {
                 ControllableDrawerTile<?> controllableDrawerTile = (ControllableDrawerTile<?>) this.getLevel().getBlockEntity(position);
                 if (action == LinkingToolItem.ActionMode.ADD) {

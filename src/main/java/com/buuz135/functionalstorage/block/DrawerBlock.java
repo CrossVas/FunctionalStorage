@@ -5,9 +5,11 @@ import com.buuz135.functionalstorage.block.tile.ControllableDrawerTile;
 import com.buuz135.functionalstorage.block.tile.DrawerControllerTile;
 import com.buuz135.functionalstorage.block.tile.DrawerTile;
 import com.buuz135.functionalstorage.block.tile.ItemControllableDrawerTile;
+import com.buuz135.functionalstorage.init.FunctionalItems;
 import com.buuz135.functionalstorage.inventory.item.DrawerCapabilityProvider;
 import com.buuz135.functionalstorage.item.LinkingToolItem;
 import com.buuz135.functionalstorage.recipe.DrawerlessWoodIngredient;
+import com.buuz135.functionalstorage.util.DrawerType;
 import com.buuz135.functionalstorage.util.IWoodType;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
@@ -25,6 +27,7 @@ import net.minecraft.data.IFinishedRecipe;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.LootContext;
 import net.minecraft.loot.LootParameters;
@@ -33,7 +36,6 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.*;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -48,79 +50,78 @@ import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public class DrawerBlock extends RotatableBlock<DrawerTile> {
 
-    public static HashMap<FunctionalStorage.DrawerType, Multimap<Direction, VoxelShape>> CACHED_SHAPES = new HashMap<>();
+    public static HashMap<DrawerType, Multimap<Direction, VoxelShape>> CACHED_SHAPES = new HashMap<>();
 
     public static BooleanProperty LOCKED = BooleanProperty.create("locked");
 
     static {
-        CACHED_SHAPES.computeIfAbsent(FunctionalStorage.DrawerType.X_1, type1 -> MultimapBuilder.hashKeys().arrayListValues().build())
+        CACHED_SHAPES.computeIfAbsent(DrawerType.X_1, type1 -> MultimapBuilder.hashKeys().arrayListValues().build())
                 .put(Direction.NORTH, VoxelShapes.box(1 / 16D, 1 / 16D, 0, 15 / 16D, 15 / 16D, 1 / 16D));
-        CACHED_SHAPES.computeIfAbsent(FunctionalStorage.DrawerType.X_1, type1 -> MultimapBuilder.hashKeys().arrayListValues().build())
+        CACHED_SHAPES.computeIfAbsent(DrawerType.X_1, type1 -> MultimapBuilder.hashKeys().arrayListValues().build())
                 .put(Direction.SOUTH, VoxelShapes.box(1 / 16D, 1 / 16D, 15 / 16D, 15 / 16D, 15 / 16D, 1));
-        CACHED_SHAPES.computeIfAbsent(FunctionalStorage.DrawerType.X_1, type1 -> MultimapBuilder.hashKeys().arrayListValues().build())
+        CACHED_SHAPES.computeIfAbsent(DrawerType.X_1, type1 -> MultimapBuilder.hashKeys().arrayListValues().build())
                 .put(Direction.WEST, VoxelShapes.box(0, 1 / 16D, 1 / 16D, 1 / 16D, 15 / 16D, 15 / 16D));
-        CACHED_SHAPES.computeIfAbsent(FunctionalStorage.DrawerType.X_1, type1 -> MultimapBuilder.hashKeys().arrayListValues().build())
+        CACHED_SHAPES.computeIfAbsent(DrawerType.X_1, type1 -> MultimapBuilder.hashKeys().arrayListValues().build())
                 .put(Direction.EAST, VoxelShapes.box(15 / 16D, 1 / 16D, 1 / 16D, 1, 15 / 16D, 15 / 16D));
-        for (Direction direction : CACHED_SHAPES.get(FunctionalStorage.DrawerType.X_1).keySet()) {
-            for (VoxelShape voxelShape : CACHED_SHAPES.get(FunctionalStorage.DrawerType.X_1).get(direction)) {
+        for (Direction direction : CACHED_SHAPES.get(DrawerType.X_1).keySet()) {
+            for (VoxelShape voxelShape : CACHED_SHAPES.get(DrawerType.X_1).get(direction)) {
                 AxisAlignedBB bounding = voxelShape.toAabbs().get(0);
-                CACHED_SHAPES.computeIfAbsent(FunctionalStorage.DrawerType.X_2, type1 -> MultimapBuilder.hashKeys().arrayListValues().build()).
+                CACHED_SHAPES.computeIfAbsent(DrawerType.X_2, type1 -> MultimapBuilder.hashKeys().arrayListValues().build()).
                         put(direction, VoxelShapes.box(bounding.minX, bounding.minY, bounding.minZ, bounding.maxX, 7 / 16D, bounding.maxZ));
-                CACHED_SHAPES.computeIfAbsent(FunctionalStorage.DrawerType.X_2, type1 -> MultimapBuilder.hashKeys().arrayListValues().build()).
+                CACHED_SHAPES.computeIfAbsent(DrawerType.X_2, type1 -> MultimapBuilder.hashKeys().arrayListValues().build()).
                         put(direction, VoxelShapes.box(bounding.minX, 9 / 16D, bounding.minZ, bounding.maxX, bounding.maxY, bounding.maxZ));
             }
         }
-        for (Direction direction : CACHED_SHAPES.get(FunctionalStorage.DrawerType.X_2).keySet()) {
-            for (VoxelShape voxelShape : CACHED_SHAPES.get(FunctionalStorage.DrawerType.X_2).get(direction)) {
+        for (Direction direction : CACHED_SHAPES.get(DrawerType.X_2).keySet()) {
+            for (VoxelShape voxelShape : CACHED_SHAPES.get(DrawerType.X_2).get(direction)) {
                 AxisAlignedBB bounding = voxelShape.toAabbs().get(0);
                 if (direction == Direction.SOUTH) {
-                    CACHED_SHAPES.computeIfAbsent(FunctionalStorage.DrawerType.X_4, type1 -> MultimapBuilder.hashKeys().arrayListValues().build()).
+                    CACHED_SHAPES.computeIfAbsent(DrawerType.X_4, type1 -> MultimapBuilder.hashKeys().arrayListValues().build()).
                             put(direction, VoxelShapes.box(9 / 16D, bounding.minY, bounding.minZ, bounding.maxX, bounding.maxY, bounding.maxZ));
-                    CACHED_SHAPES.computeIfAbsent(FunctionalStorage.DrawerType.X_4, type1 -> MultimapBuilder.hashKeys().arrayListValues().build()).
+                    CACHED_SHAPES.computeIfAbsent(DrawerType.X_4, type1 -> MultimapBuilder.hashKeys().arrayListValues().build()).
                             put(direction, VoxelShapes.box(bounding.minX, bounding.minY, bounding.minZ, 7 / 16D, bounding.maxY, bounding.maxZ));
                 } else if (direction == Direction.NORTH) {
-                    CACHED_SHAPES.computeIfAbsent(FunctionalStorage.DrawerType.X_4, type1 -> MultimapBuilder.hashKeys().arrayListValues().build()).
+                    CACHED_SHAPES.computeIfAbsent(DrawerType.X_4, type1 -> MultimapBuilder.hashKeys().arrayListValues().build()).
                             put(direction, VoxelShapes.box(bounding.minX, bounding.minY, bounding.minZ, 7 / 16D, bounding.maxY, bounding.maxZ));
-                    CACHED_SHAPES.computeIfAbsent(FunctionalStorage.DrawerType.X_4, type1 -> MultimapBuilder.hashKeys().arrayListValues().build()).
+                    CACHED_SHAPES.computeIfAbsent(DrawerType.X_4, type1 -> MultimapBuilder.hashKeys().arrayListValues().build()).
                             put(direction, VoxelShapes.box(9 / 16D, bounding.minY, bounding.minZ, bounding.maxX, bounding.maxY, bounding.maxZ));
                 } else if (direction == Direction.EAST) {
-                    CACHED_SHAPES.computeIfAbsent(FunctionalStorage.DrawerType.X_4, type1 -> MultimapBuilder.hashKeys().arrayListValues().build()).
+                    CACHED_SHAPES.computeIfAbsent(DrawerType.X_4, type1 -> MultimapBuilder.hashKeys().arrayListValues().build()).
                             put(direction, VoxelShapes.box(bounding.minX, bounding.minY, bounding.minZ, bounding.maxX, bounding.maxY, 7 / 16D));
-                    CACHED_SHAPES.computeIfAbsent(FunctionalStorage.DrawerType.X_4, type1 -> MultimapBuilder.hashKeys().arrayListValues().build()).
+                    CACHED_SHAPES.computeIfAbsent(DrawerType.X_4, type1 -> MultimapBuilder.hashKeys().arrayListValues().build()).
                             put(direction, VoxelShapes.box(bounding.minX, bounding.minY, 9 / 16D, bounding.maxX, bounding.maxY, bounding.maxZ));
                 } else {
-                    CACHED_SHAPES.computeIfAbsent(FunctionalStorage.DrawerType.X_4, type1 -> MultimapBuilder.hashKeys().arrayListValues().build()).
+                    CACHED_SHAPES.computeIfAbsent(DrawerType.X_4, type1 -> MultimapBuilder.hashKeys().arrayListValues().build()).
                             put(direction, VoxelShapes.box(bounding.minX, bounding.minY, 9 / 16D, bounding.maxX, bounding.maxY, bounding.maxZ));
-                    CACHED_SHAPES.computeIfAbsent(FunctionalStorage.DrawerType.X_4, type1 -> MultimapBuilder.hashKeys().arrayListValues().build()).
+                    CACHED_SHAPES.computeIfAbsent(DrawerType.X_4, type1 -> MultimapBuilder.hashKeys().arrayListValues().build()).
                             put(direction, VoxelShapes.box(bounding.minX, bounding.minY, bounding.minZ, bounding.maxX, bounding.maxY, 7 / 16D));
                 }
             }
         }
     }
 
-    private final FunctionalStorage.DrawerType type;
+    private final DrawerType type;
     private final IWoodType woodType;
 
-    public DrawerBlock(IWoodType woodType, FunctionalStorage.DrawerType type, AbstractBlock.Properties properties) {
+    public DrawerBlock(IWoodType woodType, DrawerType type, AbstractBlock.Properties properties) {
         super(properties, DrawerTile.class);
-        // name: woodType.getName() + "_" + type.getSlots()
+        this.setRegistryName(woodType.getName() + "_" + type.getSlots());
         this.woodType = woodType;
         this.type = type;
         setItemGroup(FunctionalStorage.TAB);
         registerDefaultState(defaultBlockState().setValue(RotatableBlock.FACING_HORIZONTAL, Direction.NORTH).setValue(LOCKED, false));
     }
-
 
     @Override
     protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
@@ -136,7 +137,12 @@ public class DrawerBlock extends RotatableBlock<DrawerTile> {
 
     @Override
     public IFactory<DrawerTile> getTileEntityFactory() {
-        return () -> new DrawerTile(this, (TileEntityType<DrawerTile>) FunctionalStorage.DRAWER_TYPES.get(type).stream().filter(registryObjectRegistryObjectPair -> registryObjectRegistryObjectPair.getLeft().get().equals(this)).map(Pair::getRight).findFirst().get().get(), type, woodType);
+        return () -> new DrawerTile(this, type, woodType);
+    }
+
+    @Override
+    public IFactory<BlockItem> getItemBlockFactory() {
+        return () -> (BlockItem) new DrawerItem(this, new Item.Properties().tab(FunctionalStorage.TAB)).setRegistryName(Objects.requireNonNull(this.getRegistryName()));
     }
 
     @Override
@@ -144,7 +150,7 @@ public class DrawerBlock extends RotatableBlock<DrawerTile> {
         return getShapes(state, source, pos, this.type);
     }
 
-    private static List<VoxelShape> getShapes(BlockState state, IBlockReader source, BlockPos pos, FunctionalStorage.DrawerType type) {
+    private static List<VoxelShape> getShapes(BlockState state, IBlockReader source, BlockPos pos, DrawerType type) {
         List<VoxelShape> boxes = new ArrayList<>();
         CACHED_SHAPES.get(type).get(state.getValue(RotatableBlock.FACING_HORIZONTAL)).forEach(boxes::add);
         VoxelShape total = VoxelShapes.block();
@@ -170,7 +176,7 @@ public class DrawerBlock extends RotatableBlock<DrawerTile> {
 
     @Override
     public ActionResultType use(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult ray) {
-        return TileUtil.getTileEntity(worldIn, pos, DrawerTile.class).map(drawerTile -> drawerTile.onSlotActivated(player, hand, ray.getDirection(), ray.getLocation().x, ray.getLocation().y, ray.getLocation().z, getHit(state, worldIn, pos, player))).orElse(InteractionResult.PASS);
+        return TileUtil.getTileEntity(worldIn, pos, DrawerTile.class).map(drawerTile -> drawerTile.onSlotActivated(player, hand, ray.getDirection(), ray.getLocation().x, ray.getLocation().y, ray.getLocation().z, getHit(state, worldIn, pos, player))).orElse(ActionResultType.PASS);
     }
 
     @Override
@@ -254,7 +260,7 @@ public class DrawerBlock extends RotatableBlock<DrawerTile> {
 
     @Override
     public void registerRecipe(Consumer<IFinishedRecipe> consumer) {
-        if (type == FunctionalStorage.DrawerType.X_1) {
+        if (type == DrawerType.X_1) {
             TitaniumShapedRecipeBuilder.shapedRecipe(this)
                     .pattern("PPP").pattern("PCP").pattern("PPP")
                     .define('P', woodType.getPlanks())
@@ -269,7 +275,7 @@ public class DrawerBlock extends RotatableBlock<DrawerTile> {
                         .save(consumer);
             }
         }
-        if (type == FunctionalStorage.DrawerType.X_2) {
+        if (type == DrawerType.X_2) {
             TitaniumShapedRecipeBuilder.shapedRecipe(this, 2)
                     .pattern("PCP").pattern("PPP").pattern("PCP")
                     .define('P', woodType.getPlanks())
@@ -284,7 +290,7 @@ public class DrawerBlock extends RotatableBlock<DrawerTile> {
                         .save(consumer);
             }
         }
-        if (type == FunctionalStorage.DrawerType.X_4) {
+        if (type == DrawerType.X_4) {
             TitaniumShapedRecipeBuilder.shapedRecipe(this, 4)
                     .pattern("CPC").pattern("PPP").pattern("CPC")
                     .define('P', woodType.getPlanks())
@@ -301,7 +307,7 @@ public class DrawerBlock extends RotatableBlock<DrawerTile> {
         }
     }
 
-    public FunctionalStorage.DrawerType getType() {
+    public DrawerType getType() {
         return type;
     }
 
@@ -350,7 +356,7 @@ public class DrawerBlock extends RotatableBlock<DrawerTile> {
         if (tile != null) {
             for (int i = 0; i < tile.getUtilityUpgrades().getSlots(); i++) {
                 ItemStack stack = tile.getUtilityUpgrades().getStackInSlot(i);
-                if (stack.getItem().equals(FunctionalStorage.REDSTONE_UPGRADE.get())) {
+                if (stack.getItem().equals(FunctionalItems.REDSTONE_UPGRADE.get())) {
                     int redstoneSlot = stack.getOrCreateTag().getInt("Slot");
                     if (redstoneSlot < tile.getStorage().getSlots()) {
                         int amount = tile.getStorage().getStackInSlot(redstoneSlot).getCount() * 14 / tile.getStorage().getSlotLimit(redstoneSlot);
@@ -364,7 +370,7 @@ public class DrawerBlock extends RotatableBlock<DrawerTile> {
 
     public static class DrawerItem extends BlockItem {
 
-        private DrawerBlock drawerBlock;
+        private final DrawerBlock drawerBlock;
 
         public DrawerItem(DrawerBlock drawerBlock, Properties properties) {
             super(drawerBlock, properties);

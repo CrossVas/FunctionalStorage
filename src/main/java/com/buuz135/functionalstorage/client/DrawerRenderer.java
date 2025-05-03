@@ -1,10 +1,11 @@
 package com.buuz135.functionalstorage.client;
 
-import com.buuz135.functionalstorage.FunctionalStorage;
 import com.buuz135.functionalstorage.block.tile.ControllableDrawerTile;
 import com.buuz135.functionalstorage.block.tile.DrawerTile;
+import com.buuz135.functionalstorage.init.FunctionalItems;
 import com.buuz135.functionalstorage.inventory.BigInventoryHandler;
 import com.buuz135.functionalstorage.item.ConfigurationToolItem;
+import com.buuz135.functionalstorage.util.DrawerType;
 import com.buuz135.functionalstorage.util.NumberUtils;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
@@ -52,7 +53,7 @@ public class DrawerRenderer extends TileEntityRenderer<DrawerTile> {
             matrixStack.pushPose();
             matrixStack.last().pose().multiply(createTransformMatrix(
                     new Vector3f(0.969f, 0.031f, 0.469f / 16.0f), ZERO, scale));
-            Minecraft.getInstance().getItemRenderer().renderStatic(new ItemStack(FunctionalStorage.VOID_UPGRADE.get()), ItemCameraTransforms.TransformType.NONE, combinedLightIn, combinedOverlayIn, matrixStack, bufferIn);
+            Minecraft.getInstance().getItemRenderer().renderStatic(new ItemStack(FunctionalItems.VOID_UPGRADE.get()), ItemCameraTransforms.TransformType.NONE, combinedLightIn, combinedOverlayIn, matrixStack, bufferIn);
             matrixStack.popPose();
         }
     }
@@ -125,11 +126,11 @@ public class DrawerRenderer extends TileEntityRenderer<DrawerTile> {
         matrixStack.translate(0, 0, -0.5 / 16D);
         combinedLightIn = WorldRenderer.getLightColor(tile.getLevel(), tile.getBlockPos().relative(facing));
         renderUpgrades(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, tile);
-        if (tile.getDrawerType() == FunctionalStorage.DrawerType.X_1)
+        if (tile.getDrawerType() == DrawerType.X_1)
             render1Slot(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, tile);
-        if (tile.getDrawerType() == FunctionalStorage.DrawerType.X_2)
+        if (tile.getDrawerType() == DrawerType.X_2)
             render2Slot(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, tile);
-        if (tile.getDrawerType() == FunctionalStorage.DrawerType.X_4)
+        if (tile.getDrawerType() == DrawerType.X_4)
             render4Slot(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, tile);
         matrixStack.popPose();
     }

@@ -1,7 +1,7 @@
 package com.buuz135.functionalstorage.block.tile;
 
-import com.buuz135.functionalstorage.FunctionalStorage;
 import com.buuz135.functionalstorage.block.DrawerBlock;
+import com.buuz135.functionalstorage.init.FunctionalItems;
 import com.buuz135.functionalstorage.item.ConfigurationToolItem;
 import com.buuz135.functionalstorage.item.LinkingToolItem;
 import com.buuz135.functionalstorage.item.StorageUpgradeItem;
@@ -18,7 +18,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
@@ -51,9 +50,9 @@ public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>
     private boolean isVoid = false;
     @Save
     private int mult = 1;
-    TileEntityType<?> entityType;
 
-    public ControllableDrawerTile(BasicTileBlock<T> base, TileEntityType<T> entityType) {
+    @SuppressWarnings("unchecked")
+    public ControllableDrawerTile(BasicTileBlock<T> base) {
         super(base);
         this.drawerOptions = new DrawerOptions();
         this.storageUpgrades = getStorageUpgradesConstructor();
@@ -65,18 +64,13 @@ public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>
                         .setSlotLimit(1)
                         .setOnSlotChanged((itemStack, integer) -> {
                             needsUpgradeCache = true;
-                            if (controllerPos != null && this.level.getBlockEntity(controllerPos) instanceof DrawerControllerTile controllerTile) {
+                            if (controllerPos != null && this.level.getBlockEntity(controllerPos) instanceof DrawerControllerTile) {
+                                DrawerControllerTile controllerTile = (DrawerControllerTile) this.level.getBlockEntity(controllerPos);
                                 controllerTile.getConnectedDrawers().rebuild();
                             }
                         })
                 )
         );
-        this.entityType = entityType;
-    }
-
-    @Override
-    public TileEntityType<?> getType() {
-        return this.entityType;
     }
 
     @Override
@@ -113,7 +107,7 @@ public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>
                 ItemStack stack = this.utilityUpgrades.getStackInSlot(i);
                 if (!stack.isEmpty()) {
                     Item item = stack.getItem();
-                    if (item.equals(FunctionalStorage.REDSTONE_UPGRADE.get())) {
+                    if (item.equals(FunctionalItems.REDSTONE_UPGRADE.get())) {
                         level.updateNeighborsAt(this.getBlockPos(), this.getBasicTileBlock());
                         break;
                     }
@@ -160,7 +154,7 @@ public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>
 
     public ActionResultType onSlotActivated(PlayerEntity playerIn, Hand hand, Direction facing, double hitX, double hitY, double hitZ, int slot) {
         ItemStack stack = playerIn.getItemInHand(hand);
-        if (stack.getItem().equals(FunctionalStorage.CONFIGURATION_TOOL.get()) || stack.getItem().equals(FunctionalStorage.LINKING_TOOL.get()))
+        if (stack.getItem().equals(FunctionalItems.CONFIGURATION_TOOL.get()) || stack.getItem().equals(FunctionalItems.LINKING_TOOL.get()))
             return ActionResultType.PASS;
         if (!stack.isEmpty() && stack.getItem() instanceof UpgradeItem) {
             UpgradeItem upgradeItem = (UpgradeItem) stack.getItem();
@@ -217,10 +211,10 @@ public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>
             mult = 1;
             for (int i = 0; i < storageUpgrades.getSlots(); i++) {
                 Item upgrade = storageUpgrades.getStackInSlot(i).getItem();
-                if (upgrade.equals(FunctionalStorage.STORAGE_UPGRADES.get(StorageUpgradeItem.StorageTier.IRON).get())) {
+                if (upgrade.equals(FunctionalItems.IRON_UPGRADE.get())) {
                     hasDowngrade = true;
                 }
-                if (upgrade.equals(FunctionalStorage.CREATIVE_UPGRADE.get())) {
+                if (upgrade.equals(FunctionalItems.CREATIVE_UPGRADE.get())) {
                     isCreative = true;
                 }
                 if (upgrade instanceof StorageUpgradeItem) {
@@ -230,7 +224,7 @@ public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>
             }
             isVoid = false;
             for (int i = 0; i < utilityUpgrades.getSlots(); i++) {
-                if (utilityUpgrades.getStackInSlot(i).getItem().equals(FunctionalStorage.VOID_UPGRADE.get())) {
+                if (utilityUpgrades.getStackInSlot(i).getItem().equals(FunctionalItems.VOID_UPGRADE.get())) {
                     isVoid = true;
                 }
             }

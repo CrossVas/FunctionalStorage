@@ -1,6 +1,5 @@
 package com.buuz135.functionalstorage.block;
 
-import com.buuz135.functionalstorage.FunctionalStorage;
 import com.buuz135.functionalstorage.block.tile.CompactingDrawerTile;
 import com.buuz135.functionalstorage.block.tile.CompactingFramedDrawerTile;
 import com.buuz135.functionalstorage.block.tile.FramedDrawerTile;
@@ -21,7 +20,6 @@ import net.minecraft.loot.LootContext;
 import net.minecraft.loot.LootParameters;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
@@ -48,7 +46,7 @@ public class CompactingFramedDrawerBlock extends CompactingDrawerBlock {
 
     @Override
     public IFactory<CompactingDrawerTile> getTileEntityFactory() {
-        return () -> new CompactingFramedDrawerTile(this, (TileEntityType<CompactingDrawerTile>) FunctionalStorage.FRAMED_COMPACTING_DRAWER.getValue().get());
+        return () -> new CompactingFramedDrawerTile(this);
     }
 
     @Override
@@ -98,7 +96,7 @@ public class CompactingFramedDrawerBlock extends CompactingDrawerBlock {
                 .pattern("SSS").pattern("PDP").pattern("SIS")
                 .define('S', Items.IRON_NUGGET)
                 .define('P', Blocks.PISTON)
-                .define('D', Ingredient.of(FRAMED.stream().map(itemSupplier -> new ItemStack(itemSupplier.get()))))
+                .define('D', Ingredient.of(FRAMED.stream().map(block -> new ItemStack(block.get()))))
                 .define('I', Tags.Items.INGOTS_IRON)
                 .save(consumer);
     }

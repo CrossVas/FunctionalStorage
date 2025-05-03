@@ -1,12 +1,11 @@
 package com.buuz135.functionalstorage.block.tile;
 
-import com.buuz135.functionalstorage.FunctionalStorage;
+import com.buuz135.functionalstorage.init.FunctionalItems;
 import com.buuz135.functionalstorage.item.ConfigurationToolItem;
 import com.hrznstudio.titanium.block.BasicTileBlock;
 import com.hrznstudio.titanium.util.TileUtil;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
@@ -19,8 +18,8 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 
 public class ControllerExtensionTile extends ItemControllableDrawerTile<ControllerExtensionTile> {
-    public ControllerExtensionTile(BasicTileBlock<ControllerExtensionTile> base, TileEntityType<ControllerExtensionTile> blockEntityType) {
-        super(base, blockEntityType);
+    public ControllerExtensionTile(BasicTileBlock<ControllerExtensionTile> base) {
+        super(base);
     }
 
     @Override
@@ -30,7 +29,7 @@ public class ControllerExtensionTile extends ItemControllableDrawerTile<Controll
 
     public ActionResultType onSlotActivated(PlayerEntity playerIn, Hand hand, Direction facing, double hitX, double hitY, double hitZ) {
         ItemStack stack = playerIn.getItemInHand(hand);
-        if (stack.getItem().equals(FunctionalStorage.CONFIGURATION_TOOL.get()) || stack.getItem().equals(FunctionalStorage.LINKING_TOOL.get()))
+        if (stack.getItem().equals(FunctionalItems.CONFIGURATION_TOOL.get()) || stack.getItem().equals(FunctionalItems.LINKING_TOOL.get()))
             return ActionResultType.PASS;
         if (isServer()) {
             return getControllerInstance().map(drawerControllerTile -> drawerControllerTile.onSlotActivated(playerIn, hand, facing, hitX, hitY, hitZ)).orElse(ActionResultType.PASS);

@@ -2,7 +2,9 @@ package com.buuz135.functionalstorage.block.tile;
 
 import com.buuz135.functionalstorage.FunctionalStorage;
 import com.buuz135.functionalstorage.client.gui.DrawerInfoGuiAddon;
+import com.buuz135.functionalstorage.init.FunctionalItems;
 import com.buuz135.functionalstorage.inventory.BigInventoryHandler;
+import com.buuz135.functionalstorage.util.DrawerType;
 import com.buuz135.functionalstorage.util.IWoodType;
 import com.hrznstudio.titanium.annotation.Save;
 import com.hrznstudio.titanium.api.IFactory;
@@ -10,7 +12,6 @@ import com.hrznstudio.titanium.api.client.IScreenAddon;
 import com.hrznstudio.titanium.block.BasicTileBlock;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
@@ -29,11 +30,11 @@ public class DrawerTile extends ItemControllableDrawerTile<DrawerTile> {
     @Save
     public BigInventoryHandler handler;
     private final LazyOptional<IItemHandler> lazyStorage;
-    private FunctionalStorage.DrawerType type;
+    private DrawerType type;
     private IWoodType woodType;
 
-    public DrawerTile(BasicTileBlock<DrawerTile> base, TileEntityType<DrawerTile> blockEntityType, FunctionalStorage.DrawerType type, IWoodType woodType) {
-        super(base, blockEntityType);
+    public DrawerTile(BasicTileBlock<DrawerTile> base, DrawerType type, IWoodType woodType) {
+        super(base);
         this.type = type;
         this.woodType = woodType;
         this.handler = new BigInventoryHandler(type) {
@@ -96,7 +97,7 @@ public class DrawerTile extends ItemControllableDrawerTile<DrawerTile> {
 
     public ActionResultType onSlotActivated(PlayerEntity playerIn, Hand hand, Direction facing, double hitX, double hitY, double hitZ, int slot) {
         ItemStack stack = playerIn.getItemInHand(hand);
-        if (stack.getItem().equals(FunctionalStorage.CONFIGURATION_TOOL.get()) || stack.getItem().equals(FunctionalStorage.LINKING_TOOL.get()))
+        if (stack.getItem().equals(FunctionalItems.CONFIGURATION_TOOL.get()) || stack.getItem().equals(FunctionalItems.LINKING_TOOL.get()))
             return ActionResultType.PASS;
         if (slot != -1 && !playerIn.getItemInHand(hand).isEmpty()) {
             BigInventoryHandler.BigStack bigStack = getHandler().getStoredStacks().get(slot);
@@ -113,7 +114,7 @@ public class DrawerTile extends ItemControllableDrawerTile<DrawerTile> {
         return this;
     }
 
-    public FunctionalStorage.DrawerType getDrawerType() {
+    public DrawerType getDrawerType() {
         return type;
     }
 

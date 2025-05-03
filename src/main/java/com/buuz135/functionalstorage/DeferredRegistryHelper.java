@@ -36,9 +36,6 @@ public class DeferredRegistryHelper {
 
     private <T extends IForgeRegistryEntry<? super T>> RegistryObject<T> register(Class<T> cl, String name, Supplier<T> object) {
         DeferredRegister deferredRegister = registries.computeIfAbsent(cl, this::addRegistry);
-        /*if (j instanceof IAlternativeEntries) { // I'm sorry
-            ((IAlternativeEntries) j).addAlternatives(this);
-        }*/
         return deferredRegister.register(name, object);
     }
 

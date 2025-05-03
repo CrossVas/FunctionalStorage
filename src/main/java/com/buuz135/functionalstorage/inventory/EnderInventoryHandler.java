@@ -1,6 +1,6 @@
 package com.buuz135.functionalstorage.inventory;
 
-import com.buuz135.functionalstorage.FunctionalStorage;
+import com.buuz135.functionalstorage.util.DrawerType;
 import com.buuz135.functionalstorage.world.EnderSavedData;
 import net.minecraft.nbt.CompoundNBT;
 
@@ -15,7 +15,7 @@ public class EnderInventoryHandler extends BigInventoryHandler implements ILocka
     private boolean voidItems;
 
     public EnderInventoryHandler(String frequency, EnderSavedData manager) {
-        super(FunctionalStorage.DrawerType.X_1);
+        super(DrawerType.X_1);
         this.manager = manager;
         this.frequency = frequency;
     }
@@ -47,7 +47,7 @@ public class EnderInventoryHandler extends BigInventoryHandler implements ILocka
         if (!getStoredStacks().get(slot).getStack().isEmpty()) {
             stackSize = getStoredStacks().get(slot).getStack().getMaxStackSize() / 64D;
         }
-        return (int) Math.floor(Math.min(Integer.MAX_VALUE, FunctionalStorage.DrawerType.X_1.getSlotAmount() * 4) * stackSize);
+        return (int) Math.floor(Math.min(Integer.MAX_VALUE, DrawerType.X_1.getSlotAmount() * 4) * stackSize);
     }
 
     @Override

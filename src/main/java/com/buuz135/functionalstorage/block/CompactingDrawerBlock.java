@@ -5,6 +5,7 @@ import com.buuz135.functionalstorage.block.tile.CompactingDrawerTile;
 import com.buuz135.functionalstorage.block.tile.ControllableDrawerTile;
 import com.buuz135.functionalstorage.block.tile.DrawerControllerTile;
 import com.buuz135.functionalstorage.block.tile.ItemControllableDrawerTile;
+import com.buuz135.functionalstorage.init.FunctionalItems;
 import com.buuz135.functionalstorage.item.LinkingToolItem;
 import com.buuz135.functionalstorage.util.StorageTags;
 import com.google.common.collect.Multimap;
@@ -28,7 +29,6 @@ import net.minecraft.loot.LootTable;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
@@ -72,6 +72,7 @@ public class CompactingDrawerBlock extends RotatableBlock<CompactingDrawerTile> 
 
     public CompactingDrawerBlock(String name, Properties properties) {
         super(properties, CompactingDrawerTile.class);
+        this.setRegistryName(name);
         setItemGroup(FunctionalStorage.TAB);
         registerDefaultState(defaultBlockState().setValue(RotatableBlock.FACING_HORIZONTAL, Direction.NORTH).setValue(DrawerBlock.LOCKED, false));
     }
@@ -84,7 +85,7 @@ public class CompactingDrawerBlock extends RotatableBlock<CompactingDrawerTile> 
 
     @Override
     public IFactory<CompactingDrawerTile> getTileEntityFactory() {
-        return () -> new CompactingDrawerTile(this, (TileEntityType<CompactingDrawerTile>) FunctionalStorage.COMPACTING_DRAWER.getRight().get());
+        return () -> new CompactingDrawerTile(this);
     }
 
     @Override
@@ -124,7 +125,7 @@ public class CompactingDrawerBlock extends RotatableBlock<CompactingDrawerTile> 
 
     @Override
     public ActionResultType use(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult ray) {
-        return TileUtil.getTileEntity(worldIn, pos, CompactingDrawerTile.class).map(drawerTile -> drawerTile.onSlotActivated(player, hand, ray.getDirection(), ray.getLocation().x, ray.getLocation().y, ray.getLocation().z, getHit(state, worldIn, pos, player))).orElse(InteractionResult.PASS);
+        return TileUtil.getTileEntity(worldIn, pos, CompactingDrawerTile.class).map(drawerTile -> drawerTile.onSlotActivated(player, hand, ray.getDirection(), ray.getLocation().x, ray.getLocation().y, ray.getLocation().z, getHit(state, worldIn, pos, player))).orElse(ActionResultType.PASS);
     }
 
     @Override
@@ -247,7 +248,7 @@ public class CompactingDrawerBlock extends RotatableBlock<CompactingDrawerTile> 
         if (tile != null) {
             for (int i = 0; i < tile.getUtilityUpgrades().getSlots(); i++) {
                 ItemStack stack = tile.getUtilityUpgrades().getStackInSlot(i);
-                if (stack.getItem().equals(FunctionalStorage.REDSTONE_UPGRADE.get())) {
+                if (stack.getItem().equals(FunctionalItems.REDSTONE_UPGRADE.get())) {
                     int redstoneSlot = stack.getOrCreateTag().getInt("Slot");
                     if (redstoneSlot < tile.getStorage().getSlots()) {
                         int amount = tile.getStorage().getStackInSlot(redstoneSlot).getCount() * 14 / tile.getStorage().getSlotLimit(redstoneSlot);

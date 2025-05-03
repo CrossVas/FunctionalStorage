@@ -1,6 +1,6 @@
 package com.buuz135.functionalstorage.block.tile;
 
-import com.buuz135.functionalstorage.FunctionalStorage;
+import com.buuz135.functionalstorage.init.FunctionalItems;
 import com.buuz135.functionalstorage.item.StorageUpgradeItem;
 import com.buuz135.functionalstorage.item.UpgradeItem;
 import com.hrznstudio.titanium.block.BasicTileBlock;
@@ -11,7 +11,6 @@ import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
@@ -31,8 +30,8 @@ public abstract class ItemControllableDrawerTile<T extends ItemControllableDrawe
 
     private static HashMap<UUID, Long> INTERACTION_LOGGER = new HashMap<>();
 
-    public ItemControllableDrawerTile(BasicTileBlock<T> base, TileEntityType<T> entityType) {
-        super(base, entityType);
+    public ItemControllableDrawerTile(BasicTileBlock<T> base) {
+        super(base);
     }
 
     @Override
@@ -43,7 +42,7 @@ public abstract class ItemControllableDrawerTile<T extends ItemControllableDrawe
                 ItemStack stack = this.getUtilityUpgrades().getStackInSlot(i);
                 if (!stack.isEmpty()) {
                     Item item = stack.getItem();
-                    if (item.equals(FunctionalStorage.PULLING_UPGRADE.get())) {
+                    if (item.equals(FunctionalItems.PULLING_UPGRADE.get())) {
                         Direction direction = UpgradeItem.getDirection(stack);
                         TileUtil.getTileEntity(level, getBlockPos().relative(direction)).ifPresent(blockEntity1 -> {
                             blockEntity1.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction.getOpposite()).ifPresent(iItemHandler -> {
@@ -65,7 +64,7 @@ public abstract class ItemControllableDrawerTile<T extends ItemControllableDrawe
                             });
                         });
                     }
-                    if (item.equals(FunctionalStorage.PUSHING_UPGRADE.get())) {
+                    if (item.equals(FunctionalItems.PUSHING_UPGRADE.get())) {
                         Direction direction = UpgradeItem.getDirection(stack);
                         TileUtil.getTileEntity(level, getBlockPos().relative(direction)).ifPresent(blockEntity1 -> {
                             blockEntity1.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction.getOpposite()).ifPresent(otherHandler -> {
@@ -86,7 +85,7 @@ public abstract class ItemControllableDrawerTile<T extends ItemControllableDrawe
                             });
                         });
                     }
-                    if (item.equals(FunctionalStorage.COLLECTOR_UPGRADE.get())) {
+                    if (item.equals(FunctionalItems.COLLECTOR_UPGRADE.get())) {
                         Direction direction = UpgradeItem.getDirection(stack);
                         AxisAlignedBB box = new AxisAlignedBB(getBlockPos().relative(direction));
                         for (ItemEntity entitiesOfClass : level.getEntitiesOfClass(ItemEntity.class, box)) {
@@ -192,7 +191,7 @@ public abstract class ItemControllableDrawerTile<T extends ItemControllableDrawe
             }
         }
                 .setInputFilter((stack, integer) -> {
-                    if (stack.getItem().equals(FunctionalStorage.STORAGE_UPGRADES.get(StorageUpgradeItem.StorageTier.IRON).get())) {
+                    if (stack.getItem().equals(FunctionalItems.IRON_UPGRADE.get())) {
                         for (int i = 0; i < getStorage().getSlots(); i++) {
                             if (getStorage().getStackInSlot(i).getCount() > 64) {
                                 return false;

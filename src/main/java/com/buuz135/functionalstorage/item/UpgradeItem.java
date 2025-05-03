@@ -1,6 +1,7 @@
 package com.buuz135.functionalstorage.item;
 
 import com.buuz135.functionalstorage.FunctionalStorage;
+import com.buuz135.functionalstorage.init.FunctionalItems;
 import com.hrznstudio.titanium.item.BasicItem;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -24,7 +25,7 @@ public class UpgradeItem extends BasicItem {
     public static Direction getDirection(ItemStack stack) {
         if (stack.hasTag() && stack.getTag().contains("Direction")) {
             Item item = stack.getItem();
-            if (item.equals(FunctionalStorage.PULLING_UPGRADE.get()) || item.equals(FunctionalStorage.PUSHING_UPGRADE.get()) || item.equals(FunctionalStorage.COLLECTOR_UPGRADE.get())) {
+            if (item.equals(FunctionalItems.PULLING_UPGRADE.get()) || item.equals(FunctionalItems.PUSHING_UPGRADE.get()) || item.equals(FunctionalItems.COLLECTOR_UPGRADE.get())) {
                 Direction direction = Direction.byName(stack.getOrCreateTag().getString("Direction"));
                 return direction == null ? Direction.NORTH : direction;
             }
@@ -47,10 +48,10 @@ public class UpgradeItem extends BasicItem {
 
     private ItemStack initNbt(ItemStack stack) {
         Item item = stack.getItem();
-        if (item.equals(FunctionalStorage.PULLING_UPGRADE.get()) || item.equals(FunctionalStorage.PUSHING_UPGRADE.get()) || item.equals(FunctionalStorage.COLLECTOR_UPGRADE.get())) {
+        if (item.equals(FunctionalItems.PULLING_UPGRADE.get()) || item.equals(FunctionalItems.PUSHING_UPGRADE.get()) || item.equals(FunctionalItems.COLLECTOR_UPGRADE.get())) {
             stack.getOrCreateTag().putString("Direction", Direction.values()[0].getName());
         }
-        if (item.equals(FunctionalStorage.REDSTONE_UPGRADE.get())) {
+        if (item.equals(FunctionalItems.REDSTONE_UPGRADE.get())) {
             stack.getOrCreateTag().putInt("Slot", 0);
         }
         return stack;
@@ -73,12 +74,12 @@ public class UpgradeItem extends BasicItem {
         tooltip.add(new TranslationTextComponent("upgrade.type").withStyle(TextFormatting.YELLOW).append(new TranslationTextComponent("upgrade.type." + getType().name().toLowerCase(Locale.ROOT)).withStyle(TextFormatting.WHITE)));
         Item item = stack.getItem();
         if (stack.hasTag()) {
-            if (item.equals(FunctionalStorage.PULLING_UPGRADE.get()) || item.equals(FunctionalStorage.PUSHING_UPGRADE.get()) || item.equals(FunctionalStorage.COLLECTOR_UPGRADE.get())) {
+            if (item.equals(FunctionalItems.PULLING_UPGRADE.get()) || item.equals(FunctionalItems.PUSHING_UPGRADE.get()) || item.equals(FunctionalItems.COLLECTOR_UPGRADE.get())) {
                 tooltip.add(new TranslationTextComponent("item.utility.direction").withStyle(TextFormatting.YELLOW).append(new TranslationTextComponent(WordUtils.capitalize(getDirection(stack).getName().toLowerCase(Locale.ROOT))).withStyle(TextFormatting.WHITE)));
                 tooltip.add(new StringTextComponent(""));
                 tooltip.add(new TranslationTextComponent("item.utility.direction.desc").withStyle(TextFormatting.GRAY));
             }
-            if (item.equals(FunctionalStorage.REDSTONE_UPGRADE.get())) {
+            if (item.equals(FunctionalItems.REDSTONE_UPGRADE.get())) {
                 tooltip.add(new TranslationTextComponent("item.utility.slot").withStyle(TextFormatting.YELLOW).append(new StringTextComponent(stack.getOrCreateTag().getInt("Slot") + "").withStyle(TextFormatting.WHITE)));
                 tooltip.add(new StringTextComponent(""));
                 tooltip.add(new TranslationTextComponent("item.utility.direction.desc").withStyle(TextFormatting.GRAY));

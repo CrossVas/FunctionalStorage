@@ -1,8 +1,8 @@
 package com.buuz135.functionalstorage.client;
 
-import com.buuz135.functionalstorage.FunctionalStorage;
 import com.buuz135.functionalstorage.block.tile.ControllableDrawerTile;
 import com.buuz135.functionalstorage.block.tile.EnderDrawerTile;
+import com.buuz135.functionalstorage.init.FunctionalItems;
 import com.buuz135.functionalstorage.inventory.EnderInventoryHandler;
 import com.buuz135.functionalstorage.item.ConfigurationToolItem;
 import com.buuz135.functionalstorage.world.EnderSavedData;
@@ -47,7 +47,7 @@ public class EnderDrawerRenderer extends TileEntityRenderer<EnderDrawerTile> {
             matrixStack.pushPose();
             matrixStack.last().pose().multiply(createTransformMatrix(
                     new Vector3f(.969f, .031f, .469f / 16.0f), ZERO, scale));
-            Minecraft.getInstance().getItemRenderer().renderStatic(new ItemStack(FunctionalStorage.VOID_UPGRADE.get()), ItemCameraTransforms.TransformType.NONE, combinedLightIn, combinedOverlayIn, matrixStack, bufferIn);
+            Minecraft.getInstance().getItemRenderer().renderStatic(new ItemStack(FunctionalItems.VOID_UPGRADE.get()), ItemCameraTransforms.TransformType.NONE, combinedLightIn, combinedOverlayIn, matrixStack, bufferIn);
             matrixStack.popPose();
         }
     }

@@ -3,6 +3,7 @@ package com.buuz135.functionalstorage.block;
 import com.buuz135.functionalstorage.FunctionalStorage;
 import com.buuz135.functionalstorage.block.tile.ControllableDrawerTile;
 import com.buuz135.functionalstorage.block.tile.DrawerControllerTile;
+import com.buuz135.functionalstorage.init.FunctionalBlocks;
 import com.buuz135.functionalstorage.util.StorageTags;
 import com.hrznstudio.titanium.api.IFactory;
 import com.hrznstudio.titanium.block.RotatableBlock;
@@ -16,16 +17,17 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Items;
 import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraftforge.common.Tags;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
@@ -33,14 +35,25 @@ public class DrawerControllerBlock extends RotatableBlock<DrawerControllerTile> 
 
     public DrawerControllerBlock() {
         super(Properties.copy(Blocks.IRON_BLOCK), DrawerControllerTile.class);
-        // name: "storage_controller"
+        this.setRegistryName("storage_controller");
         setItemGroup(FunctionalStorage.TAB);
         registerDefaultState(defaultBlockState().setValue(RotatableBlock.FACING_HORIZONTAL, Direction.NORTH).setValue(DrawerBlock.LOCKED, false));
     }
 
     @Override
     public IFactory<DrawerControllerTile> getTileEntityFactory() {
-        return () -> new DrawerControllerTile(this, (TileEntityType<DrawerControllerTile>) FunctionalStorage.DRAWER_CONTROLLER.getRight().get());
+        return () -> new DrawerControllerTile(this);
+    }
+
+    @Override
+    public boolean hasTileEntity(BlockState state) {
+        return true;
+    }
+
+    @Nullable
+    @Override
+    public TileEntity createTileEntity(BlockState state, IBlockReader world) {
+        return getTileEntityFactory().create();
     }
 
     @Nonnull
@@ -57,7 +70,7 @@ public class DrawerControllerBlock extends RotatableBlock<DrawerControllerTile> 
 
     @Override
     public ActionResultType use(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult ray) {
-        return TileUtil.getTileEntity(worldIn, pos, DrawerControllerTile.class).map(drawerTile -> drawerTile.onSlotActivated(player, hand, ray.getDirection(), ray.getLocation().x, ray.getLocation().y, ray.getLocation().z)).orElse(InteractionResult.PASS);
+        return TileUtil.getTileEntity(worldIn, pos, DrawerControllerTile.class).map(drawerTile -> drawerTile.onSlotActivated(player, hand, ray.getDirection(), ray.getLocation().x, ray.getLocation().y, ray.getLocation().z)).orElse(ActionResultType.PASS);
     }
 
     @Override
@@ -79,7 +92,7 @@ public class DrawerControllerBlock extends RotatableBlock<DrawerControllerTile> 
 
     @Override
     public void registerRecipe(Consumer<IFinishedRecipe> consumer) {
-        TitaniumShapedRecipeBuilder.shapedRecipe(FunctionalStorage.DRAWER_CONTROLLER.getLeft().get())
+        TitaniumShapedRecipeBuilder.shapedRecipe(FunctionalBlocks.CONTROLLER)
                 .pattern("IBI").pattern("CDC").pattern("IBI")
                 .define('I', Tags.Items.STONE)
                 .define('B', Tags.Items.STORAGE_BLOCKS_QUARTZ)

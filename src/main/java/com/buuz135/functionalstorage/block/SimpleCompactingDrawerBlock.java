@@ -5,7 +5,9 @@ import com.buuz135.functionalstorage.block.tile.ControllableDrawerTile;
 import com.buuz135.functionalstorage.block.tile.DrawerControllerTile;
 import com.buuz135.functionalstorage.block.tile.ItemControllableDrawerTile;
 import com.buuz135.functionalstorage.block.tile.SimpleCompactingDrawerTile;
+import com.buuz135.functionalstorage.init.FunctionalItems;
 import com.buuz135.functionalstorage.item.LinkingToolItem;
+import com.buuz135.functionalstorage.util.DrawerType;
 import com.buuz135.functionalstorage.util.StorageTags;
 import com.hrznstudio.titanium.api.IFactory;
 import com.hrznstudio.titanium.block.RotatableBlock;
@@ -26,7 +28,6 @@ import net.minecraft.loot.LootTable;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
@@ -53,13 +54,14 @@ public class SimpleCompactingDrawerBlock extends RotatableBlock<SimpleCompacting
 
     public SimpleCompactingDrawerBlock(String name, Properties properties) {
         super(properties, SimpleCompactingDrawerTile.class);
+        this.setRegistryName(name);
         setItemGroup(FunctionalStorage.TAB);
         registerDefaultState(defaultBlockState().setValue(RotatableBlock.FACING_HORIZONTAL, Direction.NORTH).setValue(DrawerBlock.LOCKED, false));
     }
 
     private static List<VoxelShape> getShapes(BlockState state, IBlockReader source, BlockPos pos) {
         List<VoxelShape> boxes = new ArrayList<>();
-        DrawerBlock.CACHED_SHAPES.get(FunctionalStorage.DrawerType.X_2).get(state.getValue(RotatableBlock.FACING_HORIZONTAL)).forEach(boxes::add);
+        DrawerBlock.CACHED_SHAPES.get(DrawerType.X_2).get(state.getValue(RotatableBlock.FACING_HORIZONTAL)).forEach(boxes::add);
         VoxelShape total = VoxelShapes.block();
         boxes.add(total);
         return boxes;
@@ -73,7 +75,7 @@ public class SimpleCompactingDrawerBlock extends RotatableBlock<SimpleCompacting
 
     @Override
     public IFactory<SimpleCompactingDrawerTile> getTileEntityFactory() {
-        return () -> new SimpleCompactingDrawerTile(this, (TileEntityType<SimpleCompactingDrawerTile>) FunctionalStorage.SIMPLE_COMPACTING_DRAWER.getRight().get());
+        return () -> new SimpleCompactingDrawerTile(this);
     }
 
     @Override
@@ -119,7 +121,7 @@ public class SimpleCompactingDrawerBlock extends RotatableBlock<SimpleCompacting
             VoxelShape hit = RayTraceUtils.rayTraceVoxelShape((BlockRayTraceResult) result, worldIn, player, 32, 0);
             if (hit != null) {
                 if (hit.equals(VoxelShapes.block())) return -1;
-                List<VoxelShape> shapes = new ArrayList<>(DrawerBlock.CACHED_SHAPES.get(FunctionalStorage.DrawerType.X_2).get(state.getValue(RotatableBlock.FACING_HORIZONTAL)));
+                List<VoxelShape> shapes = new ArrayList<>(DrawerBlock.CACHED_SHAPES.get(DrawerType.X_2).get(state.getValue(RotatableBlock.FACING_HORIZONTAL)));
                 for (int i = 0; i < shapes.size(); i++) {
                     if (VoxelShapes.joinIsNotEmpty(shapes.get(i), hit, IBooleanFunction.AND)) {
                         return i;
@@ -228,7 +230,7 @@ public class SimpleCompactingDrawerBlock extends RotatableBlock<SimpleCompacting
         if (tile != null) {
             for (int i = 0; i < tile.getUtilityUpgrades().getSlots(); i++) {
                 ItemStack stack = tile.getUtilityUpgrades().getStackInSlot(i);
-                if (stack.getItem().equals(FunctionalStorage.REDSTONE_UPGRADE.get())) {
+                if (stack.getItem().equals(FunctionalItems.REDSTONE_UPGRADE.get())) {
                     int redstoneSlot = stack.getOrCreateTag().getInt("Slot");
                     if (redstoneSlot < tile.getStorage().getSlots()) {
                         int amount = tile.getStorage().getStackInSlot(redstoneSlot).getCount() * 14 / tile.getStorage().getSlotLimit(redstoneSlot);

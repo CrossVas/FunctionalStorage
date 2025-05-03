@@ -1,10 +1,10 @@
 package com.buuz135.functionalstorage.client;
 
-import com.buuz135.functionalstorage.FunctionalStorage;
 import com.buuz135.functionalstorage.block.tile.ControllableDrawerTile;
 import com.buuz135.functionalstorage.block.tile.FluidDrawerTile;
 import com.buuz135.functionalstorage.fluid.BigFluidHandler;
 import com.buuz135.functionalstorage.item.ConfigurationToolItem;
+import com.buuz135.functionalstorage.util.DrawerType;
 import com.buuz135.functionalstorage.util.NumberUtils;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
@@ -129,11 +129,11 @@ public class FluidDrawerRenderer extends TileEntityRenderer<FluidDrawerTile> {
         }
         combinedLightIn = WorldRenderer.getLightColor(tile.getLevel(), tile.getBlockPos().relative(facing));
 
-        if (tile.getDrawerType() == FunctionalStorage.DrawerType.X_1)
+        if (tile.getDrawerType() == DrawerType.X_1)
             render1Slot(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, tile);
-        if (tile.getDrawerType() == FunctionalStorage.DrawerType.X_2)
+        if (tile.getDrawerType() == DrawerType.X_2)
             render2Slot(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, tile);
-        if (tile.getDrawerType() == FunctionalStorage.DrawerType.X_4)
+        if (tile.getDrawerType() == DrawerType.X_4)
             render4Slot(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, tile);
         matrixStack.pushPose();
         matrixStack.translate(0, 0, 0.9688);

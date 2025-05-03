@@ -54,7 +54,7 @@ public class LinkingToolItem extends BasicItem {
     }
 
     static {
-        EventManager.forge(PlayerInteractEvent.LeftClickBlock.class).filter(leftClickBlock -> leftClickBlock.getSide() == LogicalSide.SERVER && leftClickBlock.getItemStack().sameItem(FunctionalStorage.LINKING_TOOL.get().getDefaultInstance())).process(leftClickBlock -> {
+        EventManager.forge(PlayerInteractEvent.LeftClickBlock.class).filter(leftClickBlock -> leftClickBlock.getSide() == LogicalSide.SERVER && leftClickBlock.getItemStack().getItem() instanceof LinkingToolItem).process(leftClickBlock -> {
             ItemStack stack = leftClickBlock.getItemStack();
             TileEntity blockEntity = leftClickBlock.getWorld().getBlockEntity(leftClickBlock.getPos());
             if (blockEntity instanceof EnderDrawerTile) {

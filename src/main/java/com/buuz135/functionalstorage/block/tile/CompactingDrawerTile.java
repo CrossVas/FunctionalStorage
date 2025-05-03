@@ -2,6 +2,7 @@ package com.buuz135.functionalstorage.block.tile;
 
 import com.buuz135.functionalstorage.FunctionalStorage;
 import com.buuz135.functionalstorage.client.gui.DrawerInfoGuiAddon;
+import com.buuz135.functionalstorage.init.FunctionalItems;
 import com.buuz135.functionalstorage.inventory.CompactingInventoryHandler;
 import com.buuz135.functionalstorage.util.CompactingUtil;
 import com.hrznstudio.titanium.annotation.Save;
@@ -10,7 +11,6 @@ import com.hrznstudio.titanium.api.client.IScreenAddon;
 import com.hrznstudio.titanium.block.BasicTileBlock;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
@@ -32,8 +32,8 @@ public class CompactingDrawerTile extends ItemControllableDrawerTile<CompactingD
     private final LazyOptional<IItemHandler> lazyStorage;
     private boolean hasCheckedRecipes;
 
-    public CompactingDrawerTile(BasicTileBlock<CompactingDrawerTile> base, TileEntityType<CompactingDrawerTile> blockEntityType) {
-        super(base, blockEntityType);
+    public CompactingDrawerTile(BasicTileBlock<CompactingDrawerTile> base) {
+        super(base);
         this.handler = new CompactingInventoryHandler(3) {
             @Override
             public void onChange() {
@@ -102,7 +102,7 @@ public class CompactingDrawerTile extends ItemControllableDrawerTile<CompactingD
 
     public ActionResultType onSlotActivated(PlayerEntity playerIn, Hand hand, Direction facing, double hitX, double hitY, double hitZ, int slot) {
         ItemStack stack = playerIn.getItemInHand(hand);
-        if (stack.getItem().equals(FunctionalStorage.CONFIGURATION_TOOL.get()) || stack.getItem().equals(FunctionalStorage.LINKING_TOOL.get()))
+        if (stack.getItem().equals(FunctionalItems.CONFIGURATION_TOOL.get()) || stack.getItem().equals(FunctionalItems.LINKING_TOOL.get()))
             return ActionResultType.PASS;
         if (!handler.isSetup() && slot != -1) {
             stack = playerIn.getItemInHand(hand).copy();

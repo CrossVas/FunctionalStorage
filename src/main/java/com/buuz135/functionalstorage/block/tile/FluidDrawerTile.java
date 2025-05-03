@@ -3,8 +3,10 @@ package com.buuz135.functionalstorage.block.tile;
 import com.buuz135.functionalstorage.FunctionalStorage;
 import com.buuz135.functionalstorage.client.gui.FluidDrawerInfoGuiAddon;
 import com.buuz135.functionalstorage.fluid.BigFluidHandler;
+import com.buuz135.functionalstorage.init.FunctionalItems;
 import com.buuz135.functionalstorage.item.StorageUpgradeItem;
 import com.buuz135.functionalstorage.item.UpgradeItem;
+import com.buuz135.functionalstorage.util.DrawerType;
 import com.hrznstudio.titanium.annotation.Save;
 import com.hrznstudio.titanium.api.IFactory;
 import com.hrznstudio.titanium.api.client.IScreenAddon;
@@ -18,7 +20,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
@@ -44,10 +45,10 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
     public LazyOptional<IFluidHandler> fluidHandlerLazyOptional;
     @Save
     private BigFluidHandler fluidHandler;
-    private FunctionalStorage.DrawerType type;
+    private DrawerType type;
 
-    public FluidDrawerTile(BasicTileBlock<FluidDrawerTile> base, TileEntityType<FluidDrawerTile> blockEntityType, FunctionalStorage.DrawerType type) {
-        super(base, blockEntityType);
+    public FluidDrawerTile(BasicTileBlock<FluidDrawerTile> base, DrawerType type) {
+        super(base);
         this.type = type;
         this.fluidHandler = new BigFluidHandler(type.getSlots(), getTankCapacity(getStorageMultiplier())) {
             @Override
@@ -124,7 +125,7 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
                 net.minecraft.item.ItemStack stack = this.getUtilityUpgrades().getStackInSlot(i);
                 if (!stack.isEmpty()) {
                     Item item = stack.getItem();
-                    if (item.equals(FunctionalStorage.PUSHING_UPGRADE.get())) {
+                    if (item.equals(FunctionalItems.PUSHING_UPGRADE.get())) {
                         Direction direction = UpgradeItem.getDirection(stack);
                         TileUtil.getTileEntity(level, getBlockPos().relative(direction)).ifPresent(blockEntity1 -> {
                             blockEntity1.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, direction.getOpposite()).ifPresent(otherFluidHandler -> {
@@ -143,7 +144,7 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
                             });
                         });
                     }
-                    if (item.equals(FunctionalStorage.PULLING_UPGRADE.get())) {
+                    if (item.equals(FunctionalItems.PULLING_UPGRADE.get())) {
                         Direction direction = UpgradeItem.getDirection(stack);
                         TileUtil.getTileEntity(level, getBlockPos().relative(direction)).ifPresent(blockEntity1 -> {
                             blockEntity1.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, direction.getOpposite()).ifPresent(otherFluidHandler -> {
@@ -161,7 +162,7 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
                             });
                         });
                     }
-                    if (item.equals(FunctionalStorage.COLLECTOR_UPGRADE.get()) && level.getGameTime() % 20 == 0) {
+                    if (item.equals(FunctionalItems.COLLECTOR_UPGRADE.get()) && level.getGameTime() % 20 == 0) {
                         Direction direction = UpgradeItem.getDirection(stack);
                         FluidState fluidstate = this.level.getFluidState(this.getBlockPos().relative(direction));
                         if (!fluidstate.isEmpty() && fluidstate.isSource()) {
@@ -198,7 +199,7 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
     @Override
     public ActionResultType onSlotActivated(PlayerEntity playerIn, Hand hand, Direction facing, double hitX, double hitY, double hitZ, int slot) {
         ItemStack stack = playerIn.getItemInHand(hand);
-        if (stack.getItem().equals(FunctionalStorage.CONFIGURATION_TOOL.get()) || stack.getItem().equals(FunctionalStorage.LINKING_TOOL.get()))
+        if (stack.getItem().equals(FunctionalItems.CONFIGURATION_TOOL.get()) || stack.getItem().equals(FunctionalItems.LINKING_TOOL.get()))
             return ActionResultType.PASS;
         if (slot != -1 && !playerIn.getItemInHand(hand).isEmpty()) {
             ActionResultType interactionResult = stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).map(iFluidHandlerItem -> {
@@ -239,7 +240,7 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
         return this;
     }
 
-    public FunctionalStorage.DrawerType getDrawerType() {
+    public DrawerType getDrawerType() {
         return type;
     }
 
@@ -314,7 +315,7 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
             }
         }
                 .setInputFilter((stack, integer) -> {
-                    if (stack.getItem().equals(FunctionalStorage.STORAGE_UPGRADES.get(StorageUpgradeItem.StorageTier.IRON).get())) {
+                    if (stack.getItem().equals(FunctionalItems.IRON_UPGRADE.get())) {
                         return false;
                     }
                     return stack.getItem() instanceof UpgradeItem && ((UpgradeItem) stack.getItem()).getType() == UpgradeItem.Type.STORAGE;

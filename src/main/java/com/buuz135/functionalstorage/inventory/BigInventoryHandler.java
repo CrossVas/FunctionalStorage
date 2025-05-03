@@ -1,6 +1,6 @@
 package com.buuz135.functionalstorage.inventory;
 
-import com.buuz135.functionalstorage.FunctionalStorage;
+import com.buuz135.functionalstorage.util.DrawerType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraftforge.common.util.INBTSerializable;
@@ -17,10 +17,10 @@ public abstract class BigInventoryHandler implements IItemHandler, INBTSerializa
     public static String STACK = "Stack";
     public static String AMOUNT = "Amount";
 
-    private final FunctionalStorage.DrawerType type;
+    private final DrawerType type;
     private List<BigStack> storedStacks;
 
-    public BigInventoryHandler(FunctionalStorage.DrawerType type) {
+    public BigInventoryHandler(DrawerType type) {
         this.type = type;
         this.storedStacks = new ArrayList<>();
         for (int i = 0; i < type.getSlots(); i++) {

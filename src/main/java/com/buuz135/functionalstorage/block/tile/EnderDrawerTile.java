@@ -2,8 +2,10 @@ package com.buuz135.functionalstorage.block.tile;
 
 import com.buuz135.functionalstorage.FunctionalStorage;
 import com.buuz135.functionalstorage.client.gui.DrawerInfoGuiAddon;
+import com.buuz135.functionalstorage.init.FunctionalItems;
 import com.buuz135.functionalstorage.inventory.EnderInventoryHandler;
 import com.buuz135.functionalstorage.network.EnderDrawerSyncMessage;
+import com.buuz135.functionalstorage.util.DrawerType;
 import com.buuz135.functionalstorage.world.EnderSavedData;
 import com.hrznstudio.titanium.annotation.Save;
 import com.hrznstudio.titanium.api.IFactory;
@@ -13,7 +15,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
@@ -37,8 +38,8 @@ public class EnderDrawerTile extends ItemControllableDrawerTile<EnderDrawerTile>
     private String frequency;
     private LazyOptional<IItemHandler> lazyStorage;
 
-    public EnderDrawerTile(BasicTileBlock<EnderDrawerTile> base, TileEntityType<EnderDrawerTile> blockEntityType) {
-        super(base, blockEntityType);
+    public EnderDrawerTile(BasicTileBlock<EnderDrawerTile> base) {
+        super(base);
         this.frequency = UUID.randomUUID().toString();
         this.lazyStorage = LazyOptional.empty();
     }
@@ -56,7 +57,7 @@ public class EnderDrawerTile extends ItemControllableDrawerTile<EnderDrawerTile>
         screenAddons.add(() -> new DrawerInfoGuiAddon(64, 16,
                 new ResourceLocation(FunctionalStorage.MOD_ID, "textures/blocks/ender_front.png"),
                 1,
-                FunctionalStorage.DrawerType.X_1.getSlotPosition(),
+                DrawerType.X_1.getSlotPosition(),
                 integer -> getStorage().getStackInSlot(integer),
                 integer -> getStorage().getSlotLimit(integer)
         ));
@@ -86,7 +87,7 @@ public class EnderDrawerTile extends ItemControllableDrawerTile<EnderDrawerTile>
             if (!handler.isVoid()) {
                 for (int i = 0; i < getUtilityUpgrades().getSlots(); i++) {
                     ItemStack stack = getUtilityUpgrades().getStackInSlot(i);
-                    if (!stack.isEmpty() && stack.sameItem(FunctionalStorage.VOID_UPGRADE.get().getDefaultInstance())) {
+                    if (!stack.isEmpty() && stack.sameItem(new ItemStack(FunctionalItems.VOID_UPGRADE.get()))) {
                         handler.setVoidItems(true);
                         stack.shrink(1);
                         break;

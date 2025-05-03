@@ -1,9 +1,9 @@
 package com.buuz135.functionalstorage.block;
 
-import com.buuz135.functionalstorage.FunctionalStorage;
 import com.buuz135.functionalstorage.block.tile.DrawerTile;
 import com.buuz135.functionalstorage.block.tile.FramedDrawerTile;
 import com.buuz135.functionalstorage.client.model.FramedDrawerModelData;
+import com.buuz135.functionalstorage.util.DrawerType;
 import com.buuz135.functionalstorage.util.DrawerWoodType;
 import com.hrznstudio.titanium.api.IFactory;
 import com.hrznstudio.titanium.recipe.generator.TitaniumShapedRecipeBuilder;
@@ -21,7 +21,6 @@ import net.minecraft.loot.LootContext;
 import net.minecraft.loot.LootParameters;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -34,7 +33,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.registries.ForgeRegistries;
-import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -43,13 +41,13 @@ import java.util.function.Consumer;
 
 public class FramedDrawerBlock extends DrawerBlock {
 
-    public FramedDrawerBlock(FunctionalStorage.DrawerType type) {
+    public FramedDrawerBlock(DrawerType type) {
         super(DrawerWoodType.FRAMED, type, Properties.copy(Blocks.OAK_PLANKS).noOcclusion().isViewBlocking((p_61036_, p_61037_, p_61038_) -> false));
     }
 
     @Override
     public IFactory<DrawerTile> getTileEntityFactory() {
-        return () -> new FramedDrawerTile(this, (TileEntityType<DrawerTile>) FunctionalStorage.DRAWER_TYPES.get(this.getType()).stream().filter(registryObjectRegistryObjectPair -> registryObjectRegistryObjectPair.getLeft().get().equals(this)).map(Pair::getRight).findFirst().get().get(), this.getType());
+        return () -> new FramedDrawerTile(this, this.getType());
     }
 
     @Override
@@ -119,14 +117,14 @@ public class FramedDrawerBlock extends DrawerBlock {
 
     @Override
     public void registerRecipe(Consumer<IFinishedRecipe> consumer) {
-        if (this.getType() == FunctionalStorage.DrawerType.X_1) {
+        if (this.getType() == DrawerType.X_1) {
             TitaniumShapedRecipeBuilder.shapedRecipe(this)
                     .pattern("PPP").pattern("PCP").pattern("PPP")
                     .define('P', Items.IRON_NUGGET)
                     .define('C', Tags.Items.CHESTS_WOODEN)
                     .save(consumer);
         }
-        if (this.getType() == FunctionalStorage.DrawerType.X_2) {
+        if (this.getType() == DrawerType.X_2) {
             TitaniumShapedRecipeBuilder.shapedRecipe(this, 2)
                     .pattern("PCP").pattern("PPP").pattern("PCP")
                     .define('P', Items.IRON_NUGGET)
@@ -134,7 +132,7 @@ public class FramedDrawerBlock extends DrawerBlock {
                     .save(consumer);
 
         }
-        if (this.getType() == FunctionalStorage.DrawerType.X_4) {
+        if (this.getType() == DrawerType.X_4) {
             TitaniumShapedRecipeBuilder.shapedRecipe(this, 4)
                     .pattern("CPC").pattern("PPP").pattern("CPC")
                     .define('P', Items.IRON_NUGGET)
