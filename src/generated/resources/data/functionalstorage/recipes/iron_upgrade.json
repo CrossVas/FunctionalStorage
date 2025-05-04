@@ -6,7 +6,7 @@
         {
           "values": [
             {
-              "item": "functionalstorage:warped_1",
+              "item": "functionalstorage:iron_upgrade",
               "type": "forge:item_exists"
             }
           ],
@@ -16,20 +16,26 @@
       "recipe": {
         "type": "minecraft:crafting_shaped",
         "pattern": [
-          "PPP",
-          "PCP",
-          "PPP"
+          "IBI",
+          "CDC",
+          "BIB"
         ],
         "key": {
-          "P": {
-            "item": "minecraft:warped_planks"
+          "I": {
+            "tag": "forge:ingots/iron"
+          },
+          "B": {
+            "tag": "forge:storage_blocks/iron"
+          },
+          "D": {
+            "tag": "functionalstorage:drawer"
           },
           "C": {
-            "tag": "forge:chests/wooden"
+            "tag": "forge:chests"
           }
         },
         "result": {
-          "item": "functionalstorage:warped_1"
+          "item": "functionalstorage:iron_upgrade"
         }
       }
     }

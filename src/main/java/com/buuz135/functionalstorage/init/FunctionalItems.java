@@ -13,17 +13,20 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nonnull;
-import java.util.stream.Stream;
+import java.util.Arrays;
+import java.util.List;
 
 public class FunctionalItems {
 
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, FunctionalStorage.MOD_ID);
 
-    public static final RegistryObject<Item> COPPER_UPGRADE = ITEMS.register("copper_upgrade", () -> new StorageUpgradeItem(StorageUpgradeItem.StorageTier.COPPER));
+    public static final RegistryObject<Item> FLINT_UPGRADE = ITEMS.register("flint_upgrade", () -> new StorageUpgradeItem(StorageUpgradeItem.StorageTier.FLINT));
+    public static final RegistryObject<Item> OBSIDIAN_UPGRADE = ITEMS.register("obsidian_upgrade", () -> new StorageUpgradeItem(StorageUpgradeItem.StorageTier.OBSIDIAN));
+    public static final RegistryObject<Item> IRON_UPGRADE = ITEMS.register("iron_upgrade", () -> new StorageUpgradeItem(StorageUpgradeItem.StorageTier.IRON));
     public static final RegistryObject<Item> GOLD_UPGRADE = ITEMS.register("gold_upgrade", () -> new StorageUpgradeItem(StorageUpgradeItem.StorageTier.GOLD));
     public static final RegistryObject<Item> DIAMOND_UPGRADE = ITEMS.register("diamond_upgrade", () -> new StorageUpgradeItem(StorageUpgradeItem.StorageTier.DIAMOND));
     public static final RegistryObject<Item> NETHERITE_UPGRADE = ITEMS.register("netherite_upgrade", () -> new StorageUpgradeItem(StorageUpgradeItem.StorageTier.NETHERITE));
-    public static final RegistryObject<Item> IRON_UPGRADE = ITEMS.register("iron_downgrade", () -> new StorageUpgradeItem(StorageUpgradeItem.StorageTier.IRON));
+
     public static final RegistryObject<Item> CREATIVE_UPGRADE = ITEMS.register("creative_vending_upgrade", () -> new UpgradeItem(new Item.Properties(), UpgradeItem.Type.STORAGE) {
         @Override
         public boolean isFoil(@Nonnull ItemStack stack) {
@@ -44,7 +47,7 @@ public class FunctionalItems {
         ITEMS.register(e);
     }
 
-    public static Stream<RegistryObject<Item>> STORAGE_UPGRADE = Stream.of(
-            COPPER_UPGRADE, GOLD_UPGRADE, DIAMOND_UPGRADE, NETHERITE_UPGRADE, IRON_UPGRADE
+    public static List<RegistryObject<Item>> STORAGE_UPGRADE = Arrays.asList(
+            FLINT_UPGRADE, OBSIDIAN_UPGRADE, IRON_UPGRADE, GOLD_UPGRADE, DIAMOND_UPGRADE, NETHERITE_UPGRADE
     );
 }

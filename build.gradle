@@ -128,7 +128,7 @@ dependencies {
 
     runtimeOnly fg.deobf("curse.maven:jei-238222:5846870")
     runtimeOnly fg.deobf("curse.maven:curios-309927:3275653")
-    runtimeOnly fg.deobf("blank:IC2Classic-1.16.5:1.0.60")
+//    runtimeOnly fg.deobf("blank:IC2Classic-1.16.5:1.0.60")
     runtimeOnly fg.deobf("blank:jade-1.16.5:1.8.9.2-dev")
 }
 

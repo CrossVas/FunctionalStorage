@@ -6,7 +6,7 @@
         {
           "values": [
             {
-              "item": "functionalstorage:warped_1",
+              "item": "functionalstorage:gold_upgrade",
               "type": "forge:item_exists"
             }
           ],
@@ -16,20 +16,26 @@
       "recipe": {
         "type": "minecraft:crafting_shaped",
         "pattern": [
-          "PPP",
-          "PCP",
-          "PPP"
+          "IBI",
+          "CDC",
+          "BIB"
         ],
         "key": {
-          "P": {
-            "item": "minecraft:warped_planks"
+          "I": {
+            "tag": "forge:ingots/gold"
+          },
+          "B": {
+            "tag": "forge:storage_blocks/gold"
           },
           "C": {
-            "tag": "forge:chests/wooden"
+            "item": "minecraft:barrel"
+          },
+          "D": {
+            "item": "functionalstorage:iron_upgrade"
           }
         },
         "result": {
-          "item": "functionalstorage:warped_1"
+          "item": "functionalstorage:gold_upgrade"
         }
       }
     }

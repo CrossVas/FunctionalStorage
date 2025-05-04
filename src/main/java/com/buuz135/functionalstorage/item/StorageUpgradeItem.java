@@ -55,12 +55,13 @@ public class StorageUpgradeItem extends UpgradeItem {
         return component;
     }
 
-    public static enum StorageTier {
-        COPPER(8, MathHelper.color(204, 109, 81)),
-        GOLD(16, MathHelper.color(233, 177, 21)),
-        DIAMOND(24, MathHelper.color(32, 197, 181)),
-        NETHERITE(32, MathHelper.color(49, 41, 42)),
-        IRON(1, MathHelper.color(130, 130, 130));
+    public enum StorageTier {
+        FLINT(1, MathHelper.color(50, 50, 50)),
+        OBSIDIAN(2, MathHelper.color(59, 47, 85)),
+        IRON(4, MathHelper.color(130, 130, 130)),
+        GOLD(8, MathHelper.color(233, 177, 21)),
+        DIAMOND(16, MathHelper.color(32, 197, 181)),
+        NETHERITE(32, MathHelper.color(49, 41, 42));
 
         private final int storageMultiplier;
         private final int color;

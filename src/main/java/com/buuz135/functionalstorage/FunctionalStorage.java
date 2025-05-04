@@ -1,9 +1,6 @@
 package com.buuz135.functionalstorage;
 
-import com.buuz135.functionalstorage.block.CompactingDrawerBlock;
-import com.buuz135.functionalstorage.block.DrawerBlock;
-import com.buuz135.functionalstorage.block.EnderDrawerBlock;
-import com.buuz135.functionalstorage.block.FluidDrawerBlock;
+import com.buuz135.functionalstorage.block.*;
 import com.buuz135.functionalstorage.block.tile.CompactingFramedDrawerTile;
 import com.buuz135.functionalstorage.block.tile.FluidDrawerTile;
 import com.buuz135.functionalstorage.block.tile.FramedDrawerTile;
@@ -312,6 +309,12 @@ public class FunctionalStorage extends ModuleController {
                     FunctionalItems.STORAGE_UPGRADE.forEach(itemObject -> {
                         item(itemObject.get());
                     });
+                    item(FunctionalItems.COLLECTOR_UPGRADE.get());
+                    item(FunctionalItems.PULLING_UPGRADE.get());
+                    item(FunctionalItems.PUSHING_UPGRADE.get());
+                    item(FunctionalItems.VOID_UPGRADE.get());
+                    item(FunctionalItems.REDSTONE_UPGRADE.get());
+                    item(FunctionalItems.CREATIVE_UPGRADE.get());
                 }
 
                 private void item(Item item) {
@@ -324,6 +327,7 @@ public class FunctionalStorage extends ModuleController {
                     FunctionalBlocks.TYPED_DRAWER_BLOCKS.forEach(blockObject -> {
                         withExistingParent(blockObject.getRegistryName().getPath() + "_locked", modLoc(blockObject.getRegistryName().getPath()))
                                 .texture("lock_icon", modLoc("blocks/lock"));
+
                     });
                     withExistingParent(ForgeRegistries.BLOCKS.getKey(FunctionalBlocks.COMPACTING).getPath() + "_locked", modLoc(ForgeRegistries.BLOCKS.getKey(FunctionalBlocks.COMPACTING).getPath()))
                             .texture("lock_icon", modLoc("blocks/lock"));
@@ -344,11 +348,86 @@ public class FunctionalStorage extends ModuleController {
             @Override
             public void register(Consumer<IFinishedRecipe> consumer) {
                 blocksToProcess.get().stream().map(block -> (BasicBlock) block).forEach(basicBlock -> basicBlock.registerRecipe(consumer));
-                TitaniumShapedRecipeBuilder.shapedRecipe(FunctionalItems.IRON_UPGRADE.get())
-                        .pattern("III").pattern("IDI").pattern("III")
-                        .define('I', Tags.Items.INGOTS_IRON)
+
+                // flint
+                TitaniumShapedRecipeBuilder.shapedRecipe(FunctionalItems.FLINT_UPGRADE.get())
+                        .pattern("III").pattern("CDC").pattern("III")
+                        .define('I', Items.FLINT)
                         .define('D', StorageTags.DRAWER)
+                        .define('C', Tags.Items.CHESTS)
                         .save(consumer);
+
+                TitaniumShapedRecipeBuilder.shapedRecipe(FunctionalItems.FLINT_UPGRADE.get())
+                        .setName(new ResourceLocation(MOD_ID, "flint_upgrade_drawer"))
+                        .pattern("III").pattern("CDC").pattern("III")
+                        .define('I', Items.FLINT)
+                        .define('D', StorageTags.DRAWER)
+                        .define('C', Items.BARREL)
+                        .save(consumer);
+
+                // obsidian
+                TitaniumShapedRecipeBuilder.shapedRecipe(FunctionalItems.OBSIDIAN_UPGRADE.get())
+                        .pattern("III").pattern(" D ").pattern("III")
+                        .define('I', Items.OBSIDIAN)
+                        .define('D', FunctionalItems.FLINT_UPGRADE.get())
+                        .save(consumer);
+
+                // iron upgrade
+                TitaniumShapedRecipeBuilder.shapedRecipe(FunctionalItems.IRON_UPGRADE.get())
+                        .pattern("IBI").pattern("CDC").pattern("BIB")
+                        .define('I', Tags.Items.INGOTS_IRON)
+                        .define('B', Tags.Items.STORAGE_BLOCKS_IRON)
+                        .define('D', StorageTags.DRAWER)
+                        .define('C', Tags.Items.CHESTS)
+                        .save(consumer);
+                TitaniumShapedRecipeBuilder.shapedRecipe(FunctionalItems.IRON_UPGRADE.get())
+                        .setName(new ResourceLocation(MOD_ID, "iron_upgrade_drawer"))
+                        .pattern("IBI").pattern("CDC").pattern("BIB")
+                        .define('I', Tags.Items.INGOTS_IRON)
+                        .define('B', Tags.Items.STORAGE_BLOCKS_IRON)
+                        .define('D', StorageTags.DRAWER)
+                        .define('C', Items.BARREL)
+                        .save(consumer);
+
+                // gold
+                TitaniumShapedRecipeBuilder.shapedRecipe(FunctionalItems.GOLD_UPGRADE.get())
+                        .pattern("IBI").pattern("CDC").pattern("BIB")
+                        .define('I', Tags.Items.INGOTS_GOLD)
+                        .define('B', Tags.Items.STORAGE_BLOCKS_GOLD)
+                        .define('C', Tags.Items.CHESTS_WOODEN)
+                        .define('D', FunctionalItems.IRON_UPGRADE.get())
+                        .save(consumer);
+                TitaniumShapedRecipeBuilder.shapedRecipe(FunctionalItems.GOLD_UPGRADE.get())
+                        .setName(new ResourceLocation(MOD_ID, "gold_upgrade_drawer"))
+                        .pattern("IBI").pattern("CDC").pattern("BIB")
+                        .define('I', Tags.Items.INGOTS_GOLD)
+                        .define('B', Tags.Items.STORAGE_BLOCKS_GOLD)
+                        .define('C', Items.BARREL)
+                        .define('D', FunctionalItems.IRON_UPGRADE.get())
+                        .save(consumer);
+
+                // diamond
+                TitaniumShapedRecipeBuilder.shapedRecipe(FunctionalItems.DIAMOND_UPGRADE.get())
+                        .setName(new ResourceLocation(MOD_ID, "diamond_upgrade_drawer"))
+                        .pattern("IBI").pattern("CDC").pattern("IBI")
+                        .define('I', Tags.Items.GEMS_DIAMOND)
+                        .define('B', Tags.Items.STORAGE_BLOCKS_DIAMOND)
+                        .define('C', Tags.Items.CHESTS_WOODEN)
+                        .define('D', FunctionalItems.GOLD_UPGRADE.get())
+                        .save(consumer);
+                TitaniumShapedRecipeBuilder.shapedRecipe(FunctionalItems.DIAMOND_UPGRADE.get())
+                        .pattern("IBI").pattern("CDC").pattern("IBI")
+                        .define('I', Tags.Items.GEMS_DIAMOND)
+                        .define('B', Tags.Items.STORAGE_BLOCKS_DIAMOND)
+                        .define('C', Items.BARREL)
+                        .define('D', FunctionalItems.GOLD_UPGRADE.get())
+                        .save(consumer);
+
+                // netherite
+                SmithingRecipeBuilder.smithing(Ingredient.of(FunctionalItems.DIAMOND_UPGRADE.get()), Ingredient.of(Items.NETHERITE_INGOT), FunctionalItems.NETHERITE_UPGRADE.get())
+                        .unlocks("has_netherite_ingot", has(Items.NETHERITE_INGOT))
+                        .save(consumer, ForgeRegistries.ITEMS.getKey(FunctionalItems.NETHERITE_UPGRADE.get()));
+
                 TitaniumShapedRecipeBuilder.shapedRecipe(FunctionalItems.VOID_UPGRADE.get())
                         .pattern("III").pattern("IDI").pattern("III")
                         .define('I', Tags.Items.OBSIDIAN)
@@ -368,27 +447,6 @@ public class FunctionalStorage extends ModuleController {
                         .define('D', StorageTags.DRAWER)
                         .define('E', Items.DIAMOND)
                         .save(consumer);
-                TitaniumShapedRecipeBuilder.shapedRecipe(FunctionalItems.COPPER_UPGRADE.get())
-                        .pattern("IBI").pattern("CDC").pattern("IBI")
-                        .define('I', Items.COAL)
-                        .define('B', Items.COAL_BLOCK)
-                        .define('C', Tags.Items.CHESTS_WOODEN)
-                        .define('D', StorageTags.DRAWER)
-                        .save(consumer);
-                TitaniumShapedRecipeBuilder.shapedRecipe(FunctionalItems.GOLD_UPGRADE.get())
-                        .pattern("IBI").pattern("CDC").pattern("BIB")
-                        .define('I', Tags.Items.INGOTS_GOLD)
-                        .define('B', Tags.Items.STORAGE_BLOCKS_GOLD)
-                        .define('C', Tags.Items.CHESTS_WOODEN)
-                        .define('D', FunctionalItems.COPPER_UPGRADE.get())
-                        .save(consumer);
-                TitaniumShapedRecipeBuilder.shapedRecipe(FunctionalItems.DIAMOND_UPGRADE.get())
-                        .pattern("IBI").pattern("CDC").pattern("IBI")
-                        .define('I', Tags.Items.GEMS_DIAMOND)
-                        .define('B', Tags.Items.STORAGE_BLOCKS_DIAMOND)
-                        .define('C', Tags.Items.CHESTS_WOODEN)
-                        .define('D', FunctionalItems.GOLD_UPGRADE.get())
-                        .save(consumer);
                 TitaniumShapedRecipeBuilder.shapedRecipe(FunctionalItems.REDSTONE_UPGRADE.get())
                         .pattern("IBI").pattern("CDC").pattern("IBI")
                         .define('I', Items.REDSTONE)
@@ -396,9 +454,6 @@ public class FunctionalStorage extends ModuleController {
                         .define('C', Items.COMPARATOR)
                         .define('D', StorageTags.DRAWER)
                         .save(consumer);
-                SmithingRecipeBuilder.smithing(Ingredient.of(FunctionalItems.DIAMOND_UPGRADE.get()), Ingredient.of(Items.NETHERITE_INGOT), FunctionalItems.NETHERITE_UPGRADE.get())
-                        .unlocks("has_netherite_ingot", has(Items.NETHERITE_INGOT))
-                        .save(consumer, ForgeRegistries.ITEMS.getKey(FunctionalItems.NETHERITE_UPGRADE.get()));
                 TitaniumShapedRecipeBuilder.shapedRecipe(FunctionalBlocks.ARMORY_CABINET)
                         .pattern("ICI").pattern("CDC").pattern("IBI")
                         .define('I', Tags.Items.STONE)

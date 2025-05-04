@@ -266,14 +266,14 @@ public class DrawerBlock extends RotatableBlock<DrawerTile> {
                     .define('P', woodType.getPlanks())
                     .define('C', Tags.Items.CHESTS_WOODEN)
                     .save(consumer);
-            if (woodType.getName().equals("oak")) {
-                TitaniumShapedRecipeBuilder.shapedRecipe(this)
-                        .setName(new ResourceLocation(FunctionalStorage.MOD_ID, "oak_drawer_alternate_x1"))
-                        .pattern("PPP").pattern("PCP").pattern("PPP")
-                        .define('P', new DrawerlessWoodIngredient())
-                        .define('C', Tags.Items.CHESTS_WOODEN)
-                        .save(consumer);
-            }
+//            if (woodType.getName().equals("oak")) {
+//                TitaniumShapedRecipeBuilder.shapedRecipe(this)
+//                        .setName(new ResourceLocation(FunctionalStorage.MOD_ID, "oak_drawer_alternate_x1"))
+//                        .pattern("PPP").pattern("PCP").pattern("PPP")
+//                        .define('P', new DrawerlessWoodIngredient())
+//                        .define('C', Tags.Items.CHESTS_WOODEN)
+//                        .save(consumer);
+//            }
         }
         if (type == DrawerType.X_2) {
             TitaniumShapedRecipeBuilder.shapedRecipe(this, 2)
@@ -281,14 +281,14 @@ public class DrawerBlock extends RotatableBlock<DrawerTile> {
                     .define('P', woodType.getPlanks())
                     .define('C', Tags.Items.CHESTS_WOODEN)
                     .save(consumer);
-            if (woodType.getName().equals("oak")) {
-                TitaniumShapedRecipeBuilder.shapedRecipe(this, 2)
-                        .setName(new ResourceLocation(FunctionalStorage.MOD_ID, "oak_drawer_alternate_x2"))
-                        .pattern("PCP").pattern("PPP").pattern("PCP")
-                        .define('P', new DrawerlessWoodIngredient())
-                        .define('C', Tags.Items.CHESTS_WOODEN)
-                        .save(consumer);
-            }
+//            if (woodType.getName().equals("oak")) {
+//                TitaniumShapedRecipeBuilder.shapedRecipe(this, 2)
+//                        .setName(new ResourceLocation(FunctionalStorage.MOD_ID, "oak_drawer_alternate_x2"))
+//                        .pattern("PCP").pattern("PPP").pattern("PCP")
+//                        .define('P', new DrawerlessWoodIngredient())
+//                        .define('C', Tags.Items.CHESTS_WOODEN)
+//                        .save(consumer);
+//            }
         }
         if (type == DrawerType.X_4) {
             TitaniumShapedRecipeBuilder.shapedRecipe(this, 4)
@@ -296,14 +296,14 @@ public class DrawerBlock extends RotatableBlock<DrawerTile> {
                     .define('P', woodType.getPlanks())
                     .define('C', Tags.Items.CHESTS_WOODEN)
                     .save(consumer);
-            if (woodType.getName().equals("oak")) {
-                TitaniumShapedRecipeBuilder.shapedRecipe(this, 4)
-                        .setName(new ResourceLocation(FunctionalStorage.MOD_ID, "oak_drawer_alternate_x4"))
-                        .pattern("CPC").pattern("PPP").pattern("CPC")
-                        .define('P', new DrawerlessWoodIngredient())
-                        .define('C', Tags.Items.CHESTS_WOODEN)
-                        .save(consumer);
-            }
+//            if (woodType.getName().equals("oak")) {
+//                TitaniumShapedRecipeBuilder.shapedRecipe(this, 4)
+//                        .setName(new ResourceLocation(FunctionalStorage.MOD_ID, "oak_drawer_alternate_x4"))
+//                        .pattern("CPC").pattern("PPP").pattern("CPC")
+//                        .define('P', new DrawerlessWoodIngredient())
+//                        .define('C', Tags.Items.CHESTS_WOODEN)
+//                        .save(consumer);
+//            }
         }
     }
 

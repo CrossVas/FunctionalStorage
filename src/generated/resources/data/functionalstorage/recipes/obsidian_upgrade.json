@@ -6,7 +6,7 @@
         {
           "values": [
             {
-              "item": "functionalstorage:warped_1",
+              "item": "functionalstorage:obsidian_upgrade",
               "type": "forge:item_exists"
             }
           ],
@@ -16,20 +16,20 @@
       "recipe": {
         "type": "minecraft:crafting_shaped",
         "pattern": [
-          "PPP",
-          "PCP",
-          "PPP"
+          "III",
+          " D ",
+          "III"
         ],
         "key": {
-          "P": {
-            "item": "minecraft:warped_planks"
+          "I": {
+            "item": "minecraft:obsidian"
           },
-          "C": {
-            "tag": "forge:chests/wooden"
+          "D": {
+            "item": "functionalstorage:flint_upgrade"
           }
         },
         "result": {
-          "item": "functionalstorage:warped_1"
+          "item": "functionalstorage:obsidian_upgrade"
         }
       }
     }

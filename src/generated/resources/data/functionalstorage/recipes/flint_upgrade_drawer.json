@@ -6,7 +6,7 @@
         {
           "values": [
             {
-              "item": "functionalstorage:warped_1",
+              "item": "functionalstorage:flint_upgrade",
               "type": "forge:item_exists"
             }
           ],
@@ -16,20 +16,23 @@
       "recipe": {
         "type": "minecraft:crafting_shaped",
         "pattern": [
-          "PPP",
-          "PCP",
-          "PPP"
+          "III",
+          "CDC",
+          "III"
         ],
         "key": {
-          "P": {
-            "item": "minecraft:warped_planks"
+          "I": {
+            "item": "minecraft:flint"
+          },
+          "D": {
+            "tag": "functionalstorage:drawer"
           },
           "C": {
-            "tag": "forge:chests/wooden"
+            "item": "minecraft:barrel"
           }
         },
         "result": {
-          "item": "functionalstorage:warped_1"
+          "item": "functionalstorage:flint_upgrade"
         }
       }
     }

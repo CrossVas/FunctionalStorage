@@ -6,7 +6,7 @@
         {
           "values": [
             {
-              "item": "functionalstorage:warped_1",
+              "item": "functionalstorage:diamond_upgrade",
               "type": "forge:item_exists"
             }
           ],
@@ -16,20 +16,26 @@
       "recipe": {
         "type": "minecraft:crafting_shaped",
         "pattern": [
-          "PPP",
-          "PCP",
-          "PPP"
+          "IBI",
+          "CDC",
+          "IBI"
         ],
         "key": {
-          "P": {
-            "item": "minecraft:warped_planks"
+          "I": {
+            "tag": "forge:gems/diamond"
+          },
+          "B": {
+            "tag": "forge:storage_blocks/diamond"
           },
           "C": {
             "tag": "forge:chests/wooden"
+          },
+          "D": {
+            "item": "functionalstorage:gold_upgrade"
           }
         },
         "result": {
-          "item": "functionalstorage:warped_1"
+          "item": "functionalstorage:diamond_upgrade"
         }
       }
     }
