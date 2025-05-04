@@ -160,18 +160,22 @@ public class CompactingDrawerBlock extends RotatableBlock<CompactingDrawerTile> 
         return blockLootTables.droppingNothing();
     }
 
+    @Override
+    public NonNullList<ItemStack> getDynamicDrops(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
+        return NonNullList.create();
+    }
 
     @Override
-    public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
+    public List<ItemStack> getDrops(BlockState p_60537_, LootContext.Builder builder) {
         NonNullList<ItemStack> stacks = NonNullList.create();
         ItemStack stack = new ItemStack(this);
         TileEntity drawerTile = builder.getOptionalParameter(LootParameters.BLOCK_ENTITY);
         if (drawerTile instanceof ControllableDrawerTile) {
             ControllableDrawerTile<?> tile = (ControllableDrawerTile<?>) drawerTile;
             if (!tile.isEverythingEmpty()) {
-                stack.getOrCreateTag().put("Tile", drawerTile.save(new CompoundNBT()));
+                stack.getOrCreateTag().put("Tile", tile.saveWithoutMetadata());
             }
-            if (tile.isLocked()) {
+            if (tile.isLocked()){
                 stack.getOrCreateTag().putBoolean("Locked", tile.isLocked());
             }
         }
@@ -180,27 +184,19 @@ public class CompactingDrawerBlock extends RotatableBlock<CompactingDrawerTile> 
     }
 
     @Override
-    public NonNullList<ItemStack> getDynamicDrops(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
-        return NonNullList.create();
-    }
-
-    @Override
     public void setPlacedBy(World level, BlockPos pos, BlockState state, @Nullable LivingEntity livingEntity, ItemStack stack) {
         super.setPlacedBy(level, pos, state, livingEntity, stack);
-        if (stack.hasTag()) {
-            if (stack.getTag().contains("Tile")) {
-                TileEntity entity = level.getBlockEntity(pos);
-                if (entity instanceof ControllableDrawerTile) {
-                    ControllableDrawerTile<?> tile = (ControllableDrawerTile<?>) entity;
-                    entity.load(state, stack.getTag().getCompound("Tile"));
-                    tile.markForUpdate();
+        TileEntity blockEntity = level.getBlockEntity(pos);
+        if (blockEntity instanceof ControllableDrawerTile) {
+            ControllableDrawerTile<?> drawerTile = (ControllableDrawerTile<?>) blockEntity;
+            if (stack.hasTag()) {
+                CompoundNBT tag = stack.getTag();
+                if (tag.contains("Tile")) {
+                    drawerTile.load(tag.getCompound("Tile"));
+                    drawerTile.markForUpdate();
                 }
-            }
-            if (stack.getTag().contains("Locked")) {
-                TileEntity entity = level.getBlockEntity(pos);
-                if (entity instanceof ControllableDrawerTile) {
-                    ControllableDrawerTile<?> tile = (ControllableDrawerTile<?>) entity;
-                    tile.setLocked(stack.getTag().getBoolean("Locked"));
+                if (tag.contains("Locked")) {
+                    drawerTile.setLocked(tag.getBoolean("Locked"));
                 }
             }
         }

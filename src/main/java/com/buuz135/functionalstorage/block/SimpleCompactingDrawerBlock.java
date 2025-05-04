@@ -25,7 +25,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.loot.LootContext;
 import net.minecraft.loot.LootParameters;
 import net.minecraft.loot.LootTable;
-import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResultType;
@@ -151,7 +150,7 @@ public class SimpleCompactingDrawerBlock extends RotatableBlock<SimpleCompacting
         if (drawerTile instanceof ControllableDrawerTile) {
             ControllableDrawerTile<?> tile = (ControllableDrawerTile<?>) drawerTile;
             if (!tile.isEverythingEmpty()) {
-                stack.getOrCreateTag().put("Tile", drawerTile.save(new CompoundNBT()));
+                stack.getOrCreateTag().put("Tile", tile.saveWithoutMetadata());
             }
             if (tile.isLocked()) {
                 stack.getOrCreateTag().putBoolean("Locked", tile.isLocked());
@@ -174,7 +173,7 @@ public class SimpleCompactingDrawerBlock extends RotatableBlock<SimpleCompacting
                 TileEntity entity = level.getBlockEntity(pos);
                 if (entity instanceof ControllableDrawerTile) {
                     ControllableDrawerTile<?> tile = (ControllableDrawerTile<?>) entity;
-                    entity.load(state, stack.getTag().getCompound("Tile"));
+                    tile.load(stack.getTag().getCompound("Tile"));
                     tile.markForUpdate();
                 }
             }

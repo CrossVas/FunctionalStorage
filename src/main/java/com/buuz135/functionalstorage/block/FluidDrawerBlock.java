@@ -167,7 +167,7 @@ public class FluidDrawerBlock extends RotatableBlock<FluidDrawerTile> {
         if (drawerTile instanceof FluidDrawerTile) {
             FluidDrawerTile tile = (FluidDrawerTile) drawerTile;
             if (!tile.isEverythingEmpty()) {
-                stack.getOrCreateTag().put("Tile", drawerTile.save(new CompoundNBT()));
+                stack.getOrCreateTag().put("Tile", tile.saveWithoutMetadata());
             }
             if (tile.isLocked()) {
                 stack.getOrCreateTag().putBoolean("Locked", tile.isLocked());
@@ -190,7 +190,7 @@ public class FluidDrawerBlock extends RotatableBlock<FluidDrawerTile> {
                 TileEntity entity = level.getBlockEntity(pos);
                 if (entity instanceof ControllableDrawerTile) {
                     ControllableDrawerTile<?> tile = (ControllableDrawerTile<?>) entity;
-                    entity.load(state, stack.getTag().getCompound("Tile"));
+                    tile.load(stack.getTag().getCompound("Tile"));
                     tile.markForUpdate();
                 }
             }

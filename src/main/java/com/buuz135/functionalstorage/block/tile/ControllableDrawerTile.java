@@ -7,28 +7,37 @@ import com.buuz135.functionalstorage.item.LinkingToolItem;
 import com.buuz135.functionalstorage.item.StorageUpgradeItem;
 import com.buuz135.functionalstorage.item.UpgradeItem;
 import com.hrznstudio.titanium.annotation.Save;
-import com.hrznstudio.titanium.api.IFactory;
-import com.hrznstudio.titanium.api.client.IScreenAddon;
 import com.hrznstudio.titanium.block.BasicTileBlock;
 import com.hrznstudio.titanium.block.tile.ActiveTile;
 import com.hrznstudio.titanium.client.screen.addon.TextScreenAddon;
 import com.hrznstudio.titanium.component.inventory.InventoryComponent;
+import com.hrznstudio.titanium.nbthandler.NBTManager;
 import com.hrznstudio.titanium.util.TileUtil;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SUpdateTileEntityPacket;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.World;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.INBTSerializable;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.items.ItemHandlerHelper;
 
+import javax.annotation.Nonnull;
 import java.util.HashMap;
-import java.util.List;
 
 public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>> extends ActiveTile<T> {
 
@@ -74,29 +83,35 @@ public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>
     }
 
     @Override
-    public List<IFactory<? extends IScreenAddon>> getScreenAddons() {
-        List<IFactory<? extends IScreenAddon>> screenAddons = super.getScreenAddons();
+    public void setLevelAndPosition(World level, BlockPos pos) {
+        super.setLevelAndPosition(level, pos);
+        if (isClient()) {
+            initClient();
+        }
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public void initClient() {
         if (getStorageSlotAmount() > 0) {
-            screenAddons.add(() -> new TextScreenAddon("Storage", 10, 59, false, TextFormatting.DARK_GRAY.getColor()) {
+            addGuiAddonFactory(() -> new TextScreenAddon("Storage", 10, 59, false, TextFormatting.DARK_GRAY.getColor()) {
                 @Override
                 public String getText() {
                     return new TranslationTextComponent("key.categories.storage").getString();
                 }
             });
         }
-        screenAddons.add(() -> new TextScreenAddon("Utility", 114, 59, false, TextFormatting.DARK_GRAY.getColor()) {
+        addGuiAddonFactory(() -> new TextScreenAddon("Utility", 114, 59, false, TextFormatting.DARK_GRAY.getColor()) {
             @Override
             public String getText() {
                 return new TranslationTextComponent("key.categories.utility").getString();
             }
         });
-        screenAddons.add(() -> new TextScreenAddon("key.categories.inventory", 8, 92, false, TextFormatting.DARK_GRAY.getColor()) {
+        addGuiAddonFactory(() -> new TextScreenAddon("key.categories.inventory", 8, 92, false, TextFormatting.DARK_GRAY.getColor()) {
             @Override
             public String getText() {
                 return new TranslationTextComponent("key.categories.inventory").getString();
             }
         });
-        return screenAddons;
     }
 
     @Override
@@ -114,6 +129,76 @@ public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>
                 }
             }
         }
+    }
+
+    @Nonnull
+    @Override
+    public CompoundNBT getUpdateTag() {
+        CompoundNBT tag = new CompoundNBT();
+        save(tag);
+        return tag;
+    }
+
+    @Override
+    public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
+        load(pkt.getTag());
+    }
+
+    @Override
+    public SUpdateTileEntityPacket getUpdatePacket() {
+        CompoundNBT tag = new CompoundNBT();
+        saveAdditional(tag);
+        return new SUpdateTileEntityPacket(getBlockPos(), 1, tag);
+    }
+
+    @Override
+    public void load(BlockState state, CompoundNBT compound) {
+        load(compound);
+        // super implementation
+        this.worldPosition = new BlockPos(compound.getInt("x"), compound.getInt("y"), compound.getInt("z"));
+        if (compound.contains("ForgeData")) ObfuscationReflectionHelper.setPrivateValue(TileEntity.class, this, compound.getCompound("ForgeData"), "customTileData");
+        if (getCapabilities() != null && compound.contains("ForgeCaps")) deserializeCaps(compound.getCompound("ForgeCaps"));
+    }
+
+    public void load(CompoundNBT compoundNBT) {
+        NBTManager.getInstance().readTileEntity(this, compoundNBT);
+    }
+
+    @Nonnull
+    @Override
+    public CompoundNBT save(CompoundNBT compound) {
+        // Inject the "metadata" that saveMetadata would add
+        // we basically mimic the newer system
+        ResourceLocation id = TileEntityType.getKey(this.getType());
+        if (id == null) {
+            throw new RuntimeException(this.getClass() + " is missing a mapping! This is a bug!");
+        }
+        compound.putString("id", id.toString());
+        BlockPos pos = this.getBlockPos();
+        compound.putInt("x", pos.getX());
+        compound.putInt("y", pos.getY());
+        compound.putInt("z", pos.getZ());
+        CompoundNBT customTileData = ObfuscationReflectionHelper.getPrivateValue(TileEntity.class, this, "customTileData");
+        if (customTileData != null) {
+            compound.put("ForgeData", customTileData);
+        }
+        if (getCapabilities() != null) {
+            compound.put("ForgeCaps", serializeCaps());
+        }
+
+        // add our data
+        this.saveAdditional(compound);
+        return compound;
+    }
+
+    public CompoundNBT saveAdditional(CompoundNBT compoundNBT) {
+        return NBTManager.getInstance().writeTileEntity(this, compoundNBT);
+    }
+
+    public final CompoundNBT saveWithoutMetadata() {
+        CompoundNBT tag = new CompoundNBT();
+        this.saveAdditional(tag);
+        return tag;
     }
 
     public BlockPos getControllerPos() {

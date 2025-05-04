@@ -27,7 +27,6 @@ import net.minecraft.item.Items;
 import net.minecraft.loot.LootContext;
 import net.minecraft.loot.LootParameters;
 import net.minecraft.loot.LootTable;
-import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResultType;
@@ -166,7 +165,7 @@ public class EnderDrawerBlock extends RotatableBlock<EnderDrawerTile> {
         if (drawerTile instanceof EnderDrawerTile) {
             EnderDrawerTile tile = (EnderDrawerTile) drawerTile;
             if (!tile.isEverythingEmpty()) {
-                stack.getOrCreateTag().put("Tile", drawerTile.save(new CompoundNBT()));
+                stack.getOrCreateTag().put("Tile", tile.saveWithoutMetadata());
             }
         }
         stacks.add(stack);
@@ -181,7 +180,7 @@ public class EnderDrawerBlock extends RotatableBlock<EnderDrawerTile> {
                 TileEntity entity = level.getBlockEntity(pos);
                 if (entity instanceof ControllableDrawerTile) {
                     ControllableDrawerTile<?> tile = (ControllableDrawerTile<?>) entity;
-                    entity.load(state, stack.getTag().getCompound("Tile"));
+                    tile.load(stack.getTag().getCompound("Tile"));
                     tile.markForUpdate();
                 }
             }

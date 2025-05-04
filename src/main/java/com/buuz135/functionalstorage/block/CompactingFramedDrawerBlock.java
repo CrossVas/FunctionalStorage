@@ -18,7 +18,6 @@ import net.minecraft.item.Items;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.loot.LootContext;
 import net.minecraft.loot.LootParameters;
-import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
@@ -66,7 +65,7 @@ public class CompactingFramedDrawerBlock extends CompactingDrawerBlock {
         if (drawerTile instanceof CompactingFramedDrawerTile) {
             CompactingFramedDrawerTile framedDrawerTile = (CompactingFramedDrawerTile) drawerTile;
             if (!framedDrawerTile.isEverythingEmpty()) {
-                stack.getOrCreateTag().put("Tile", drawerTile.save(new CompoundNBT()));
+                stack.getOrCreateTag().put("Tile", framedDrawerTile.saveWithoutMetadata());
             }
             if (framedDrawerTile.getFramedDrawerModelData() != null) {
                 stack.getOrCreateTag().put("Style", framedDrawerTile.getFramedDrawerModelData().serializeNBT());

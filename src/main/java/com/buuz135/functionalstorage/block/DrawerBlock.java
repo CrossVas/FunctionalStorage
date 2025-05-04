@@ -1,21 +1,18 @@
 package com.buuz135.functionalstorage.block;
 
 import com.buuz135.functionalstorage.FunctionalStorage;
-import com.buuz135.functionalstorage.block.tile.ControllableDrawerTile;
 import com.buuz135.functionalstorage.block.tile.DrawerControllerTile;
 import com.buuz135.functionalstorage.block.tile.DrawerTile;
 import com.buuz135.functionalstorage.block.tile.ItemControllableDrawerTile;
 import com.buuz135.functionalstorage.init.FunctionalItems;
 import com.buuz135.functionalstorage.inventory.item.DrawerCapabilityProvider;
 import com.buuz135.functionalstorage.item.LinkingToolItem;
-import com.buuz135.functionalstorage.recipe.DrawerlessWoodIngredient;
 import com.buuz135.functionalstorage.util.DrawerType;
 import com.buuz135.functionalstorage.util.IWoodType;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.hrznstudio.titanium.api.IFactory;
 import com.hrznstudio.titanium.block.RotatableBlock;
-import com.hrznstudio.titanium.datagenerator.loot.block.BasicBlockLootTables;
 import com.hrznstudio.titanium.recipe.generator.TitaniumShapedRecipeBuilder;
 import com.hrznstudio.titanium.util.RayTraceUtils;
 import com.hrznstudio.titanium.util.TileUtil;
@@ -31,12 +28,14 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.LootContext;
 import net.minecraft.loot.LootParameters;
-import net.minecraft.loot.LootTable;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.*;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
@@ -203,27 +202,16 @@ public class DrawerBlock extends RotatableBlock<DrawerTile> {
     }
 
     @Override
-    public LootTable.Builder getLootTable(@Nonnull BasicBlockLootTables blockLootTables) {
-        //CopyNbtFunction.Builder nbtBuilder = CopyNbtFunction.copyData(ContextNbtProvider.BLOCK_ENTITY);
-        //nbtBuilder.copy("handler",  "BlockEntityTag.handler");
-        //nbtBuilder.copy("storageUpgrades",  "BlockEntityTag.storageUpgrades");
-        //nbtBuilder.copy("utilityUpgrades",  "BlockEntityTag.utilityUpgrades");
-        //return blockLootTables.droppingSelfWithNbt(this, nbtBuilder);
-        return blockLootTables.droppingNothing();
-    }
-
-
-    @Override
-    public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
+    public List<ItemStack> getDrops(BlockState p_60537_, LootContext.Builder builder) {
         NonNullList<ItemStack> stacks = NonNullList.create();
         ItemStack stack = new ItemStack(this);
         TileEntity drawerTile = builder.getOptionalParameter(LootParameters.BLOCK_ENTITY);
         if (drawerTile instanceof DrawerTile) {
             DrawerTile tile = (DrawerTile) drawerTile;
             if (!tile.isEverythingEmpty()) {
-                stack.getOrCreateTag().put("Tile", drawerTile.save(new CompoundNBT()));
+                stack.getOrCreateTag().put("Tile", tile.saveWithoutMetadata());
             }
-            if (tile.isLocked()) {
+            if (tile.isLocked()){
                 stack.getOrCreateTag().putBoolean("Locked", tile.isLocked());
             }
         }
@@ -232,30 +220,27 @@ public class DrawerBlock extends RotatableBlock<DrawerTile> {
     }
 
     @Override
-    public NonNullList<ItemStack> getDynamicDrops(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
-        return NonNullList.create();
-    }
-
-    @Override
     public void setPlacedBy(World level, BlockPos pos, BlockState state, @Nullable LivingEntity livingEntity, ItemStack stack) {
         super.setPlacedBy(level, pos, state, livingEntity, stack);
-        if (stack.hasTag()) {
-            if (stack.getTag().contains("Tile")) {
-                TileEntity entity = level.getBlockEntity(pos);
-                if (entity instanceof ControllableDrawerTile) {
-                    ControllableDrawerTile<?> tile = (ControllableDrawerTile<?>) entity;
-                    entity.load(state, stack.getTag().getCompound("Tile"));
-                    tile.markForUpdate();
+        TileEntity blockEntity = level.getBlockEntity(pos);
+        if (blockEntity instanceof DrawerTile) {
+            DrawerTile drawerTile = (DrawerTile) blockEntity;
+            if (stack.hasTag()) {
+                CompoundNBT tag = stack.getTag();
+                if (tag.contains("Tile")) {
+                    drawerTile.load(tag.getCompound("Tile"));
+                    drawerTile.markForUpdate();
                 }
-            }
-            if (stack.getTag().contains("Locked")) {
-                TileEntity entity = level.getBlockEntity(pos);
-                if (entity instanceof ControllableDrawerTile) {
-                    ControllableDrawerTile<?> tile = (ControllableDrawerTile<?>) entity;
-                    tile.setLocked(stack.getTag().getBoolean("Locked"));
+                if (tag.contains("Locked")) {
+                    drawerTile.setLocked(tag.getBoolean("Locked"));
                 }
             }
         }
+    }
+
+    @Override
+    public NonNullList<ItemStack> getDynamicDrops(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
+        return NonNullList.create();
     }
 
     @Override
@@ -266,14 +251,6 @@ public class DrawerBlock extends RotatableBlock<DrawerTile> {
                     .define('P', woodType.getPlanks())
                     .define('C', Tags.Items.CHESTS_WOODEN)
                     .save(consumer);
-//            if (woodType.getName().equals("oak")) {
-//                TitaniumShapedRecipeBuilder.shapedRecipe(this)
-//                        .setName(new ResourceLocation(FunctionalStorage.MOD_ID, "oak_drawer_alternate_x1"))
-//                        .pattern("PPP").pattern("PCP").pattern("PPP")
-//                        .define('P', new DrawerlessWoodIngredient())
-//                        .define('C', Tags.Items.CHESTS_WOODEN)
-//                        .save(consumer);
-//            }
         }
         if (type == DrawerType.X_2) {
             TitaniumShapedRecipeBuilder.shapedRecipe(this, 2)
@@ -281,14 +258,6 @@ public class DrawerBlock extends RotatableBlock<DrawerTile> {
                     .define('P', woodType.getPlanks())
                     .define('C', Tags.Items.CHESTS_WOODEN)
                     .save(consumer);
-//            if (woodType.getName().equals("oak")) {
-//                TitaniumShapedRecipeBuilder.shapedRecipe(this, 2)
-//                        .setName(new ResourceLocation(FunctionalStorage.MOD_ID, "oak_drawer_alternate_x2"))
-//                        .pattern("PCP").pattern("PPP").pattern("PCP")
-//                        .define('P', new DrawerlessWoodIngredient())
-//                        .define('C', Tags.Items.CHESTS_WOODEN)
-//                        .save(consumer);
-//            }
         }
         if (type == DrawerType.X_4) {
             TitaniumShapedRecipeBuilder.shapedRecipe(this, 4)
@@ -296,14 +265,6 @@ public class DrawerBlock extends RotatableBlock<DrawerTile> {
                     .define('P', woodType.getPlanks())
                     .define('C', Tags.Items.CHESTS_WOODEN)
                     .save(consumer);
-//            if (woodType.getName().equals("oak")) {
-//                TitaniumShapedRecipeBuilder.shapedRecipe(this, 4)
-//                        .setName(new ResourceLocation(FunctionalStorage.MOD_ID, "oak_drawer_alternate_x4"))
-//                        .pattern("CPC").pattern("PPP").pattern("CPC")
-//                        .define('P', new DrawerlessWoodIngredient())
-//                        .define('C', Tags.Items.CHESTS_WOODEN)
-//                        .save(consumer);
-//            }
         }
     }
 
