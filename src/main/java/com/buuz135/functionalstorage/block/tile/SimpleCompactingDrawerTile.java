@@ -69,11 +69,6 @@ public class SimpleCompactingDrawerTile extends ItemControllableDrawerTile<Simpl
         this.hasCheckedRecipes = false;
     }
 
-    @Override
-    public IItemHandler getItemHandler() {
-        return this.handler;
-    }
-
     @OnlyIn(Dist.CLIENT)
     @Override
     public void initClient() {
@@ -92,8 +87,8 @@ public class SimpleCompactingDrawerTile extends ItemControllableDrawerTile<Simpl
     }
 
     @Override
-    public void tick() {
-        super.tick();
+    public void tickServer() {
+        super.tickServer();
         if (!hasCheckedRecipes) {
             if (!handler.getParent().isEmpty()) {
                 CompactingUtil compactingUtil = new CompactingUtil(this.level, 2);

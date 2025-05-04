@@ -33,9 +33,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.INBTSerializable;
-import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
-import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 
 import javax.annotation.Nonnull;
@@ -84,14 +82,6 @@ public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>
         );
     }
 
-    public IItemHandler getItemHandler() {
-        return null;
-    }
-
-    public IFluidHandler getFluidHandler() {
-        return null;
-    }
-
     @Override
     public void setLevelAndPosition(World level, BlockPos pos) {
         super.setLevelAndPosition(level, pos);
@@ -127,6 +117,12 @@ public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>
     @Override
     public void tick() {
         super.tick();
+        if (!isClient()) {
+            tickServer();
+        }
+    }
+
+    public void tickServer() {
         if (level.getGameTime() % 20 == 0) {
             for (int i = 0; i < this.utilityUpgrades.getSlots(); i++) {
                 ItemStack stack = this.utilityUpgrades.getStackInSlot(i);

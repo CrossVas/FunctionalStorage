@@ -17,7 +17,6 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import org.apache.commons.lang3.tuple.Pair;
@@ -72,11 +71,6 @@ public class CompactingDrawerTile extends ItemControllableDrawerTile<CompactingD
     }
 
     @Override
-    public IItemHandler getItemHandler() {
-        return this.handler;
-    }
-
-    @Override
     public List<IFactory<? extends IScreenAddon>> getScreenAddons() {
         List<IFactory<? extends IScreenAddon>> screenAddons = super.getScreenAddons();
         screenAddons.add(() -> new DrawerInfoGuiAddon(64, 16,
@@ -94,8 +88,8 @@ public class CompactingDrawerTile extends ItemControllableDrawerTile<CompactingD
     }
 
     @Override
-    public void tick() {
-        super.tick();
+    public void tickServer() {
+        super.tickServer();
         if (!hasCheckedRecipes) {
             if (!handler.getParent().isEmpty()) {
                 CompactingUtil compactingUtil = new CompactingUtil(this.level, 3);

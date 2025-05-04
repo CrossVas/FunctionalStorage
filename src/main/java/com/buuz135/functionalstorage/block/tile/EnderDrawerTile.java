@@ -44,11 +44,6 @@ public class EnderDrawerTile extends ItemControllableDrawerTile<EnderDrawerTile>
     }
 
     @Override
-    public IItemHandler getItemHandler() {
-        return lazyStorage.orElse(null);
-    }
-
-    @Override
     public void setLevelAndPosition(World world, BlockPos pos) {
         super.setLevelAndPosition(world, pos);
         this.lazyStorage.invalidate();
@@ -78,8 +73,8 @@ public class EnderDrawerTile extends ItemControllableDrawerTile<EnderDrawerTile>
     }
 
     @Override
-    public void tick() {
-        super.tick();
+    public void tickServer() {
+        super.tickServer();
         if (level.getGameTime() % 20 == 0) {
             FunctionalStorage.NETWORK.sendToNearby(level, getBlockPos(), 32, new EnderDrawerSyncMessage(frequency, ((EnderInventoryHandler) getStorage())));
         }

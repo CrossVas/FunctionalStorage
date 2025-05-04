@@ -1,5 +1,6 @@
 package com.buuz135.functionalstorage.block.tile;
 
+import com.buuz135.functionalstorage.block.config.FunctionalStorageConfig;
 import com.buuz135.functionalstorage.init.FunctionalItems;
 import com.buuz135.functionalstorage.item.StorageUpgradeItem;
 import com.buuz135.functionalstorage.item.UpgradeItem;
@@ -35,9 +36,9 @@ public abstract class ItemControllableDrawerTile<T extends ItemControllableDrawe
     }
 
     @Override
-    public void tick() {
-        super.tick();
-        if (level.getGameTime() % 4 == 0) {
+    public void tickServer() {
+        super.tickServer();
+        if (level.getGameTime() % FunctionalStorageConfig.UPGRADE_TICK == 0) {
             for (int i = 0; i < this.getUtilityUpgrades().getSlots(); i++) {
                 ItemStack stack = this.getUtilityUpgrades().getStackInSlot(i);
                 if (!stack.isEmpty()) {
@@ -47,7 +48,7 @@ public abstract class ItemControllableDrawerTile<T extends ItemControllableDrawe
                         TileUtil.getTileEntity(level, getBlockPos().relative(direction)).ifPresent(blockEntity1 -> {
                             blockEntity1.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction.getOpposite()).ifPresent(iItemHandler -> {
                                 for (int otherSlot = 0; otherSlot < iItemHandler.getSlots(); otherSlot++) {
-                                    ItemStack pulledStack = iItemHandler.extractItem(otherSlot, 2, true);
+                                    ItemStack pulledStack = iItemHandler.extractItem(otherSlot, FunctionalStorageConfig.UPGRADE_PULL_ITEMS, true);
                                     if (pulledStack.isEmpty()) continue;
                                     boolean hasWorked = false;
                                     for (int ourSlot = 0; ourSlot < this.getStorage().getSlots(); ourSlot++) {
@@ -68,19 +69,27 @@ public abstract class ItemControllableDrawerTile<T extends ItemControllableDrawe
                         Direction direction = UpgradeItem.getDirection(stack);
                         TileUtil.getTileEntity(level, getBlockPos().relative(direction)).ifPresent(blockEntity1 -> {
                             blockEntity1.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction.getOpposite()).ifPresent(otherHandler -> {
-                                for (int otherSlot = 0; otherSlot < getStorage().getSlots(); otherSlot++) {
-                                    ItemStack pulledStack = getStorage().extractItem(otherSlot, 2, true);
-                                    if (pulledStack.isEmpty()) continue;
-                                    boolean hasWorked = false;
-                                    for (int ourSlot = 0; ourSlot < otherHandler.getSlots(); ourSlot++) {
-                                        ItemStack simulated = otherHandler.insertItem(ourSlot, pulledStack, true);
-                                        if (simulated.getCount() <= pulledStack.getCount()) {
-                                            otherHandler.insertItem(ourSlot, getStorage().extractItem(otherSlot, pulledStack.getCount() - simulated.getCount(), false), false);
-                                            hasWorked = true;
-                                            break;
+                                for (int sourceSlot = 0; sourceSlot < getStorage().getSlots(); sourceSlot++) {
+                                    ItemStack toTransferSim = getStorage().extractItem(sourceSlot, FunctionalStorageConfig.UPGRADE_PUSH_ITEMS, true);
+                                    if (toTransferSim.isEmpty()) continue;
+                                    for (int targetSlot = 0; targetSlot < otherHandler.getSlots(); targetSlot++) {
+                                        ItemStack remainder = otherHandler.insertItem(targetSlot, toTransferSim, true);
+                                        int inserted = toTransferSim.getCount() - remainder.getCount();
+                                        if (inserted > 0) {
+                                            // extract the amount we were actually able to insert
+                                            ItemStack extracted = getStorage().extractItem(sourceSlot, inserted, false);
+                                            otherHandler.insertItem(targetSlot, extracted, false);
+                                            // check if there is still anything left to try with this stack
+                                            toTransferSim = remainder;
+                                            if (toTransferSim.isEmpty()) {
+                                                break; // done
+                                            }
                                         }
                                     }
-                                    if (hasWorked) break;
+                                    // if we made no progress at all for this source slot, assume inventory is full
+                                    if (toTransferSim.getCount() == getStorage().extractItem(sourceSlot, FunctionalStorageConfig.UPGRADE_PUSH_ITEMS, true).getCount()) {
+                                        break;
+                                    }
                                 }
                             });
                         });
@@ -89,7 +98,7 @@ public abstract class ItemControllableDrawerTile<T extends ItemControllableDrawe
                         Direction direction = UpgradeItem.getDirection(stack);
                         AxisAlignedBB box = new AxisAlignedBB(getBlockPos().relative(direction));
                         for (ItemEntity entitiesOfClass : level.getEntitiesOfClass(ItemEntity.class, box)) {
-                            ItemStack pulledStack = ItemHandlerHelper.copyStackWithSize(entitiesOfClass.getItem(), Math.min(entitiesOfClass.getItem().getCount(), 4));
+                            ItemStack pulledStack = ItemHandlerHelper.copyStackWithSize(entitiesOfClass.getItem(), Math.min(entitiesOfClass.getItem().getCount(), FunctionalStorageConfig.UPGRADE_COLLECTOR_ITEMS));
                             if (pulledStack.isEmpty()) continue;
                             boolean hasWorked = false;
                             for (int ourSlot = 0; ourSlot < this.getStorage().getSlots(); ourSlot++) {
