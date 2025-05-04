@@ -7,8 +7,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.Direction;
-import net.minecraft.util.NonNullList;
+import net.minecraft.util.*;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
@@ -17,6 +16,7 @@ import net.minecraft.world.World;
 import org.apache.commons.lang3.text.WordUtils;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -38,6 +38,31 @@ public class UpgradeItem extends BasicItem {
     public UpgradeItem(Properties properties, Type type) {
         super(properties.tab(FunctionalStorage.TAB));
         this.type = type;
+    }
+
+    @Override
+    public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
+        if (hand == Hand.MAIN_HAND) {
+            ItemStack handStack = player.getItemInHand(hand);
+            Item upgrade = handStack.getItem();
+            if (upgrade.equals(FunctionalItems.PULLING_UPGRADE.get()) || upgrade.equals(FunctionalItems.PUSHING_UPGRADE.get()) || upgrade.equals(FunctionalItems.COLLECTOR_UPGRADE.get())) {
+                Direction direction = getDirection(handStack);
+                Direction next = Direction.values()[(Arrays.asList(Direction.values()).indexOf(direction) + 1 ) % Direction.values().length];
+                handStack.getOrCreateTag().putString("Direction", next.getName());
+                player.playSound(SoundEvents.UI_BUTTON_CLICK, .5f, 1);
+                player.displayClientMessage(new TranslationTextComponent("item.utility.direction").withStyle(TextFormatting.YELLOW).append(new TranslationTextComponent(WordUtils.capitalize(getDirection(handStack).getName().toLowerCase(Locale.ROOT))).withStyle(TextFormatting.WHITE)), true);
+                return ActionResult.success(handStack);
+            }
+            if (upgrade.equals(FunctionalItems.REDSTONE_UPGRADE.get())){
+                int slot = handStack.getOrCreateTag().getInt("Slot");
+                handStack.getOrCreateTag().putInt("Slot", (slot + 1) % 4);
+                player.playSound(SoundEvents.UI_BUTTON_CLICK, 0.5f, 1);
+                player.displayClientMessage(new TranslationTextComponent("item.utility.slot").withStyle(TextFormatting.YELLOW).append(new StringTextComponent(slot + "").withStyle(TextFormatting.WHITE)), true);
+                return ActionResult.success(handStack);
+            }
+        }
+
+        return super.use(world, player, hand);
     }
 
     @Override

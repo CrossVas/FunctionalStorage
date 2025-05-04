@@ -61,7 +61,7 @@ public class FunctionalStorageLangProvider extends LanguageProvider {
         this.add(FunctionalItems.CONFIGURATION_TOOL.get(), "Configuration Tool");
         this.add("item.utility.downgrade", "Downgrades the slots to a max of 64 items");
         this.add("item.utility.direction", "Direction: ");
-        this.add("item.utility.direction.desc", "Right click in a GUI to change direction");
+        this.add("item.utility.direction.desc", "Right click in the air to change direction");
         this.add("configurationtool.configmode", "Config Mode: ");
         this.add("configurationtool.configmode.locking", "Locking");
         this.add("configurationtool.configmode.toggle_numbers", "Hide/Show Amounts");
@@ -74,9 +74,9 @@ public class FunctionalStorageLangProvider extends LanguageProvider {
         this.add("linkingtool.ender.frequency", "Frequency: ");
         this.add("linkingtool.ender.clear", "Sneak + Right Click in the air to clear frequency.");
         this.add("drawer.block.contents", "Contents: ");
-        this.add("frameddrawer.use", "How 2 Change Texture: \nInside a crafting window place the block you want use the texture of for the outside of the drawer in the first slot of the crafting window, on the second slot put the block that will be used for the texture on the inside of the framed drawer and on the third slot put a framed drawer. \n");
+        this.add("frameddrawer.use", "How to Change Texture: \nInside a crafting window place the block you want use the texture of for the outside of the drawer in the first slot of the crafting window, on the second slot put the block that will be used for the texture on the inside of the framed drawer and on the third slot put a framed drawer. \n");
         this.add("item.utility.slot", "Slot: ");
-        this.add("item.utility.slot.desc", "Right click in a GUI to change slot");
+        this.add("item.utility.slot.desc", "Right click in the air to change slot");
         this.add("gui.functionalstorage.item", "Item: ");
         this.add("gui.functionalstorage.amount", "Amount: ");
         this.add("gui.functionalstorage.slot", "Slot: ");
