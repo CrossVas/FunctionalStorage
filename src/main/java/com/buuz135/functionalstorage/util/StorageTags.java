@@ -6,9 +6,24 @@ import net.minecraft.tags.ITag;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.ResourceLocation;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class StorageTags {
 
-    public static ITag.INamedTag<Item> DRAWER = ItemTags.createOptional(new ResourceLocation(FunctionalStorage.MOD_ID, "drawer"));
-    public static ITag.INamedTag<Item> IGNORE_CRAFTING_CHECK = ItemTags.createOptional(new ResourceLocation(FunctionalStorage.MOD_ID, "ignore_crafting_check"));
+    public static Map<ResourceLocation, ITag.INamedTag<Item>> tagCache = new HashMap<>();
 
+    public static ITag.INamedTag<Item> DRAWER = getTag("drawer");
+    public static ITag.INamedTag<Item> IGNORE_CRAFTING_CHECK = getTag("ignore_crafting_check");
+
+    public static ITag.INamedTag<Item> getTag(String name) {
+        return getTag(new ResourceLocation(FunctionalStorage.MOD_ID, name));
+    }
+
+    public static ITag.INamedTag<Item> getTag(ResourceLocation resourceLocation) {
+        if (!tagCache.containsKey(resourceLocation)) {
+            tagCache.put(resourceLocation, ItemTags.createOptional(resourceLocation));
+        }
+        return tagCache.get(resourceLocation);
+    }
 }

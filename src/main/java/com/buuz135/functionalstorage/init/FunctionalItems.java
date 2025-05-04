@@ -1,13 +1,10 @@
 package com.buuz135.functionalstorage.init;
 
 import com.buuz135.functionalstorage.FunctionalStorage;
-import com.buuz135.functionalstorage.block.DrawerBlock;
 import com.buuz135.functionalstorage.item.ConfigurationToolItem;
 import com.buuz135.functionalstorage.item.LinkingToolItem;
 import com.buuz135.functionalstorage.item.StorageUpgradeItem;
 import com.buuz135.functionalstorage.item.UpgradeItem;
-import net.minecraft.block.Block;
-import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -40,33 +37,14 @@ public class FunctionalItems {
     public static final RegistryObject<Item> VOID_UPGRADE = ITEMS.register("void_upgrade", () -> new UpgradeItem(new Item.Properties(), UpgradeItem.Type.UTILITY));
     public static final RegistryObject<Item> REDSTONE_UPGRADE = ITEMS.register("redstone_upgrade", () -> new UpgradeItem(new Item.Properties(), UpgradeItem.Type.UTILITY));
 
-    public static final RegistryObject<Item> CONFIGURATION_TOOL = ITEMS.register("linking_tool", LinkingToolItem::new);
-    public static final RegistryObject<Item> LINKING_TOOL = ITEMS.register("configuration_tool", ConfigurationToolItem::new);
+    public static final RegistryObject<Item> CONFIGURATION_TOOL = ITEMS.register("linking_tool", ConfigurationToolItem::new);
+    public static final RegistryObject<Item> LINKING_TOOL = ITEMS.register("configuration_tool", LinkingToolItem::new);
 
     public static void initItems(IEventBus e) {
-//        TYPED_DRAWER_BLOCKS.forEach(FunctionalItems::registerCustomBlockItem);
-//        Stream.of(
-//                COMPACTING, FRAMED_COMPACTING, SIMPLE_COMPACTING,
-//                FLUID_1, FLUID_2, FLUID_4,
-//                CONTROLLER, CONTROLLER_EXTENSION,
-//                ARMORY_CABINET, ENDER
-//        ).forEach(FunctionalItems::registerDefaultBlockItem);
         ITEMS.register(e);
-    }
-
-    private static void registerCustomBlockItem(RegistryObject<Block> block) {
-        ITEMS.register(block.getId().getPath(), () -> new DrawerBlock.DrawerItem((DrawerBlock) block.get(), new Item.Properties()/*.tab(FunctionalStorage.TAB)*/));
-    }
-
-    private static void registerDefaultBlockItem(RegistryObject<Block> block) {
-        ITEMS.register(block.getId().getPath(), () -> new BlockItem(block.get(), new Item.Properties()/*.tab(FunctionalStorage.TAB)*/));
     }
 
     public static Stream<RegistryObject<Item>> STORAGE_UPGRADE = Stream.of(
             COPPER_UPGRADE, GOLD_UPGRADE, DIAMOND_UPGRADE, NETHERITE_UPGRADE, IRON_UPGRADE
-    );
-
-    public static Stream<RegistryObject<Item>> UPGRADES = Stream.of(
-            COPPER_UPGRADE, GOLD_UPGRADE, DIAMOND_UPGRADE, NETHERITE_UPGRADE, IRON_UPGRADE, CREATIVE_UPGRADE, COLLECTOR_UPGRADE, PULLING_UPGRADE, PUSHING_UPGRADE, VOID_UPGRADE, REDSTONE_UPGRADE
     );
 }

@@ -67,7 +67,7 @@ import net.minecraftforge.common.util.NonNullLazy;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.DeferredWorkQueue;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -102,6 +102,7 @@ public class FunctionalStorage extends ModuleController {
 
     public FunctionalStorage() {
         init();
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::onClient);
         EventManager.forge(BlockEvent.BreakEvent.class).process(breakEvent -> {
             if (breakEvent.getPlayer().isCreative()) {
                 if (breakEvent.getState().getBlock() instanceof DrawerBlock) {
@@ -151,13 +152,6 @@ public class FunctionalStorage extends ModuleController {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         FunctionalBlocks.initBlocks(bus);
         FunctionalItems.initItems(bus);
-        bus.addListener(this::onClientLoad);
-    }
-
-    public void onClientLoad(FMLClientSetupEvent e) {
-        DeferredWorkQueue.runLater(() -> {
-            this.onClient(); // Run client-only setup here
-        });
     }
 
     @Override
@@ -214,7 +208,6 @@ public class FunctionalStorage extends ModuleController {
 
                         .content(Block.class, FunctionalBlocks.CONTROLLER)
                         .content(Block.class, FunctionalBlocks.CONTROLLER_EXTENSION)
-
                 ));
     }
 
@@ -262,7 +255,7 @@ public class FunctionalStorage extends ModuleController {
         }).subscribe();
         EventManager.mod(FMLClientSetupEvent.class).process(event -> {
             FunctionalBlocks.TYPED_DRAWER_BLOCKS.forEach(blockObject -> {
-//                RenderTypeLookup.setRenderLayer(blockObject, RenderType.cutout());
+                RenderTypeLookup.setRenderLayer(blockObject, RenderType.cutout());
             });
             RenderTypeLookup.setRenderLayer(FunctionalBlocks.COMPACTING, RenderType.cutout());
             RenderTypeLookup.setRenderLayer(FunctionalBlocks.FRAMED_COMPACTING, RenderType.cutout());
@@ -310,7 +303,7 @@ public class FunctionalStorage extends ModuleController {
             event.getGenerator().addProvider(new FunctionalStorageBlockstateProvider(event.getGenerator(), event.getExistingFileHelper(), blocksToProcess));
             event.getGenerator().addProvider(new TitaniumLootTableProvider(event.getGenerator(), blocksToProcess));
 
-            event.getGenerator().addProvider(new FunctionalStorageItemTagsProvider(event.getGenerator(), new BlockTagsProvider(event.getGenerator()), MOD_ID, event.getExistingFileHelper()));
+            event.getGenerator().addProvider(new FunctionalStorageItemTagsProvider(event.getGenerator(), new BlockTagsProvider(event.getGenerator(), MOD_ID, event.getExistingFileHelper()), MOD_ID, event.getExistingFileHelper()));
             event.getGenerator().addProvider(new FunctionalStorageLangProvider(event.getGenerator(), MOD_ID, "en_us"));
             event.getGenerator().addProvider(new FunctionalStorageBlockTagsProvider(event.getGenerator(), MOD_ID, event.getExistingFileHelper()));
             event.getGenerator().addProvider(new ItemModelProvider(event.getGenerator(), MOD_ID, event.getExistingFileHelper()) {

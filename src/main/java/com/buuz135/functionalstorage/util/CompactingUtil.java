@@ -82,7 +82,7 @@ public class CompactingUtil {
             container = createContainerAndFill(2, stack);
             outputs = findAllMatchingRecipes(container);
         }
-        if (stack.getItem().is(StorageTags.IGNORE_CRAFTING_CHECK)) {
+        if (StorageTags.IGNORE_CRAFTING_CHECK.contains(stack.getItem())) {
             realOutputs = outputs;
         } else if (outputs.size() > 0) {
             for (ItemStack output : outputs) {
