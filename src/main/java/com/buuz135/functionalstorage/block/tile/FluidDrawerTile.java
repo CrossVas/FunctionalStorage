@@ -254,6 +254,7 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
         return type.getSlotAmount();
     }
 
+    @Override
     public BigFluidHandler getFluidHandler() {
         return fluidHandler;
     }

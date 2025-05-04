@@ -17,6 +17,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import org.apache.commons.lang3.tuple.Pair;
@@ -68,6 +69,11 @@ public class CompactingDrawerTile extends ItemControllableDrawerTile<CompactingD
         };
         lazyStorage = LazyOptional.of(() -> this.handler);
         this.hasCheckedRecipes = false;
+    }
+
+    @Override
+    public IItemHandler getItemHandler() {
+        return this.handler;
     }
 
     @Override

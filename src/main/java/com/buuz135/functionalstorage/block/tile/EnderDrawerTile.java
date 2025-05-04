@@ -44,6 +44,11 @@ public class EnderDrawerTile extends ItemControllableDrawerTile<EnderDrawerTile>
     }
 
     @Override
+    public IItemHandler getItemHandler() {
+        return lazyStorage.orElse(null);
+    }
+
+    @Override
     public void setLevelAndPosition(World world, BlockPos pos) {
         super.setLevelAndPosition(world, pos);
         this.lazyStorage.invalidate();

@@ -72,6 +72,11 @@ public class DrawerTile extends ItemControllableDrawerTile<DrawerTile> {
         lazyStorage = LazyOptional.of(() -> this.handler);
     }
 
+    @Override
+    public IItemHandler getItemHandler() {
+        return handler;
+    }
+
     @OnlyIn(Dist.CLIENT)
     @Override
     public void initClient() {

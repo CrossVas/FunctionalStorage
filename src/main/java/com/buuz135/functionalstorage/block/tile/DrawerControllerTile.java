@@ -70,6 +70,16 @@ public class DrawerControllerTile extends ItemControllableDrawerTile<DrawerContr
     }
 
     @Override
+    public ControllerFluidHandler getFluidHandler() {
+        return fluidHandler;
+    }
+
+    @Override
+    public IItemHandler getItemHandler() {
+        return inventoryHandler;
+    }
+
+    @Override
     public int getStorageSlotAmount() {
         return 1;
     }

@@ -69,6 +69,11 @@ public class SimpleCompactingDrawerTile extends ItemControllableDrawerTile<Simpl
         this.hasCheckedRecipes = false;
     }
 
+    @Override
+    public IItemHandler getItemHandler() {
+        return this.handler;
+    }
+
     @OnlyIn(Dist.CLIENT)
     @Override
     public void initClient() {
