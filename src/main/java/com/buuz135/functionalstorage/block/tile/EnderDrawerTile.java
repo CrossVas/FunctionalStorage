@@ -8,8 +8,6 @@ import com.buuz135.functionalstorage.network.EnderDrawerSyncMessage;
 import com.buuz135.functionalstorage.util.DrawerType;
 import com.buuz135.functionalstorage.world.EnderSavedData;
 import com.hrznstudio.titanium.annotation.Save;
-import com.hrznstudio.titanium.api.IFactory;
-import com.hrznstudio.titanium.api.client.IScreenAddon;
 import com.hrznstudio.titanium.block.BasicTileBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
@@ -22,6 +20,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -29,7 +29,6 @@ import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.UUID;
 
 public class EnderDrawerTile extends ItemControllableDrawerTile<EnderDrawerTile> {
@@ -51,17 +50,17 @@ public class EnderDrawerTile extends ItemControllableDrawerTile<EnderDrawerTile>
         this.lazyStorage = LazyOptional.of(() -> EnderSavedData.getInstance(this.level).getFrequency(this.frequency));
     }
 
+    @OnlyIn(Dist.CLIENT)
     @Override
-    public List<IFactory<? extends IScreenAddon>> getScreenAddons() {
-        List<IFactory<? extends IScreenAddon>> screenAddons = super.getScreenAddons();
-        screenAddons.add(() -> new DrawerInfoGuiAddon(64, 16,
+    public void initClient() {
+        super.initClient();
+        addGuiAddonFactory(() -> new DrawerInfoGuiAddon(64, 16,
                 new ResourceLocation(FunctionalStorage.MOD_ID, "textures/blocks/ender_front.png"),
                 1,
                 DrawerType.X_1.getSlotPosition(),
                 integer -> getStorage().getStackInSlot(integer),
                 integer -> getStorage().getSlotLimit(integer)
         ));
-        return screenAddons;
     }
 
     @Nonnull

@@ -8,8 +8,6 @@ import com.buuz135.functionalstorage.item.StorageUpgradeItem;
 import com.buuz135.functionalstorage.item.UpgradeItem;
 import com.buuz135.functionalstorage.util.DrawerType;
 import com.hrznstudio.titanium.annotation.Save;
-import com.hrznstudio.titanium.api.IFactory;
-import com.hrznstudio.titanium.api.client.IScreenAddon;
 import com.hrznstudio.titanium.block.BasicTileBlock;
 import com.hrznstudio.titanium.component.inventory.InventoryComponent;
 import com.hrznstudio.titanium.util.TileUtil;
@@ -24,6 +22,8 @@ import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidActionResult;
@@ -38,7 +38,6 @@ import net.minecraftforge.items.CapabilityItemHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
 
 public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
 
@@ -79,9 +78,10 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
         return (int) Math.min(Integer.MAX_VALUE, maxCap);
     }
 
+    @OnlyIn(Dist.CLIENT)
     @Override
-    public List<IFactory<? extends IScreenAddon>> getScreenAddons() {
-        List<IFactory<? extends IScreenAddon>> screenAddons = super.getScreenAddons();
+    public void initClient() {
+        super.initClient();
         String slotName = "";
         if (type.getSlots() == 2) {
             slotName = "_2";
@@ -90,14 +90,13 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
             slotName = "_4";
         }
         String finalSlotName = slotName;
-        screenAddons.add(() -> new FluidDrawerInfoGuiAddon(64, 16,
+        addGuiAddonFactory(() -> new FluidDrawerInfoGuiAddon(64, 16,
                 new ResourceLocation(FunctionalStorage.MOD_ID, "textures/blocks/fluid_front" + finalSlotName + ".png"),
                 type.getSlots(),
                 type.getSlotPosition(),
                 this::getFluidHandler,
                 integer -> getFluidHandler().getTankCapacity(integer)
         ));
-        return screenAddons;
     }
 
     @Nonnull

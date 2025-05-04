@@ -6,8 +6,6 @@ import com.buuz135.functionalstorage.init.FunctionalItems;
 import com.buuz135.functionalstorage.inventory.CompactingInventoryHandler;
 import com.buuz135.functionalstorage.util.CompactingUtil;
 import com.hrznstudio.titanium.annotation.Save;
-import com.hrznstudio.titanium.api.IFactory;
-import com.hrznstudio.titanium.api.client.IScreenAddon;
 import com.hrznstudio.titanium.block.BasicTileBlock;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -15,6 +13,8 @@ import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -23,7 +23,6 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
 
 public class SimpleCompactingDrawerTile extends ItemControllableDrawerTile<SimpleCompactingDrawerTile> {
 
@@ -70,10 +69,11 @@ public class SimpleCompactingDrawerTile extends ItemControllableDrawerTile<Simpl
         this.hasCheckedRecipes = false;
     }
 
+    @OnlyIn(Dist.CLIENT)
     @Override
-    public List<IFactory<? extends IScreenAddon>> getScreenAddons() {
-        List<IFactory<? extends IScreenAddon>> screenAddons = super.getScreenAddons();
-        screenAddons.add(() -> new DrawerInfoGuiAddon(64, 16,
+    public void initClient() {
+        super.initClient();
+        addGuiAddonFactory(() -> new DrawerInfoGuiAddon(64, 16,
                 new ResourceLocation(FunctionalStorage.MOD_ID, "textures/blocks/simple_compacting_drawer_front.png"),
                 2,
                 integer -> {
@@ -84,7 +84,6 @@ public class SimpleCompactingDrawerTile extends ItemControllableDrawerTile<Simpl
                 integer -> getStorage().getStackInSlot(integer),
                 integer -> getStorage().getSlotLimit(integer)
         ));
-        return screenAddons;
     }
 
     @Override
