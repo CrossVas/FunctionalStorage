@@ -37,8 +37,8 @@ public class FunctionalItems {
     public static final RegistryObject<Item> VOID_UPGRADE = ITEMS.register("void_upgrade", () -> new UpgradeItem(new Item.Properties(), UpgradeItem.Type.UTILITY));
     public static final RegistryObject<Item> REDSTONE_UPGRADE = ITEMS.register("redstone_upgrade", () -> new UpgradeItem(new Item.Properties(), UpgradeItem.Type.UTILITY));
 
-    public static final RegistryObject<Item> CONFIGURATION_TOOL = ITEMS.register("linking_tool", ConfigurationToolItem::new);
-    public static final RegistryObject<Item> LINKING_TOOL = ITEMS.register("configuration_tool", LinkingToolItem::new);
+    public static final RegistryObject<Item> CONFIGURATION_TOOL = ITEMS.register("configuration_tool", ConfigurationToolItem::new);
+    public static final RegistryObject<Item> LINKING_TOOL = ITEMS.register("linking_tool", LinkingToolItem::new);
 
     public static void initItems(IEventBus e) {
         ITEMS.register(e);

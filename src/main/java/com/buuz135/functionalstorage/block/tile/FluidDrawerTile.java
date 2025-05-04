@@ -198,22 +198,23 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
 
     @Override
     public ActionResultType onSlotActivated(PlayerEntity playerIn, Hand hand, Direction facing, double hitX, double hitY, double hitZ, int slot) {
-        ItemStack stack = playerIn.getItemInHand(hand);
-        if (stack.getItem().equals(FunctionalItems.CONFIGURATION_TOOL.get()) || stack.getItem().equals(FunctionalItems.LINKING_TOOL.get()))
-            return ActionResultType.PASS;
-        if (slot != -1 && !playerIn.getItemInHand(hand).isEmpty()) {
-            ActionResultType interactionResult = stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).map(iFluidHandlerItem -> {
-                return playerIn.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).map(iItemHandler -> {
-                    FluidActionResult result = FluidUtil.tryEmptyContainerAndStow(stack, this.fluidHandler.getTankList()[slot], iItemHandler, Integer.MAX_VALUE, playerIn, true);
-                    if (result.isSuccess()) {
-                        playerIn.setItemInHand(playerIn.getUsedItemHand(), result.getResult());
-                        return ActionResultType.SUCCESS;
-                    }
-                    return ActionResultType.PASS;
+        if (hand == Hand.MAIN_HAND) {
+            ItemStack stack = playerIn.getItemInHand(Hand.MAIN_HAND);
+            if (stack.getItem().equals(FunctionalItems.CONFIGURATION_TOOL.get()) || stack.getItem().equals(FunctionalItems.LINKING_TOOL.get()))
+                return ActionResultType.PASS;
+            if (slot != -1 && !playerIn.getItemInHand(hand).isEmpty()) {
+                ActionResultType interactionResult = stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).map(iFluidHandlerItem -> {
+                    return playerIn.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).map(iItemHandler -> {
+                        FluidActionResult result = FluidUtil.tryEmptyContainerAndStow(stack, this.fluidHandler.getTankList()[slot], iItemHandler, Integer.MAX_VALUE, playerIn, true);
+                        if (result.isSuccess()) {
+                            playerIn.setItemInHand(hand, result.getResult());
+                            return ActionResultType.SUCCESS;
+                        } else return ActionResultType.PASS;
+                    }).orElse(ActionResultType.PASS);
                 }).orElse(ActionResultType.PASS);
-            }).orElse(ActionResultType.PASS);
-            if (interactionResult == ActionResultType.SUCCESS) {
-                return interactionResult;
+                if (interactionResult == ActionResultType.SUCCESS) {
+                    return interactionResult;
+                }
             }
         }
         return super.onSlotActivated(playerIn, hand, facing, hitX, hitY, hitZ, slot);
@@ -221,13 +222,13 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
 
     @Override
     public void onClicked(PlayerEntity playerIn, int slot) {
-        ItemStack stack = playerIn.getItemInHand(playerIn.getUsedItemHand());
+        ItemStack stack = playerIn.getItemInHand(Hand.MAIN_HAND);
         if (slot != -1 && !stack.isEmpty()) {
             stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).ifPresent(iFluidHandlerItem -> {
                 playerIn.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(iItemHandler -> {
                     FluidActionResult result = FluidUtil.tryFillContainerAndStow(stack, this.fluidHandler.getTankList()[slot], iItemHandler, Integer.MAX_VALUE, playerIn, true);
                     if (result.isSuccess()) {
-                        playerIn.setItemInHand(playerIn.getUsedItemHand(), result.getResult());
+                        playerIn.setItemInHand(Hand.MAIN_HAND, result.getResult());
                     }
                 });
             });

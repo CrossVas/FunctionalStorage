@@ -48,7 +48,7 @@ public class FunctionalStorageLangProvider extends LanguageProvider {
         this.add("storageupgrade.desc.fluid", "Multiplies the block fluid storage by ");
 
         FunctionalItems.STORAGE_UPGRADE.forEach(itemRegistryObject -> {
-            this.add(itemRegistryObject.get(), WordUtils.capitalizeFully(itemRegistryObject.get().getRegistryName().getPath(), '_', ' '));
+            this.add(itemRegistryObject.get(), WordUtils.capitalizeFully(itemRegistryObject.get().getRegistryName().getPath()).replace('_', ' '));
         });
 
         this.add(FunctionalItems.COLLECTOR_UPGRADE.get(), WordUtils.capitalize(ForgeRegistries.ITEMS.getKey(FunctionalItems.COLLECTOR_UPGRADE.get()).getPath().replace('_', ' ').toLowerCase()));
