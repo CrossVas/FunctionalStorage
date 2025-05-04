@@ -191,7 +191,7 @@ public abstract class ItemControllableDrawerTile<T extends ItemControllableDrawe
             }
         }
                 .setInputFilter((stack, integer) -> {
-                    if (stack.getItem().equals(FunctionalItems.IRON_UPGRADE.get())) {
+                    if (stack.getItem().equals(FunctionalItems.FLINT_UPGRADE.get())) {
                         for (int i = 0; i < getStorage().getSlots(); i++) {
                             if (getStorage().getStackInSlot(i).getCount() > 64) {
                                 return false;

@@ -45,7 +45,7 @@ public class DrawerStackItemHandler implements IItemHandler, INBTSerializable<Co
                     if (multiplier == 1) multiplier = ((StorageUpgradeItem) itemStack.getItem()).getStorageMultiplier();
                     else multiplier *= ((StorageUpgradeItem) itemStack.getItem()).getStorageMultiplier();
                 }
-                if (itemStack.getItem().equals(FunctionalItems.IRON_UPGRADE.get())) {
+                if (itemStack.getItem().equals(FunctionalItems.FLINT_UPGRADE.get())) {
                     this.downgrade = true;
                 }
             }

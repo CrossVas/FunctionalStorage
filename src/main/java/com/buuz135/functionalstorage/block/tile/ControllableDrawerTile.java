@@ -211,7 +211,7 @@ public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>
             mult = 1;
             for (int i = 0; i < storageUpgrades.getSlots(); i++) {
                 Item upgrade = storageUpgrades.getStackInSlot(i).getItem();
-                if (upgrade.equals(FunctionalItems.IRON_UPGRADE.get())) {
+                if (upgrade.equals(FunctionalItems.FLINT_UPGRADE.get())) {
                     hasDowngrade = true;
                 }
                 if (upgrade.equals(FunctionalItems.CREATIVE_UPGRADE.get())) {

@@ -316,7 +316,7 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
             }
         }
                 .setInputFilter((stack, integer) -> {
-                    if (stack.getItem().equals(FunctionalItems.IRON_UPGRADE.get())) {
+                    if (stack.getItem().equals(FunctionalItems.FLINT_UPGRADE.get())) {
                         return false;
                     }
                     return stack.getItem() instanceof UpgradeItem && ((UpgradeItem) stack.getItem()).getType() == UpgradeItem.Type.STORAGE;
