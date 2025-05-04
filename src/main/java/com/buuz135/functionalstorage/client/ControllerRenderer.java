@@ -18,6 +18,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.math.*;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
+import org.lwjgl.opengl.GL11;
 
 import java.util.List;
 import java.util.OptionalDouble;
@@ -27,16 +28,16 @@ import static com.buuz135.functionalstorage.item.LinkingToolItem.NBT_FIRST;
 
 public class ControllerRenderer extends TileEntityRenderer<DrawerControllerTile> {
 
-    public static RenderType TYPE = RenderType.create("custom_lines", DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL, 4, 256, false, false, RenderType.State.builder()
-            .setShadeModelState(new RenderState.ShadeModelState(false))
-            .setDepthTestState(new RenderState.DepthTestState("always", 519))
-            .setLineState(new RenderState.LineState(OptionalDouble.empty()))
-            .setLayeringState(new RenderState.LayerState("view_offset_z_layering", () -> {
-                RenderSystem.pushMatrix();
-                RenderSystem.scalef(0.99975586F, 0.99975586F, 0.99975586F);
-            }, RenderSystem::popMatrix))
-            .setCullState(new RenderState.CullState(false))
-            .createCompositeState(false));
+    public static final RenderType TYPE = RenderType.create("custom_lines", DefaultVertexFormats.POSITION_COLOR, GL11.GL_LINES, 256, false, false,
+            RenderType.State.builder()
+                    .setLineState(new RenderState.LineState(OptionalDouble.empty()))
+                    .setLayeringState(new RenderState.LayerState("view_offset_z_layering", () -> {
+                        RenderSystem.pushMatrix();
+                        RenderSystem.scalef(0.99975586F, 0.99975586F, 0.99975586F);
+                    }, RenderSystem::popMatrix))
+                    .setDepthTestState(new RenderState.DepthTestState("always", GL11.GL_ALWAYS))
+                    .setCullState(new RenderState.CullState(false))
+                    .createCompositeState(false));
 
     public ControllerRenderer(TileEntityRendererDispatcher dispatcher) {
         super(dispatcher);
@@ -46,15 +47,12 @@ public class ControllerRenderer extends TileEntityRenderer<DrawerControllerTile>
     private static void renderShape(MatrixStack matrixStack, IVertexBuilder vertexBuilder, VoxelShape voxelShape, double x, double y, double z, float r, float g, float b, float a) {
         MatrixStack.Entry matrixPose = matrixStack.last();
         voxelShape.forAllEdges((p_194324_, p_194325_, p_194326_, p_194327_, p_194328_, p_194329_) -> {
-            float f = (float) (p_194327_ - p_194324_);
-            float f1 = (float) (p_194328_ - p_194325_);
-            float f2 = (float) (p_194329_ - p_194326_);
-            float f3 = MathHelper.sqrt(f * f + f1 * f1 + f2 * f2);
-            f /= f3;
-            f1 /= f3;
-            f2 /= f3;
-            vertexBuilder.vertex(matrixPose.pose(), (float) (p_194324_ + x), (float) (p_194325_ + y), (float) (p_194326_ + z)).color(r, g, b, a).normal(matrixPose.normal(), f, f1, f2).endVertex();
-            vertexBuilder.vertex(matrixPose.pose(), (float) (p_194327_ + x), (float) (p_194328_ + y), (float) (p_194329_ + z)).color(r, g, b, a).normal(matrixPose.normal(), f, f1, f2).endVertex();
+            vertexBuilder.vertex(matrixPose.pose(), (float) (p_194324_ + x), (float) (p_194325_ + y), (float) (p_194326_ + z))
+                    .color(r, g, b, a)
+                    .endVertex();
+            vertexBuilder.vertex(matrixPose.pose(), (float) (p_194327_ + x), (float) (p_194328_ + y), (float) (p_194329_ + z))
+                    .color(r, g, b, a)
+                    .endVertex();
         });
     }
 
@@ -83,7 +81,6 @@ public class ControllerRenderer extends TileEntityRenderer<DrawerControllerTile>
                 tile.getConnectedDrawers().rebuildShapes();
                 shape = tile.getConnectedDrawers().getCachedVoxelShape();
             }
-            //LevelRenderer.renderVoxelShape(matrixStack, bufferIn.getBuffer(TYPE), shape, -tile.getBlockPos().getX(), -tile.getBlockPos().getY(), -tile.getBlockPos().getZ(), 1f, 1f, 1f, 1f);
             List<AxisAlignedBB> list = shape.toAabbs();
             int i = MathHelper.ceil((double) list.size() / 3.0D);
 
