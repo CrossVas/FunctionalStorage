@@ -7,6 +7,8 @@ import com.buuz135.functionalstorage.item.LinkingToolItem;
 import com.buuz135.functionalstorage.item.StorageUpgradeItem;
 import com.buuz135.functionalstorage.item.UpgradeItem;
 import com.hrznstudio.titanium.annotation.Save;
+import com.hrznstudio.titanium.api.IFactory;
+import com.hrznstudio.titanium.api.client.IScreenAddon;
 import com.hrznstudio.titanium.block.BasicTileBlock;
 import com.hrznstudio.titanium.block.tile.ActiveTile;
 import com.hrznstudio.titanium.client.screen.addon.TextScreenAddon;
@@ -29,15 +31,13 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.World;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.items.ItemHandlerHelper;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
+import java.util.List;
 
 public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>> extends ActiveTile<T> {
 
@@ -83,35 +83,29 @@ public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>
     }
 
     @Override
-    public void setLevelAndPosition(World level, BlockPos pos) {
-        super.setLevelAndPosition(level, pos);
-        if (isClient()) {
-            initClient();
-        }
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    public void initClient() {
+    public List<IFactory<? extends IScreenAddon>> getScreenAddons() {
+        List<IFactory<? extends IScreenAddon>> screenAddons = super.getScreenAddons();
         if (getStorageSlotAmount() > 0) {
-            addGuiAddonFactory(() -> new TextScreenAddon("Storage", 10, 59, false, TextFormatting.DARK_GRAY.getColor()) {
+            screenAddons.add(() -> new TextScreenAddon("Storage", 10, 59, false, TextFormatting.DARK_GRAY.getColor()) {
                 @Override
                 public String getText() {
                     return new TranslationTextComponent("key.categories.storage").getString();
                 }
             });
         }
-        addGuiAddonFactory(() -> new TextScreenAddon("Utility", 114, 59, false, TextFormatting.DARK_GRAY.getColor()) {
+        screenAddons.add(() -> new TextScreenAddon("Utility", 114, 59, false, TextFormatting.DARK_GRAY.getColor()) {
             @Override
             public String getText() {
                 return new TranslationTextComponent("key.categories.utility").getString();
             }
         });
-        addGuiAddonFactory(() -> new TextScreenAddon("key.categories.inventory", 8, 92, false, TextFormatting.DARK_GRAY.getColor()) {
+        screenAddons.add(() -> new TextScreenAddon("key.categories.inventory", 8, 92, false, TextFormatting.DARK_GRAY.getColor()) {
             @Override
             public String getText() {
                 return new TranslationTextComponent("key.categories.inventory").getString();
             }
         });
+        return screenAddons;
     }
 
     @Override

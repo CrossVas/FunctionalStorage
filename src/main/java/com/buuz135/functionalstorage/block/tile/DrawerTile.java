@@ -7,6 +7,8 @@ import com.buuz135.functionalstorage.inventory.BigInventoryHandler;
 import com.buuz135.functionalstorage.util.DrawerType;
 import com.buuz135.functionalstorage.util.IWoodType;
 import com.hrznstudio.titanium.annotation.Save;
+import com.hrznstudio.titanium.api.IFactory;
+import com.hrznstudio.titanium.api.client.IScreenAddon;
 import com.hrznstudio.titanium.block.BasicTileBlock;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -14,8 +16,6 @@ import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -23,6 +23,7 @@ import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 
 public class DrawerTile extends ItemControllableDrawerTile<DrawerTile> {
 
@@ -72,17 +73,17 @@ public class DrawerTile extends ItemControllableDrawerTile<DrawerTile> {
         lazyStorage = LazyOptional.of(() -> this.handler);
     }
 
-    @OnlyIn(Dist.CLIENT)
     @Override
-    public void initClient() {
-        super.initClient();
-        addGuiAddonFactory(() -> new DrawerInfoGuiAddon(64, 16,
+    public List<IFactory<? extends IScreenAddon>> getScreenAddons() {
+        List<IFactory<? extends IScreenAddon>> screenAddons = super.getScreenAddons();
+        screenAddons.add(() -> new DrawerInfoGuiAddon(64, 16,
                 new ResourceLocation(FunctionalStorage.MOD_ID, "textures/blocks/" + woodType.getName() + "_front_" + type.getSlots() + ".png"),
                 type.getSlots(),
                 type.getSlotPosition(),
                 integer -> getHandler().getStackInSlot(integer),
                 integer -> getHandler().getSlotLimit(integer)
         ));
+        return screenAddons;
     }
 
     @Nonnull
