@@ -35,6 +35,7 @@ import com.hrznstudio.titanium.nbthandler.NBTManager;
 import com.hrznstudio.titanium.network.NetworkHandler;
 import com.hrznstudio.titanium.recipe.generator.TitaniumRecipeProvider;
 import com.hrznstudio.titanium.recipe.generator.TitaniumShapedRecipeBuilder;
+import com.hrznstudio.titanium.tab.AdvancedTitaniumTab;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.RenderTypeLookup;
@@ -42,7 +43,6 @@ import net.minecraft.data.BlockTagsProvider;
 import net.minecraft.data.IFinishedRecipe;
 import net.minecraft.data.SmithingRecipeBuilder;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.crafting.IRecipeSerializer;
@@ -90,12 +90,7 @@ public class FunctionalStorage extends ModuleController {
         NETWORK.registerMessage(EnderDrawerSyncMessage.class);
     }
 
-    public static ItemGroup TAB = new ItemGroup(MOD_ID) {
-        @Override
-        public ItemStack makeIcon() {
-            return Items.CRAFTING_TABLE.getDefaultInstance();
-        }
-    };
+    public static AdvancedTitaniumTab TAB = new AdvancedTitaniumTab(MOD_ID, true);
 
     public FunctionalStorage() {
         init();
@@ -206,6 +201,7 @@ public class FunctionalStorage extends ModuleController {
                         .content(Block.class, FunctionalBlocks.CONTROLLER)
                         .content(Block.class, FunctionalBlocks.CONTROLLER_EXTENSION)
                 ));
+        FunctionalBlocks.TYPED_DRAWER_BLOCKS.forEach(block -> TAB.addIconStacks(new ItemStack(block)));
     }
 
     @OnlyIn(Dist.CLIENT)
