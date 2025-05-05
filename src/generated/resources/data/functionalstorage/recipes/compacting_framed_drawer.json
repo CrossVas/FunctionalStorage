@@ -27,7 +27,17 @@
           "P": {
             "item": "minecraft:piston"
           },
-          "D": [],
+          "D": [
+            {
+              "item": "functionalstorage:framed_1"
+            },
+            {
+              "item": "functionalstorage:framed_2"
+            },
+            {
+              "item": "functionalstorage:framed_4"
+            }
+          ],
           "I": {
             "tag": "forge:ingots/iron"
           }

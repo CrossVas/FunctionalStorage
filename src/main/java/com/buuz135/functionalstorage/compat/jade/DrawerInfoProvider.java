@@ -75,7 +75,7 @@ public class DrawerInfoProvider implements IBlockComponentProvider {
                             extra = "   " + extra;
                         }
                     }
-                    iTooltip.append(helper.item(stack, 0.5f, extra));
+                    iTooltip.append(helper.item(stack, 1f, extra));
                 }
             }
         }

@@ -3,10 +3,10 @@ package com.buuz135.functionalstorage.block;
 import com.buuz135.functionalstorage.block.tile.CompactingDrawerTile;
 import com.buuz135.functionalstorage.block.tile.CompactingFramedDrawerTile;
 import com.buuz135.functionalstorage.block.tile.FramedDrawerTile;
+import com.buuz135.functionalstorage.init.FunctionalBlocks;
 import com.hrznstudio.titanium.api.IFactory;
 import com.hrznstudio.titanium.recipe.generator.TitaniumShapedRecipeBuilder;
 import com.hrznstudio.titanium.util.TileUtil;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.util.ITooltipFlag;
@@ -28,16 +28,12 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraftforge.common.Tags;
-import net.minecraftforge.fml.RegistryObject;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
 public class CompactingFramedDrawerBlock extends CompactingDrawerBlock {
-
-    public static List<RegistryObject<Block>> FRAMED = new ArrayList<>();
 
     public CompactingFramedDrawerBlock(String name) {
         super(name, Properties.copy(Blocks.STONE).noOcclusion().isViewBlocking((p_61036_, p_61037_, p_61038_) -> false));
@@ -95,7 +91,7 @@ public class CompactingFramedDrawerBlock extends CompactingDrawerBlock {
                 .pattern("SSS").pattern("PDP").pattern("SIS")
                 .define('S', Items.IRON_NUGGET)
                 .define('P', Blocks.PISTON)
-                .define('D', Ingredient.of(FRAMED.stream().map(block -> new ItemStack(block.get()))))
+                .define('D', Ingredient.of(FunctionalBlocks.FRAMED.stream().map(ItemStack::new)))
                 .define('I', Tags.Items.INGOTS_IRON)
                 .save(consumer);
     }
