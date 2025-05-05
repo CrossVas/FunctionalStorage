@@ -49,6 +49,8 @@
   "gui.functionalstorage.fluid": "Fluid: ",
   "gui.functionalstorage.item": "Item: ",
   "gui.functionalstorage.slot": "Slot: ",
+  "info.drawer.frequency": "Frequency:",
+  "info.drawer.slot_limit": "Slot Limit: %s",
   "item.functionalstorage.collector_upgrade": "Collector Upgrade",
   "item.functionalstorage.configuration_tool": "Configuration Tool",
   "item.functionalstorage.creative_vending_upgrade": "Creative Vending Upgrade",

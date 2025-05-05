@@ -129,7 +129,6 @@ dependencies {
 
     runtimeOnly fg.deobf("curse.maven:jei-238222:5846870")
     runtimeOnly fg.deobf("curse.maven:curios-309927:3275653")
-    runtimeOnly fg.deobf("blank:IC2Classic-1.16.5:1.0.60")
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

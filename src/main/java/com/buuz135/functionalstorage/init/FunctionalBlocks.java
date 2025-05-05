@@ -93,7 +93,7 @@ public class FunctionalBlocks {
         return AbstractBlock.Properties.copy(plankSupplier.get());
     }
 
-    public static List<Block> TYPED_DRAWER_BLOCKS = Arrays.asList(
+    public static List<Block> DRAWERS = Arrays.asList(
             OAK_1, OAK_2, OAK_4,
             SPRUCE_1, SPRUCE_2, SPRUCE_4,
             BIRCH_1, BIRCH_2, BIRCH_4,

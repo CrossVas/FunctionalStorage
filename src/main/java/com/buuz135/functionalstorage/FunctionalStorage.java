@@ -201,12 +201,12 @@ public class FunctionalStorage extends ModuleController {
                         .content(Block.class, FunctionalBlocks.CONTROLLER)
                         .content(Block.class, FunctionalBlocks.CONTROLLER_EXTENSION)
                 ));
-        FunctionalBlocks.TYPED_DRAWER_BLOCKS.forEach(block -> TAB.addIconStacks(new ItemStack(block)));
+        FunctionalBlocks.DRAWERS.forEach(block -> TAB.addIconStacks(new ItemStack(block)));
     }
 
     @OnlyIn(Dist.CLIENT)
     public void onClient() {
-        FunctionalBlocks.TYPED_DRAWER_BLOCKS.forEach(tileEntityObject -> {
+        FunctionalBlocks.DRAWERS.forEach(tileEntityObject -> {
             ClientRegistry.bindTileEntityRenderer(((BasicTileBlock<?>) tileEntityObject).getTileEntityType(), DrawerRenderer::new);
         });
 
@@ -247,7 +247,7 @@ public class FunctionalStorage extends ModuleController {
             }, FunctionalItems.CONFIGURATION_TOOL.get());
         }).subscribe();
         EventManager.mod(FMLClientSetupEvent.class).process(event -> {
-            FunctionalBlocks.TYPED_DRAWER_BLOCKS.forEach(blockObject -> {
+            FunctionalBlocks.DRAWERS.forEach(blockObject -> {
                 RenderTypeLookup.setRenderLayer(blockObject, RenderType.cutout());
             });
             RenderTypeLookup.setRenderLayer(FunctionalBlocks.COMPACTING, RenderType.cutout());
@@ -320,11 +320,13 @@ public class FunctionalStorage extends ModuleController {
             event.getGenerator().addProvider(new BlockModelProvider(event.getGenerator(), MOD_ID, event.getExistingFileHelper()) {
                 @Override
                 protected void registerModels() {
-                    FunctionalBlocks.TYPED_DRAWER_BLOCKS.forEach(blockObject -> {
-                        withExistingParent(blockObject.getRegistryName().getPath() + "_locked", modLoc(blockObject.getRegistryName().getPath()))
+                    for (Block drawer : FunctionalBlocks.DRAWERS) {
+                        if (drawer instanceof FramedDrawerBlock) {
+                            continue;
+                        }
+                        withExistingParent(drawer.getRegistryName().getPath() + "_locked", modLoc(drawer.getRegistryName().getPath()))
                                 .texture("lock_icon", modLoc("blocks/lock"));
-
-                    });
+                    }
                     withExistingParent(ForgeRegistries.BLOCKS.getKey(FunctionalBlocks.COMPACTING).getPath() + "_locked", modLoc(ForgeRegistries.BLOCKS.getKey(FunctionalBlocks.COMPACTING).getPath()))
                             .texture("lock_icon", modLoc("blocks/lock"));
                     withExistingParent(ForgeRegistries.BLOCKS.getKey(FunctionalBlocks.ENDER).getPath() + "_locked", modLoc(ForgeRegistries.BLOCKS.getKey(FunctionalBlocks.ENDER).getPath()))

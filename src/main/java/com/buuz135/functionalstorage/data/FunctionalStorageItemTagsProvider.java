@@ -21,7 +21,7 @@ public class FunctionalStorageItemTagsProvider extends ItemTagsProvider {
     @Override
     protected void addTags() {
         TagsProvider.Builder<Item> tTagAppender = this.tag(StorageTags.DRAWER);
-        FunctionalBlocks.TYPED_DRAWER_BLOCKS.forEach(blockRegistryObject -> {
+        FunctionalBlocks.DRAWERS.forEach(blockRegistryObject -> {
             tTagAppender.add(blockRegistryObject.asItem());
         });
         this.tag(StorageTags.IGNORE_CRAFTING_CHECK)

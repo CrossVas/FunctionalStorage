@@ -18,7 +18,7 @@ public class FunctionalStorageLangProvider extends LanguageProvider {
     @Override
     protected void addTranslations() {
         this.add("itemGroup.functionalstorage", "Functional Storage");
-        FunctionalBlocks.TYPED_DRAWER_BLOCKS.forEach(blockRegistryObject -> {
+        FunctionalBlocks.DRAWERS.forEach(blockRegistryObject -> {
             DrawerBlock drawerBlock = (DrawerBlock) blockRegistryObject;
             this.add(drawerBlock, WordUtils.capitalize(drawerBlock.getWoodType().getName().replace('_', ' ').toLowerCase()) + " Drawer (" + drawerBlock.getType().getDisplayName() + ")");
         });
@@ -82,5 +82,7 @@ public class FunctionalStorageLangProvider extends LanguageProvider {
         this.add("gui.functionalstorage.slot", "Slot: ");
         this.add("gui.functionalstorage.fluid", "Fluid: ");
         this.add("config.jade.plugin_functionalstorage.drawer", "Drawer Info");
+        this.add("info.drawer.slot_limit", "Slot Limit: %s");
+        this.add("info.drawer.frequency", "Frequency:");
     }
 }
