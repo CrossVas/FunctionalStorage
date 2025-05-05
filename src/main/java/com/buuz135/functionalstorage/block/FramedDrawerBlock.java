@@ -88,16 +88,17 @@ public class FramedDrawerBlock extends DrawerBlock {
         NonNullList<ItemStack> stacks = NonNullList.create();
         ItemStack stack = new ItemStack(this);
         TileEntity drawerTile = builder.getOptionalParameter(LootParameters.BLOCK_ENTITY);
+        boolean locked = state.getValue(LOCKED);
         if (drawerTile instanceof FramedDrawerTile) {
             FramedDrawerTile framedDrawerTile = (FramedDrawerTile) drawerTile;
-            if (!framedDrawerTile.isEverythingEmpty()) {
+            if (!framedDrawerTile.isEverythingEmpty() || locked) {
                 stack.getOrCreateTag().put("Tile", drawerTile.save(new CompoundNBT()));
             }
             if (framedDrawerTile.getFramedDrawerModelData() != null) {
                 stack.getOrCreateTag().put("Style", framedDrawerTile.getFramedDrawerModelData().serializeNBT());
             }
-            if (framedDrawerTile.isLocked()) {
-                stack.getOrCreateTag().putBoolean("Locked", framedDrawerTile.isLocked());
+            if (locked) {
+                stack.getOrCreateTag().putBoolean("Locked", true);
             }
         }
         stacks.add(stack);

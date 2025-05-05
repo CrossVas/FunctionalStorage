@@ -1,10 +1,7 @@
 package com.buuz135.functionalstorage.block;
 
 import com.buuz135.functionalstorage.FunctionalStorage;
-import com.buuz135.functionalstorage.block.tile.CompactingDrawerTile;
-import com.buuz135.functionalstorage.block.tile.ControllableDrawerTile;
-import com.buuz135.functionalstorage.block.tile.DrawerControllerTile;
-import com.buuz135.functionalstorage.block.tile.ItemControllableDrawerTile;
+import com.buuz135.functionalstorage.block.tile.*;
 import com.buuz135.functionalstorage.init.FunctionalItems;
 import com.buuz135.functionalstorage.item.LinkingToolItem;
 import com.buuz135.functionalstorage.util.StorageTags;
@@ -166,17 +163,18 @@ public class CompactingDrawerBlock extends RotatableBlock<CompactingDrawerTile> 
     }
 
     @Override
-    public List<ItemStack> getDrops(BlockState p_60537_, LootContext.Builder builder) {
+    public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
         NonNullList<ItemStack> stacks = NonNullList.create();
         ItemStack stack = new ItemStack(this);
         TileEntity drawerTile = builder.getOptionalParameter(LootParameters.BLOCK_ENTITY);
-        if (drawerTile instanceof ControllableDrawerTile) {
-            ControllableDrawerTile<?> tile = (ControllableDrawerTile<?>) drawerTile;
-            if (!tile.isEverythingEmpty()) {
+        boolean locked = state.getValue(DrawerBlock.LOCKED);
+        if (drawerTile instanceof CompactingDrawerTile) {
+            CompactingDrawerTile tile = (CompactingDrawerTile) drawerTile;
+            if (!tile.isEverythingEmpty() || locked) {
                 stack.getOrCreateTag().put("Tile", tile.saveWithoutMetadata());
             }
-            if (tile.isLocked()){
-                stack.getOrCreateTag().putBoolean("Locked", tile.isLocked());
+            if (locked) {
+                stack.getOrCreateTag().putBoolean("Locked", true);
             }
         }
         stacks.add(stack);
@@ -187,8 +185,8 @@ public class CompactingDrawerBlock extends RotatableBlock<CompactingDrawerTile> 
     public void setPlacedBy(World level, BlockPos pos, BlockState state, @Nullable LivingEntity livingEntity, ItemStack stack) {
         super.setPlacedBy(level, pos, state, livingEntity, stack);
         TileEntity blockEntity = level.getBlockEntity(pos);
-        if (blockEntity instanceof ControllableDrawerTile) {
-            ControllableDrawerTile<?> drawerTile = (ControllableDrawerTile<?>) blockEntity;
+        if (blockEntity instanceof CompactingDrawerTile) {
+            CompactingDrawerTile drawerTile = (CompactingDrawerTile) blockEntity;
             if (stack.hasTag()) {
                 CompoundNBT tag = stack.getTag();
                 if (tag.contains("Tile")) {

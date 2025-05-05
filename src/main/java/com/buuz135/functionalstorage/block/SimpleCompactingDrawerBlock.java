@@ -1,10 +1,7 @@
 package com.buuz135.functionalstorage.block;
 
 import com.buuz135.functionalstorage.FunctionalStorage;
-import com.buuz135.functionalstorage.block.tile.ControllableDrawerTile;
-import com.buuz135.functionalstorage.block.tile.DrawerControllerTile;
-import com.buuz135.functionalstorage.block.tile.ItemControllableDrawerTile;
-import com.buuz135.functionalstorage.block.tile.SimpleCompactingDrawerTile;
+import com.buuz135.functionalstorage.block.tile.*;
 import com.buuz135.functionalstorage.init.FunctionalItems;
 import com.buuz135.functionalstorage.item.LinkingToolItem;
 import com.buuz135.functionalstorage.util.DrawerType;
@@ -25,6 +22,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.loot.LootContext;
 import net.minecraft.loot.LootParameters;
 import net.minecraft.loot.LootTable;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResultType;
@@ -141,19 +139,24 @@ public class SimpleCompactingDrawerBlock extends RotatableBlock<SimpleCompacting
         return blockLootTables.droppingNothing();
     }
 
+    @Override
+    public NonNullList<ItemStack> getDynamicDrops(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
+        return NonNullList.create();
+    }
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
         NonNullList<ItemStack> stacks = NonNullList.create();
         ItemStack stack = new ItemStack(this);
         TileEntity drawerTile = builder.getOptionalParameter(LootParameters.BLOCK_ENTITY);
-        if (drawerTile instanceof ControllableDrawerTile) {
-            ControllableDrawerTile<?> tile = (ControllableDrawerTile<?>) drawerTile;
-            if (!tile.isEverythingEmpty()) {
+        boolean locked = state.getValue(DrawerBlock.LOCKED);
+        if (drawerTile instanceof SimpleCompactingDrawerTile) {
+            SimpleCompactingDrawerTile tile = (SimpleCompactingDrawerTile) drawerTile;
+            if (!tile.isEverythingEmpty() || locked) {
                 stack.getOrCreateTag().put("Tile", tile.saveWithoutMetadata());
             }
-            if (tile.isLocked()) {
-                stack.getOrCreateTag().putBoolean("Locked", tile.isLocked());
+            if (locked) {
+                stack.getOrCreateTag().putBoolean("Locked", true);
             }
         }
         stacks.add(stack);
@@ -161,27 +164,19 @@ public class SimpleCompactingDrawerBlock extends RotatableBlock<SimpleCompacting
     }
 
     @Override
-    public NonNullList<ItemStack> getDynamicDrops(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
-        return NonNullList.create();
-    }
-
-    @Override
     public void setPlacedBy(World level, BlockPos pos, BlockState state, @Nullable LivingEntity livingEntity, ItemStack stack) {
         super.setPlacedBy(level, pos, state, livingEntity, stack);
-        if (stack.hasTag()) {
-            if (stack.getTag().contains("Tile")) {
-                TileEntity entity = level.getBlockEntity(pos);
-                if (entity instanceof ControllableDrawerTile) {
-                    ControllableDrawerTile<?> tile = (ControllableDrawerTile<?>) entity;
-                    tile.load(stack.getTag().getCompound("Tile"));
-                    tile.markForUpdate();
+        TileEntity blockEntity = level.getBlockEntity(pos);
+        if (blockEntity instanceof SimpleCompactingDrawerTile) {
+            SimpleCompactingDrawerTile drawerTile = (SimpleCompactingDrawerTile) blockEntity;
+            if (stack.hasTag()) {
+                CompoundNBT tag = stack.getTag();
+                if (tag.contains("Tile")) {
+                    drawerTile.load(tag.getCompound("Tile"));
+                    drawerTile.markForUpdate();
                 }
-            }
-            if (stack.getTag().contains("Locked")) {
-                TileEntity entity = level.getBlockEntity(pos);
-                if (entity instanceof ControllableDrawerTile) {
-                    ControllableDrawerTile<?> tile = (ControllableDrawerTile<?>) entity;
-                    tile.setLocked(stack.getTag().getBoolean("Locked"));
+                if (tag.contains("Locked")) {
+                    drawerTile.setLocked(tag.getBoolean("Locked"));
                 }
             }
         }

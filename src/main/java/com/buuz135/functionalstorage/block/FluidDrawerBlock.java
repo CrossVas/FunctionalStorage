@@ -3,6 +3,7 @@ package com.buuz135.functionalstorage.block;
 import com.buuz135.functionalstorage.FunctionalStorage;
 import com.buuz135.functionalstorage.block.tile.ControllableDrawerTile;
 import com.buuz135.functionalstorage.block.tile.DrawerControllerTile;
+import com.buuz135.functionalstorage.block.tile.DrawerTile;
 import com.buuz135.functionalstorage.block.tile.FluidDrawerTile;
 import com.buuz135.functionalstorage.init.FunctionalItems;
 import com.buuz135.functionalstorage.inventory.item.DrawerCapabilityProvider;
@@ -158,19 +159,24 @@ public class FluidDrawerBlock extends RotatableBlock<FluidDrawerTile> {
         return blockLootTables.droppingNothing();
     }
 
+    @Override
+    public NonNullList<ItemStack> getDynamicDrops(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
+        return NonNullList.create();
+    }
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
         NonNullList<ItemStack> stacks = NonNullList.create();
         ItemStack stack = new ItemStack(this);
         TileEntity drawerTile = builder.getOptionalParameter(LootParameters.BLOCK_ENTITY);
+        boolean locked = state.getValue(DrawerBlock.LOCKED);
         if (drawerTile instanceof FluidDrawerTile) {
             FluidDrawerTile tile = (FluidDrawerTile) drawerTile;
-            if (!tile.isEverythingEmpty()) {
+            if (!tile.isEverythingEmpty() || locked) {
                 stack.getOrCreateTag().put("Tile", tile.saveWithoutMetadata());
             }
-            if (tile.isLocked()) {
-                stack.getOrCreateTag().putBoolean("Locked", tile.isLocked());
+            if (locked) {
+                stack.getOrCreateTag().putBoolean("Locked", true);
             }
         }
         stacks.add(stack);
@@ -178,24 +184,20 @@ public class FluidDrawerBlock extends RotatableBlock<FluidDrawerTile> {
     }
 
     @Override
-    public NonNullList<ItemStack> getDynamicDrops(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
-        return NonNullList.create();
-    }
-
-    @Override
     public void setPlacedBy(World level, BlockPos pos, BlockState state, @Nullable LivingEntity livingEntity, ItemStack stack) {
         super.setPlacedBy(level, pos, state, livingEntity, stack);
-        if (stack.hasTag()) {
-            if (stack.getTag().contains("Tile")) {
-                TileEntity entity = level.getBlockEntity(pos);
-                if (entity instanceof ControllableDrawerTile) {
-                    ControllableDrawerTile<?> tile = (ControllableDrawerTile<?>) entity;
-                    tile.load(stack.getTag().getCompound("Tile"));
-                    tile.markForUpdate();
+        TileEntity blockEntity = level.getBlockEntity(pos);
+        if (blockEntity instanceof FluidDrawerTile) {
+            FluidDrawerTile drawerTile = (FluidDrawerTile) blockEntity;
+            if (stack.hasTag()) {
+                CompoundNBT tag = stack.getTag();
+                if (tag.contains("Tile")) {
+                    drawerTile.load(tag.getCompound("Tile"));
+                    drawerTile.markForUpdate();
                 }
-            }
-            if (stack.getTag().contains("Locked")) {
-                level.setBlock(pos, state.setValue(DrawerBlock.LOCKED, true), 3);
+                if (tag.contains("Locked")) {
+                    drawerTile.setLocked(tag.getBoolean("Locked"));
+                }
             }
         }
     }

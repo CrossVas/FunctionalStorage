@@ -201,17 +201,18 @@ public class DrawerBlock extends RotatableBlock<DrawerTile> {
     }
 
     @Override
-    public List<ItemStack> getDrops(BlockState p_60537_, LootContext.Builder builder) {
+    public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
         NonNullList<ItemStack> stacks = NonNullList.create();
         ItemStack stack = new ItemStack(this);
         TileEntity drawerTile = builder.getOptionalParameter(LootParameters.BLOCK_ENTITY);
+        boolean locked = state.getValue(LOCKED);
         if (drawerTile instanceof DrawerTile) {
             DrawerTile tile = (DrawerTile) drawerTile;
-            if (!tile.isEverythingEmpty()) {
+            if (!tile.isEverythingEmpty() || locked) {
                 stack.getOrCreateTag().put("Tile", tile.saveWithoutMetadata());
             }
-            if (tile.isLocked()){
-                stack.getOrCreateTag().putBoolean("Locked", tile.isLocked());
+            if (locked) {
+                stack.getOrCreateTag().putBoolean("Locked", true);
             }
         }
         stacks.add(stack);

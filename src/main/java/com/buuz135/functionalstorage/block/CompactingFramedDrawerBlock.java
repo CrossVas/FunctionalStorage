@@ -58,16 +58,17 @@ public class CompactingFramedDrawerBlock extends CompactingDrawerBlock {
         NonNullList<ItemStack> stacks = NonNullList.create();
         ItemStack stack = new ItemStack(this);
         TileEntity drawerTile = builder.getOptionalParameter(LootParameters.BLOCK_ENTITY);
+        boolean locked = state.getValue(DrawerBlock.LOCKED);
         if (drawerTile instanceof CompactingFramedDrawerTile) {
             CompactingFramedDrawerTile framedDrawerTile = (CompactingFramedDrawerTile) drawerTile;
-            if (!framedDrawerTile.isEverythingEmpty()) {
+            if (!framedDrawerTile.isEverythingEmpty() || locked) {
                 stack.getOrCreateTag().put("Tile", framedDrawerTile.saveWithoutMetadata());
             }
             if (framedDrawerTile.getFramedDrawerModelData() != null) {
                 stack.getOrCreateTag().put("Style", framedDrawerTile.getFramedDrawerModelData().serializeNBT());
             }
-            if (framedDrawerTile.isLocked()) {
-                stack.getOrCreateTag().putBoolean("Locked", framedDrawerTile.isLocked());
+            if (locked) {
+                stack.getOrCreateTag().putBoolean("Locked", true);
             }
         }
         stacks.add(stack);
