@@ -289,9 +289,7 @@ public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>
 
     public abstract int getStorageSlotAmount();
 
-    public void onClicked(PlayerEntity playerIn, int slot) {
-
-    }
+    public void onClicked(PlayerEntity playerIn, int slot) {}
 
     public abstract int getBaseSize(int lost);
 

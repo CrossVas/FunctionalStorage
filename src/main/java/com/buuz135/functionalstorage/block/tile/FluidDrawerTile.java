@@ -8,6 +8,7 @@ import com.buuz135.functionalstorage.init.FunctionalItems;
 import com.buuz135.functionalstorage.item.StorageUpgradeItem;
 import com.buuz135.functionalstorage.item.UpgradeItem;
 import com.buuz135.functionalstorage.util.DrawerType;
+import com.buuz135.functionalstorage.util.FunctionalFluidUtils;
 import com.hrznstudio.titanium.annotation.Save;
 import com.hrznstudio.titanium.block.BasicTileBlock;
 import com.hrznstudio.titanium.component.inventory.InventoryComponent;
@@ -203,18 +204,9 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
             if (stack.getItem().equals(FunctionalItems.CONFIGURATION_TOOL.get()) || stack.getItem().equals(FunctionalItems.LINKING_TOOL.get()))
                 return ActionResultType.PASS;
             if (slot != -1 && !playerIn.getItemInHand(hand).isEmpty()) {
-                ActionResultType interactionResult = stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).map(iFluidHandlerItem -> {
-                    return playerIn.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).map(iItemHandler -> {
-                        FluidActionResult result = FluidUtil.tryEmptyContainerAndStow(stack, this.fluidHandler.getTankList()[slot], iItemHandler, Integer.MAX_VALUE, playerIn, true);
-                        if (result.isSuccess()) {
-                            playerIn.setItemInHand(hand, result.getResult());
-                            return ActionResultType.SUCCESS;
-                        } else return ActionResultType.PASS;
-                    }).orElse(ActionResultType.PASS);
-                }).orElse(ActionResultType.PASS);
-                if (interactionResult == ActionResultType.SUCCESS) {
-                    return interactionResult;
-                }
+                if (FunctionalFluidUtils.drainContainers(stack, slot, playerIn, this.fluidHandler)) {
+                    return ActionResultType.SUCCESS;
+                } else return ActionResultType.PASS;
             }
         }
         return super.onSlotActivated(playerIn, hand, facing, hitX, hitY, hitZ, slot);
@@ -228,7 +220,7 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
                 playerIn.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(iItemHandler -> {
                     FluidActionResult result = FluidUtil.tryFillContainerAndStow(stack, this.fluidHandler.getTankList()[slot], iItemHandler, Integer.MAX_VALUE, playerIn, true);
                     if (result.isSuccess()) {
-                        playerIn.setItemInHand(Hand.MAIN_HAND, result.getResult());
+                        playerIn.setItemInHand(Hand.MAIN_HAND, result.getResult().copy());
                     }
                 });
             });

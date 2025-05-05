@@ -52,10 +52,7 @@ import net.minecraftforge.common.capabilities.ICapabilityProvider;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class DrawerBlock extends RotatableBlock<DrawerTile> {
@@ -180,7 +177,9 @@ public class DrawerBlock extends RotatableBlock<DrawerTile> {
 
     @Override
     public void attack(BlockState state, World worldIn, BlockPos pos, PlayerEntity player) {
-        TileUtil.getTileEntity(worldIn, pos, DrawerTile.class).ifPresent(drawerTile -> drawerTile.onClicked(player, getHit(state, worldIn, pos, player)));
+        if (worldIn.isClientSide()) return;
+        TileUtil.getTileEntity(worldIn, pos, DrawerTile.class)
+                    .ifPresent(drawerTile -> drawerTile.onClicked(player, getHit(state, worldIn, pos, player)));
     }
 
     public int getHit(BlockState state, World worldIn, BlockPos pos, PlayerEntity player) {
