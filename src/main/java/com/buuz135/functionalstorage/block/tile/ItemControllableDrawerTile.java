@@ -146,6 +146,7 @@ public abstract class ItemControllableDrawerTile<T extends ItemControllableDrawe
     public abstract int getStorageSlotAmount();
 
     public void onClicked(PlayerEntity playerIn, int slot) {
+        // TODO: re-think this
         if (isServer() && slot != -1) {
             RayTraceResult rayTraceResult = RayTraceUtils.rayTraceSimple(this.level, playerIn, 16, 0);
             if (rayTraceResult.getType() == RayTraceResult.Type.BLOCK) {
