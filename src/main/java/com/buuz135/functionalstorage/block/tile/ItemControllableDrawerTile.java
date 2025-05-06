@@ -160,7 +160,7 @@ public abstract class ItemControllableDrawerTile<T extends ItemControllableDrawe
                 BlockRayTraceResult blockResult = (BlockRayTraceResult) rayTraceResult;
                 Direction facing = blockResult.getDirection();
                 if (facing.equals(this.getFacingDirection())) {
-                    ItemHandlerHelper.giveItemToPlayer(playerIn, getStorage().extractItem(slot, playerIn.isShiftKeyDown() ? getStorage().getStackInSlot(slot).getMaxStackSize() : 1, false));
+                    takeOrDrop(playerIn, getStorage().extractItem(slot, playerIn.isShiftKeyDown() ? getStorage().getStackInSlot(slot).getMaxStackSize() : 1, false), -1);
                 }
             }
         }

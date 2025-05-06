@@ -16,6 +16,7 @@ import com.hrznstudio.titanium.component.inventory.InventoryComponent;
 import com.hrznstudio.titanium.nbthandler.NBTManager;
 import com.hrznstudio.titanium.util.TileUtil;
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -24,16 +25,16 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Hand;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
+import net.minecraftforge.items.wrapper.PlayerMainInvWrapper;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -284,6 +285,33 @@ public abstract class ControllableDrawerTile<T extends ControllableDrawerTile<T>
     public abstract int getStorageSlotAmount();
 
     public void onClicked(PlayerEntity playerIn, int slot) {}
+
+    public void takeOrDrop(PlayerEntity player, ItemStack stack, int preferredSlot) {
+        if (stack.isEmpty()) return;
+        IItemHandler inventory = new PlayerMainInvWrapper(player.inventory);
+        World world = player.level;
+        ItemStack remainder = stack;
+        if (preferredSlot >= 0 && preferredSlot < inventory.getSlots()) {
+            remainder = inventory.insertItem(preferredSlot, stack, false);
+        }
+        if (!remainder.isEmpty()) {
+            remainder = ItemHandlerHelper.insertItemStacked(inventory, remainder, false);
+        }
+        if (remainder.isEmpty() || remainder.getCount() != stack.getCount()) {
+            world.playSound(null, player.getX(), player.getY() + 0.5, player.getZ(),
+                    SoundEvents.ITEM_PICKUP, SoundCategory.PLAYERS, 0.2F, ((world.random.nextFloat() - world.random.nextFloat()) * 0.7F + 1.0F) * 2.0F);
+        }
+        if (!remainder.isEmpty() && !world.isClientSide) {
+            Direction direction = this.getFacingDirection();
+            double xPos = getBlockPos().getX() + direction.getStepX() + 0.5;
+            double yPos = getBlockPos().getY() + direction.getStepY() + 0.5;
+            double zPos = getBlockPos().getZ() + direction.getStepZ() + 0.5;
+            ItemEntity entityitem = new ItemEntity(world, xPos, yPos, zPos, stack);
+            entityitem.setPickUpDelay(40);
+            entityitem.setDeltaMovement(entityitem.getDeltaMovement().multiply(0, 0, 0));
+            world.addFreshEntity(entityitem);
+        }
+    }
 
     public abstract int getBaseSize(int lost);
 
