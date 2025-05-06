@@ -94,7 +94,7 @@ public class DrawerInfoProvider implements IBlockComponentProvider {
                     String extra = "";
                     if (stack.getItem() instanceof PusherUpgradeItem) {
                         String slot = stack.getOrCreateTag().getInt("Slot") == 4 ? "All" : stack.getOrCreateTag().getInt("Slot") + "";
-                        extra = slot + ": " + WordUtils.capitalize(UpgradeItem.getDirection(stack).name().toLowerCase(Locale.ROOT));
+                        extra = WordUtils.capitalize(UpgradeItem.getDirection(stack).name().toLowerCase(Locale.ROOT)) + ": " + slot;
                     }
                     if (stack.sameItem(FunctionalItems.PULLING_UPGRADE.get().getDefaultInstance()) ||
                             stack.getItem() instanceof CollectorUpgradeItem) {
