@@ -1,10 +1,7 @@
 package com.buuz135.functionalstorage.init;
 
 import com.buuz135.functionalstorage.FunctionalStorage;
-import com.buuz135.functionalstorage.item.ConfigurationToolItem;
-import com.buuz135.functionalstorage.item.LinkingToolItem;
-import com.buuz135.functionalstorage.item.StorageUpgradeItem;
-import com.buuz135.functionalstorage.item.UpgradeItem;
+import com.buuz135.functionalstorage.item.*;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -34,9 +31,10 @@ public class FunctionalItems {
         }
     });
 
-    public static final RegistryObject<Item> COLLECTOR_UPGRADE = ITEMS.register("collector_upgrade", () -> new UpgradeItem(new Item.Properties(), UpgradeItem.Type.UTILITY));
+    public static final RegistryObject<Item> COLLECTOR_UPGRADE = ITEMS.register("collector_upgrade", () -> new CollectorUpgradeItem(7));
+    public static final RegistryObject<Item> ADV_COLLECTOR_UPGRADE = ITEMS.register("adv_collector_upgrade", () -> new CollectorUpgradeItem(11));
     public static final RegistryObject<Item> PULLING_UPGRADE = ITEMS.register("puller_upgrade", () -> new UpgradeItem(new Item.Properties(), UpgradeItem.Type.UTILITY));
-    public static final RegistryObject<Item> PUSHING_UPGRADE = ITEMS.register("pusher_upgrade", () -> new UpgradeItem(new Item.Properties(), UpgradeItem.Type.UTILITY));
+    public static final RegistryObject<Item> PUSHING_UPGRADE = ITEMS.register("pusher_upgrade", PusherUpgradeItem::new);
     public static final RegistryObject<Item> VOID_UPGRADE = ITEMS.register("void_upgrade", () -> new UpgradeItem(new Item.Properties(), UpgradeItem.Type.UTILITY));
     public static final RegistryObject<Item> REDSTONE_UPGRADE = ITEMS.register("redstone_upgrade", () -> new UpgradeItem(new Item.Properties(), UpgradeItem.Type.UTILITY));
 

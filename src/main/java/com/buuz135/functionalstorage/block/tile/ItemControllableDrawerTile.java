@@ -2,6 +2,7 @@ package com.buuz135.functionalstorage.block.tile;
 
 import com.buuz135.functionalstorage.block.config.FunctionalStorageConfig;
 import com.buuz135.functionalstorage.init.FunctionalItems;
+import com.buuz135.functionalstorage.item.CollectorUpgradeItem;
 import com.buuz135.functionalstorage.item.StorageUpgradeItem;
 import com.buuz135.functionalstorage.item.UpgradeItem;
 import com.hrznstudio.titanium.block.BasicTileBlock;
@@ -26,6 +27,7 @@ import net.minecraftforge.items.ItemHandlerHelper;
 import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 public abstract class ItemControllableDrawerTile<T extends ItemControllableDrawerTile<T>> extends ControllableDrawerTile<T> {
 
@@ -66,10 +68,13 @@ public abstract class ItemControllableDrawerTile<T extends ItemControllableDrawe
                         });
                     }
                     if (item.equals(FunctionalItems.PUSHING_UPGRADE.get())) {
+                        int slot = stack.getOrCreateTag().getInt("Slot");
+                        boolean allSlots = slot == 4;
                         Direction direction = UpgradeItem.getDirection(stack);
                         TileUtil.getTileEntity(level, getBlockPos().relative(direction)).ifPresent(blockEntity1 -> {
                             blockEntity1.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction.getOpposite()).ifPresent(otherHandler -> {
-                                for (int sourceSlot = 0; sourceSlot < getStorage().getSlots(); sourceSlot++) {
+                                IntStream sourceSlots = allSlots ? IntStream.range(0, getStorage().getSlots()) : IntStream.of(slot);
+                                for (int sourceSlot : (Iterable<Integer>) sourceSlots::iterator) {
                                     ItemStack toTransferSim = getStorage().extractItem(sourceSlot, FunctionalStorageConfig.UPGRADE_PUSH_ITEMS, true);
                                     if (toTransferSim.isEmpty()) continue;
                                     for (int targetSlot = 0; targetSlot < otherHandler.getSlots(); targetSlot++) {
@@ -94,9 +99,11 @@ public abstract class ItemControllableDrawerTile<T extends ItemControllableDrawe
                             });
                         });
                     }
-                    if (item.equals(FunctionalItems.COLLECTOR_UPGRADE.get())) {
+                    if (item instanceof CollectorUpgradeItem) {
+                        CollectorUpgradeItem collector = (CollectorUpgradeItem) item;
+                        int range = collector.getRange() / 2;
                         Direction direction = UpgradeItem.getDirection(stack);
-                        AxisAlignedBB box = new AxisAlignedBB(getBlockPos().relative(direction));
+                        AxisAlignedBB box = new AxisAlignedBB(getBlockPos().relative(direction, range + 1)).inflate(range);
                         for (ItemEntity entitiesOfClass : level.getEntitiesOfClass(ItemEntity.class, box)) {
                             ItemStack pulledStack = ItemHandlerHelper.copyStackWithSize(entitiesOfClass.getItem(), Math.min(entitiesOfClass.getItem().getCount(), FunctionalStorageConfig.UPGRADE_COLLECTOR_ITEMS));
                             if (pulledStack.isEmpty()) continue;

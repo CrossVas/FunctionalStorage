@@ -306,6 +306,7 @@ public class FunctionalStorage extends ModuleController {
                         item(itemObject.get());
                     });
                     item(FunctionalItems.COLLECTOR_UPGRADE.get());
+                    item(FunctionalItems.ADV_COLLECTOR_UPGRADE.get());
                     item(FunctionalItems.PULLING_UPGRADE.get());
                     item(FunctionalItems.PUSHING_UPGRADE.get());
                     item(FunctionalItems.VOID_UPGRADE.get());
@@ -479,6 +480,13 @@ public class FunctionalStorage extends ModuleController {
                         .define('B', Items.HOPPER)
                         .define('R', Tags.Items.DUSTS_REDSTONE)
                         .define('D', StorageTags.DRAWER)
+                        .save(consumer);
+                TitaniumShapedRecipeBuilder.shapedRecipe(FunctionalItems.ADV_COLLECTOR_UPGRADE.get())
+                        .pattern(" D ").pattern("GUG").pattern("RRR")
+                        .define('U', FunctionalItems.COLLECTOR_UPGRADE.get())
+                        .define('G', Tags.Items.INGOTS_GOLD)
+                        .define('R', Tags.Items.DUSTS_REDSTONE)
+                        .define('D', Tags.Items.GEMS_DIAMOND)
                         .save(consumer);
                 TitaniumShapedRecipeBuilder.shapedRecipe(FunctionalBlocks.ENDER)
                         .pattern("PPP").pattern("LCL").pattern("PPP")

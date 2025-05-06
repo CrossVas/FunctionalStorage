@@ -52,6 +52,7 @@ public class FunctionalStorageLangProvider extends LanguageProvider {
         });
 
         this.add(FunctionalItems.COLLECTOR_UPGRADE.get(), WordUtils.capitalize(ForgeRegistries.ITEMS.getKey(FunctionalItems.COLLECTOR_UPGRADE.get()).getPath().replace('_', ' ').toLowerCase()));
+        this.add(FunctionalItems.ADV_COLLECTOR_UPGRADE.get(), WordUtils.capitalize(ForgeRegistries.ITEMS.getKey(FunctionalItems.ADV_COLLECTOR_UPGRADE.get()).getPath().replace('_', ' ').toLowerCase()));
         this.add(FunctionalItems.PULLING_UPGRADE.get(), WordUtils.capitalize(ForgeRegistries.ITEMS.getKey(FunctionalItems.PULLING_UPGRADE.get()).getPath().replace('_', ' ').toLowerCase()));
         this.add(FunctionalItems.PUSHING_UPGRADE.get(), WordUtils.capitalize(ForgeRegistries.ITEMS.getKey(FunctionalItems.PUSHING_UPGRADE.get()).getPath().replace('_', ' ').toLowerCase()));
         this.add(FunctionalItems.VOID_UPGRADE.get(), WordUtils.capitalize(ForgeRegistries.ITEMS.getKey(FunctionalItems.VOID_UPGRADE.get()).getPath().replace('_', ' ').toLowerCase()));
@@ -77,6 +78,7 @@ public class FunctionalStorageLangProvider extends LanguageProvider {
         this.add("frameddrawer.use", "How to Change Texture: \nInside a crafting window place the block you want use the texture of for the outside of the drawer in the first slot of the crafting window, on the second slot put the block that will be used for the texture on the inside of the framed drawer and on the third slot put a framed drawer. \n");
         this.add("item.utility.slot", "Slot: ");
         this.add("item.utility.slot.desc", "Right click in the air to change slot");
+        this.add("e", "Sneak + Right click in the air to change slot");
         this.add("gui.functionalstorage.item", "Item: ");
         this.add("gui.functionalstorage.amount", "Amount: ");
         this.add("gui.functionalstorage.slot", "Slot: ");

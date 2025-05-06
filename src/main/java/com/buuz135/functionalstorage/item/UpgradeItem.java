@@ -25,7 +25,7 @@ public class UpgradeItem extends BasicItem {
     public static Direction getDirection(ItemStack stack) {
         if (stack.hasTag() && stack.getTag().contains("Direction")) {
             Item item = stack.getItem();
-            if (item.equals(FunctionalItems.PULLING_UPGRADE.get()) || item.equals(FunctionalItems.PUSHING_UPGRADE.get()) || item.equals(FunctionalItems.COLLECTOR_UPGRADE.get())) {
+            if (item.equals(FunctionalItems.PULLING_UPGRADE.get()) || item.equals(FunctionalItems.PUSHING_UPGRADE.get()) || item instanceof CollectorUpgradeItem) {
                 Direction direction = Direction.byName(stack.getOrCreateTag().getString("Direction"));
                 return direction == null ? Direction.NORTH : direction;
             }
@@ -42,10 +42,10 @@ public class UpgradeItem extends BasicItem {
 
     @Override
     public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
-        if (hand == Hand.MAIN_HAND) {
+        if (hand == Hand.MAIN_HAND && !player.isCrouching()) {
             ItemStack handStack = player.getItemInHand(hand);
             Item upgrade = handStack.getItem();
-            if (upgrade.equals(FunctionalItems.PULLING_UPGRADE.get()) || upgrade.equals(FunctionalItems.PUSHING_UPGRADE.get()) || upgrade.equals(FunctionalItems.COLLECTOR_UPGRADE.get())) {
+            if (upgrade.equals(FunctionalItems.PULLING_UPGRADE.get()) || upgrade.equals(FunctionalItems.PUSHING_UPGRADE.get()) || upgrade instanceof CollectorUpgradeItem) {
                 Direction direction = getDirection(handStack);
                 Direction next = Direction.values()[(Arrays.asList(Direction.values()).indexOf(direction) + 1 ) % Direction.values().length];
                 handStack.getOrCreateTag().putString("Direction", next.getName());
@@ -73,10 +73,10 @@ public class UpgradeItem extends BasicItem {
 
     private ItemStack initNbt(ItemStack stack) {
         Item item = stack.getItem();
-        if (item.equals(FunctionalItems.PULLING_UPGRADE.get()) || item.equals(FunctionalItems.PUSHING_UPGRADE.get()) || item.equals(FunctionalItems.COLLECTOR_UPGRADE.get())) {
+        if (item.equals(FunctionalItems.PULLING_UPGRADE.get()) || item instanceof CollectorUpgradeItem) {
             stack.getOrCreateTag().putString("Direction", Direction.values()[0].getName());
         }
-        if (item.equals(FunctionalItems.REDSTONE_UPGRADE.get())) {
+        if (item.equals(FunctionalItems.REDSTONE_UPGRADE.get()) || item.equals(FunctionalItems.PUSHING_UPGRADE.get())) {
             stack.getOrCreateTag().putInt("Slot", 0);
         }
         return stack;
@@ -99,7 +99,7 @@ public class UpgradeItem extends BasicItem {
         tooltip.add(new TranslationTextComponent("upgrade.type").withStyle(TextFormatting.YELLOW).append(new TranslationTextComponent("upgrade.type." + getType().name().toLowerCase(Locale.ROOT)).withStyle(TextFormatting.WHITE)));
         Item item = stack.getItem();
         if (stack.hasTag()) {
-            if (item.equals(FunctionalItems.PULLING_UPGRADE.get()) || item.equals(FunctionalItems.PUSHING_UPGRADE.get()) || item.equals(FunctionalItems.COLLECTOR_UPGRADE.get())) {
+            if (item.equals(FunctionalItems.PULLING_UPGRADE.get()) || item.equals(FunctionalItems.PUSHING_UPGRADE.get()) || item instanceof CollectorUpgradeItem) {
                 tooltip.add(new TranslationTextComponent("item.utility.direction").withStyle(TextFormatting.YELLOW).append(new TranslationTextComponent(WordUtils.capitalize(getDirection(stack).getName().toLowerCase(Locale.ROOT))).withStyle(TextFormatting.WHITE)));
                 tooltip.add(new StringTextComponent(""));
                 tooltip.add(new TranslationTextComponent("item.utility.direction.desc").withStyle(TextFormatting.GRAY));
@@ -107,7 +107,13 @@ public class UpgradeItem extends BasicItem {
             if (item.equals(FunctionalItems.REDSTONE_UPGRADE.get())) {
                 tooltip.add(new TranslationTextComponent("item.utility.slot").withStyle(TextFormatting.YELLOW).append(new StringTextComponent(stack.getOrCreateTag().getInt("Slot") + "").withStyle(TextFormatting.WHITE)));
                 tooltip.add(new StringTextComponent(""));
-                tooltip.add(new TranslationTextComponent("item.utility.direction.desc").withStyle(TextFormatting.GRAY));
+                tooltip.add(new TranslationTextComponent("item.utility.slot.desc").withStyle(TextFormatting.GRAY));
+            }
+            if (item.equals(FunctionalItems.PUSHING_UPGRADE.get())) {
+                String slot = stack.getOrCreateTag().getInt("Slot") == 4 ? "All" : stack.getOrCreateTag().getInt("Slot") + "";
+                tooltip.add(new TranslationTextComponent("item.utility.slot").withStyle(TextFormatting.YELLOW).append(new StringTextComponent(slot).withStyle(TextFormatting.WHITE)));
+                tooltip.add(new StringTextComponent(""));
+                tooltip.add(new TranslationTextComponent("item.utility.pusher.slot.desc").withStyle(TextFormatting.GRAY));
             }
         }
 

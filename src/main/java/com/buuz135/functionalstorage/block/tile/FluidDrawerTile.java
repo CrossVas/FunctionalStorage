@@ -5,6 +5,7 @@ import com.buuz135.functionalstorage.block.config.FunctionalStorageConfig;
 import com.buuz135.functionalstorage.client.gui.FluidDrawerInfoGuiAddon;
 import com.buuz135.functionalstorage.fluid.BigFluidHandler;
 import com.buuz135.functionalstorage.init.FunctionalItems;
+import com.buuz135.functionalstorage.item.CollectorUpgradeItem;
 import com.buuz135.functionalstorage.item.StorageUpgradeItem;
 import com.buuz135.functionalstorage.item.UpgradeItem;
 import com.buuz135.functionalstorage.util.DrawerType;
@@ -41,6 +42,7 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.stream.IntStream;
 
 public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
 
@@ -128,11 +130,14 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
                 if (!stack.isEmpty()) {
                     Item item = stack.getItem();
                     if (item.equals(FunctionalItems.PUSHING_UPGRADE.get())) {
+                        int slot = stack.getOrCreateTag().getInt("Slot");
+                        boolean allSlots = slot == 4;
                         Direction direction = UpgradeItem.getDirection(stack);
                         TileUtil.getTileEntity(level, getBlockPos().relative(direction)).ifPresent(blockEntity1 -> {
                             blockEntity1.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, direction.getOpposite()).ifPresent(otherFluidHandler -> {
-                                for (int tankId = 0; tankId < this.getFluidHandler().getTanks(); tankId++) {
-                                    BigFluidHandler.CustomFluidTank fluidTank = this.fluidHandler.getTankList()[tankId];
+                                IntStream targetSlots = allSlots ? IntStream.range(0, this.getFluidHandler().getTanks()) : IntStream.of(slot);
+                                for (int targetSlot : (Iterable<Integer>) targetSlots::iterator) {
+                                    BigFluidHandler.CustomFluidTank fluidTank = this.fluidHandler.getTankList()[targetSlot];
                                     if (fluidTank.getFluid().isEmpty()) continue;
                                     FluidStack extracted = fluidTank.drain(FunctionalStorageConfig.UPGRADE_PUSH_FLUID, IFluidHandler.FluidAction.SIMULATE);
                                     if (extracted.isEmpty()) continue;
@@ -164,7 +169,7 @@ public class FluidDrawerTile extends ControllableDrawerTile<FluidDrawerTile> {
                             });
                         });
                     }
-                    if (item.equals(FunctionalItems.COLLECTOR_UPGRADE.get()) && level.getGameTime() % (FunctionalStorageConfig.UPGRADE_TICK * 3) == 0) {
+                    if (item instanceof CollectorUpgradeItem && level.getGameTime() % (FunctionalStorageConfig.UPGRADE_TICK * 3) == 0) {
                         Direction direction = UpgradeItem.getDirection(stack);
                         FluidState fluidstate = this.level.getFluidState(this.getBlockPos().relative(direction));
                         if (!fluidstate.isEmpty() && fluidstate.isSource()) {

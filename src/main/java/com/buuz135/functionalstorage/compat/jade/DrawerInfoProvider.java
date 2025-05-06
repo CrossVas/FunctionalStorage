@@ -2,11 +2,12 @@ package com.buuz135.functionalstorage.compat.jade;
 
 import com.buuz135.functionalstorage.block.EnderDrawerBlock;
 import com.buuz135.functionalstorage.block.tile.*;
-import com.buuz135.functionalstorage.compat.top.CustomElementItemStack;
 import com.buuz135.functionalstorage.init.FunctionalItems;
 import com.buuz135.functionalstorage.inventory.BigInventoryHandler;
 import com.buuz135.functionalstorage.inventory.CompactingInventoryHandler;
 import com.buuz135.functionalstorage.inventory.EnderInventoryHandler;
+import com.buuz135.functionalstorage.item.CollectorUpgradeItem;
+import com.buuz135.functionalstorage.item.PusherUpgradeItem;
 import com.buuz135.functionalstorage.item.UpgradeItem;
 import com.buuz135.functionalstorage.util.NumberUtils;
 import com.buuz135.functionalstorage.world.EnderSavedData;
@@ -14,7 +15,6 @@ import mcjty.theoneprobe.api.TankReference;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import org.apache.commons.lang3.text.WordUtils;
@@ -92,9 +92,12 @@ public class DrawerInfoProvider implements IBlockComponentProvider {
                 ItemStack stack = ((ControllableDrawerTile) blockEntity).getUtilityUpgrades().getStackInSlot(i);
                 if (!stack.isEmpty()) {
                     String extra = "";
-                    if (stack.sameItem(FunctionalItems.PUSHING_UPGRADE.get().getDefaultInstance()) ||
-                            stack.sameItem(FunctionalItems.PULLING_UPGRADE.get().getDefaultInstance()) ||
-                            stack.sameItem(FunctionalItems.COLLECTOR_UPGRADE.get().getDefaultInstance())) {
+                    if (stack.getItem() instanceof PusherUpgradeItem) {
+                        String slot = stack.getOrCreateTag().getInt("Slot") == 4 ? "All" : stack.getOrCreateTag().getInt("Slot") + "";
+                        extra = slot + ": " + WordUtils.capitalize(UpgradeItem.getDirection(stack).name().toLowerCase(Locale.ROOT));
+                    }
+                    if (stack.sameItem(FunctionalItems.PULLING_UPGRADE.get().getDefaultInstance()) ||
+                            stack.getItem() instanceof CollectorUpgradeItem) {
                         extra = WordUtils.capitalize(UpgradeItem.getDirection(stack).name().toLowerCase(Locale.ROOT));
                         if (extra.equals("Up")) {
                             extra = "   " + extra;
