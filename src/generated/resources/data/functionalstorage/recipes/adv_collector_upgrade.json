@@ -1,0 +1,43 @@
+{
+  "type": "forge:conditional",
+  "recipes": [
+    {
+      "conditions": [
+        {
+          "values": [
+            {
+              "item": "functionalstorage:adv_collector_upgrade",
+              "type": "forge:item_exists"
+            }
+          ],
+          "type": "forge:and"
+        }
+      ],
+      "recipe": {
+        "type": "minecraft:crafting_shaped",
+        "pattern": [
+          " D ",
+          "GUG",
+          "RRR"
+        ],
+        "key": {
+          "U": {
+            "item": "functionalstorage:collector_upgrade"
+          },
+          "G": {
+            "tag": "forge:ingots/gold"
+          },
+          "R": {
+            "tag": "forge:dusts/redstone"
+          },
+          "D": {
+            "tag": "forge:gems/diamond"
+          }
+        },
+        "result": {
+          "item": "functionalstorage:adv_collector_upgrade"
+        }
+      }
+    }
+  ]
+}
