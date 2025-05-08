@@ -94,7 +94,7 @@ public class FunctionalStorage extends ModuleController {
 
     public FunctionalStorage() {
         init();
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::onClient);
+//        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::onClient);
         EventManager.forge(BlockEvent.BreakEvent.class).process(breakEvent -> {
             if (breakEvent.getPlayer().isCreative()) {
                 if (breakEvent.getState().getBlock() instanceof DrawerBlock) {
@@ -491,7 +491,7 @@ public class FunctionalStorage extends ModuleController {
                 TitaniumShapedRecipeBuilder.shapedRecipe(FunctionalBlocks.ENDER)
                         .pattern("PPP").pattern("LCL").pattern("PPP")
                         .define('P', ItemTags.PLANKS)
-                        .define('C', Tags.Items.CHESTS_ENDER)
+                        .define('C', Items.ENDER_CHEST)
                         .define('L', StorageTags.DRAWER)
                         .save(consumer);
             }
