@@ -94,7 +94,7 @@ public class FunctionalStorage extends ModuleController {
 
     public FunctionalStorage() {
         init();
-//        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::onClient);
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::onClient);
         EventManager.forge(BlockEvent.BreakEvent.class).process(breakEvent -> {
             if (breakEvent.getPlayer().isCreative()) {
                 if (breakEvent.getState().getBlock() instanceof DrawerBlock) {

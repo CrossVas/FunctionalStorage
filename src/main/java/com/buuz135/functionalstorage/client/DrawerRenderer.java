@@ -11,6 +11,7 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.ItemRenderer;
 import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.model.ItemCameraTransforms;
@@ -18,6 +19,9 @@ import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Direction;
+import net.minecraft.util.Util;
+import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.util.math.vector.Quaternion;
 import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
@@ -60,31 +64,26 @@ public class DrawerRenderer extends TileEntityRenderer<DrawerTile> {
 
     public static void renderStack(MatrixStack matrixStack, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn, ItemStack stack, int amount, float scale, ControllableDrawerTile.DrawerOptions options) {
         IBakedModel model = Minecraft.getInstance().getItemRenderer().getModel(stack, Minecraft.getInstance().level, null);
-        if (model.isGui3d()) {
-            float thickness = (float) FunctionalStorageClientConfig.DRAWER_RENDER_THICKNESS;
-            // Avoid scaling normal matrix by using mulPoseMatrix() instead of scale()
-            matrixStack.last().pose().multiply(createTransformMatrix(
-                    ZERO, ZERO, new Vector3f(.75f, .75f, thickness)));
-        } else {
-            matrixStack.last().pose().multiply(createTransformMatrix(
-                    ZERO, ZERO, .4f));
-        }
+        ItemRenderer itemRenderer = Minecraft.getInstance().getItemRenderer();
 
-        matrixStack.mulPose(Vector3f.YP.rotationDegrees(180));
+        Quaternion ITEM_LIGHT_ROTATION_3D = Util.make(() -> {
+            Quaternion quaternion = new Quaternion(Vector3f.XP, -15f, true);
+            quaternion.mul(new Quaternion(Vector3f.YP, 15f, true));
+            return quaternion;
+        });
+
+        Quaternion ITEM_LIGHT_ROTATION_FLAT = new Quaternion(Vector3f.XP, -45f, true);
+
+        matrixStack.last().pose().multiply(Matrix4f.createScaleMatrix(.5f, .5f, 0.001f));
+        boolean render3D = model.isGui3d();
+        if (render3D)
+            matrixStack.last().normal().mul(ITEM_LIGHT_ROTATION_3D);
+        else
+            matrixStack.last().normal().mul(ITEM_LIGHT_ROTATION_FLAT);
+
         if (options.isActive(ConfigurationToolItem.ConfigurationAction.TOGGLE_RENDER)) {
-            Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemCameraTransforms.TransformType.FIXED, combinedLightIn, combinedOverlayIn, matrixStack, bufferIn);
+            itemRenderer.render(stack, ItemCameraTransforms.TransformType.GUI, false, matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, model);
         }
-
-        matrixStack.last().pose().multiply(createTransformMatrix(
-                ZERO, new Vector3f(0, 180, 0), 1));
-        if (!model.isGui3d()) {
-            matrixStack.last().pose().multiply(createTransformMatrix(
-                    ZERO, ZERO, new Vector3f(0.5f / 0.4f, 0.5f / 0.4f, 1)));
-        } else {
-            matrixStack.last().pose().multiply(createTransformMatrix(
-                    ZERO, ZERO, .665f));
-        }
-
 
         if (options.isActive(ConfigurationToolItem.ConfigurationAction.TOGGLE_NUMBERS))
             renderText(matrixStack, bufferIn, combinedOverlayIn, new StringTextComponent(NumberUtils.getFormatedBigNumber(amount)).withStyle(TextFormatting.WHITE), Direction.NORTH, scale);
