@@ -47,30 +47,18 @@ public class CompactingDrawerRenderer extends TileEntityRenderer<CompactingDrawe
 
         matrixStack.translate(0, 0, -0.5 / 16D);
         combinedLightIn = WorldRenderer.getLightColor(tile.getLevel(), tile.getBlockPos().relative(facing));
-        DrawerRenderer.renderUpgrades(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, tile);
+        RenderHelper.renderUpgrades(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, tile);
         ItemStack stack = tile.getHandler().getResultList().get(0).getResult();
         if (!stack.isEmpty()) {
-            matrixStack.pushPose();
-            matrixStack.last().pose().multiply(createTransformMatrix(
-                    new Vector3f(.75f, .27f, .0005f), ZERO, new Vector3f(.5f, .5f, 1.0f)));
-            DrawerRenderer.renderStack(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, stack, tile.getHandler().getStackInSlot(0).getCount(), 0.02f, tile.getDrawerOptions());
-            matrixStack.popPose();
+            RenderHelper.renderSmallStack(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, stack, tile.getHandler().getStackInSlot(0).getCount(), tile.getDrawerOptions(), .75f, .25f);
         }
         stack = tile.getHandler().getResultList().get(1).getResult();
         if (!stack.isEmpty()) {
-            matrixStack.pushPose();
-            matrixStack.last().pose().multiply(createTransformMatrix(
-                    new Vector3f(.25f, .27f, .0005f), ZERO, new Vector3f(.5f, .5f, 1.0f)));
-            DrawerRenderer.renderStack(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, stack, tile.getHandler().getStackInSlot(1).getCount(), 0.02f, tile.getDrawerOptions());
-            matrixStack.popPose();
+            RenderHelper.renderSmallStack(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, stack, tile.getHandler().getStackInSlot(1).getCount(), tile.getDrawerOptions(), .25f, .25f);
         }
         stack = tile.getHandler().getResultList().get(2).getResult();
         if (!stack.isEmpty()) {
-            matrixStack.pushPose();
-            matrixStack.last().pose().multiply(createTransformMatrix(
-                    new Vector3f(.5f, .77f, .0005f), ZERO, new Vector3f(.5f, .5f, 1.0f)));
-            DrawerRenderer.renderStack(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, stack, tile.getHandler().getStackInSlot(2).getCount(), 0.02f, tile.getDrawerOptions());
-            matrixStack.popPose();
+            RenderHelper.renderSmallStack(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, stack, tile.getHandler().getStackInSlot(2).getCount(), tile.getDrawerOptions(), .5f, .75f);
         }
         matrixStack.popPose();
     }

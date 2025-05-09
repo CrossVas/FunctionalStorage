@@ -89,7 +89,7 @@ public class EnderDrawerRenderer extends TileEntityRenderer<EnderDrawerTile> {
         if (!inventoryHandler.getStoredStacks().get(0).getStack().isEmpty()) {
             matrixStack.translate(0.5, 0.5, 0.0005f);
             ItemStack stack = inventoryHandler.getStoredStacks().get(0).getStack();
-            DrawerRenderer.renderStack(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, stack, inventoryHandler.getStoredStacks().get(0).getAmount(), 0.015f, tile.getDrawerOptions());
+            RenderHelper.renderStack(matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, stack, inventoryHandler.getStoredStacks().get(0).getAmount(), 0.015f, tile.getDrawerOptions(), -.155f);
         }
     }
 
