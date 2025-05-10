@@ -35,12 +35,14 @@ import com.hrznstudio.titanium.nbthandler.NBTManager;
 import com.hrznstudio.titanium.network.NetworkHandler;
 import com.hrznstudio.titanium.recipe.generator.TitaniumRecipeProvider;
 import com.hrznstudio.titanium.recipe.generator.TitaniumShapedRecipeBuilder;
+import com.hrznstudio.titanium.recipe.generator.TitaniumShapelessRecipeBuilder;
 import com.hrznstudio.titanium.tab.AdvancedTitaniumTab;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.RenderTypeLookup;
 import net.minecraft.data.BlockTagsProvider;
 import net.minecraft.data.IFinishedRecipe;
+import net.minecraft.data.ShapelessRecipeBuilder;
 import net.minecraft.data.SmithingRecipeBuilder;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -423,9 +425,12 @@ public class FunctionalStorage extends ModuleController {
                         .save(consumer);
 
                 // netherite
-                SmithingRecipeBuilder.smithing(Ingredient.of(FunctionalItems.DIAMOND_UPGRADE.get()), Ingredient.of(Items.NETHERITE_INGOT), FunctionalItems.NETHERITE_UPGRADE.get())
-                        .unlocks("has_netherite_ingot", has(Items.NETHERITE_INGOT))
-                        .save(consumer, ForgeRegistries.ITEMS.getKey(FunctionalItems.NETHERITE_UPGRADE.get()));
+//                SmithingRecipeBuilder.smithing(Ingredient.of(FunctionalItems.DIAMOND_UPGRADE.get()), Ingredient.of(Items.NETHERITE_INGOT), FunctionalItems.NETHERITE_UPGRADE.get())
+//                        .unlocks("has_netherite_ingot", has(Items.NETHERITE_INGOT))
+//                        .save(consumer, ForgeRegistries.ITEMS.getKey(FunctionalItems.NETHERITE_UPGRADE.get()));
+                TitaniumShapelessRecipeBuilder.shapelessRecipe(FunctionalItems.NETHERITE_UPGRADE.get())
+                                .requires(Ingredient.of(FunctionalItems.DIAMOND_UPGRADE.get()))
+                                        .requires(Ingredient.of(Items.NETHERITE_INGOT)).save(consumer);
 
                 TitaniumShapedRecipeBuilder.shapedRecipe(FunctionalItems.VOID_UPGRADE.get())
                         .pattern("III").pattern("IDI").pattern("III")
